@@ -1,12 +1,12 @@
-import { Button } from "antd"
+import { Button } from "antd";
+import Navigation from "./navigation";
 
 function App() {
-
   return (
     <div className="App">
-    <Button type="primary">Button</Button>
-  </div>
-  )
+      <Navigation />
+    </div>
+  );
 }
 
-export default App
+export default App;
