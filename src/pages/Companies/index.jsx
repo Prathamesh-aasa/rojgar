@@ -32,6 +32,11 @@ const index = () => {
       key: "CompanyId",
     },
     {
+      title: "Job poster Email Id",
+      dataIndex: "JobposterEmail",
+      key: "JobposterEmail",
+    },
+    {
       title: "Job poster Ph No.",
       dataIndex: "JobposterPhNo",
       key: "JobposterPhNo",
@@ -69,7 +74,7 @@ const index = () => {
       key: index,
       name: "Company Name",
       CompanyId: "ABCD1234",
-      JobposterPhNo: "candidate@gmail.com",
+      JobposterEmail: "candidate@gmail.com",
       JobposterPhNo: "+91 9876543210",
       dateRegistration: "31 March 2023",
       Address: "Pune",
@@ -79,7 +84,7 @@ const index = () => {
       key: index,
       name: "Company Name",
       CompanyId: "ABCD1234",
-      JobposterPhNo: "candidate@gmail.com",
+      JobposterEmail: "candidate@gmail.com",
       JobposterPhNo: "+91 9876543210",
       dateRegistration: "31 March 2023",
       Address: "Pune",
@@ -121,7 +126,13 @@ const index = () => {
         </div>
       </div>
       <Table columns={columns} dataSource={data} pagination={false} />
-      <Modal title="Update Status" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+      <Modal title="Update Status"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        style={{ top: 0 }}
+        width="100%"
+        bodyStyle={{ height: "80vh", padding: 0 }}>
         <p>{`Selected Status: ${selectedStatus}`}</p>
         {/* Add form elements here to handle status update if needed */}
       </Modal>
