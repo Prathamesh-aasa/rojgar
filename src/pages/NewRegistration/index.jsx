@@ -1,23 +1,72 @@
-import React from "react";
-import { Table, Tabs, Tag, Input, Dropdown, Button } from "antd";
-import { useState } from "react";
-import { FilterOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { Table, Tabs, Tag, Input } from "antd";
+import { db } from "../../../firebase";
+import { collection, getDocs, query } from "firebase/firestore";
 const { Search } = Input;
 
 const Index = () => {
-  const [searchText, setSearchText] = useState("");
-  const [filteredTasks, setFilteredTasks] = useState([]);
-  const [filteredTeamTasks, setFilteredTeamTasks] = useState([]);
+  const [filteredIndividualUsers, setFilteredIndividualUsers] = useState([]);
+  const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const [individualUsers, setIndividualUsers] = useState([]);
+  const [companiesList, setCompaniesList] = useState([]);
+
+  const getIndividualUsers = async () => {
+    const individualCollection = collection(db, "Individuals");
+    const indQry = query(individualCollection);
+    const snapshot = await getDocs(indQry);
+    const usersList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setIndividualUsers(usersList);
+    setFilteredIndividualUsers(usersList);
+  };
+
+  const getCompanies = async () => {
+    const companyCollection = collection(db, "RegisterAsCompany");
+    const compQry = query(companyCollection);
+    const snapshot = await getDocs(compQry);
+    const companiesList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setCompaniesList(companiesList);
+    setFilteredCompanies(companiesList);
+  };
+
+  useEffect(() => {
+    getIndividualUsers();
+    getCompanies();
+  }, []);
+
+  const handleSearch = (value, type) => {
+    if (type === "individuals") {
+      const filtered = individualUsers.filter((user) =>
+        Object.values(user).some((val) =>
+          String(val).toLowerCase().includes(value.toLowerCase())
+        )
+      );
+      setFilteredIndividualUsers(filtered);
+    } else {
+      const filtered = companiesList.filter((company) =>
+        Object.values(company).some((val) =>
+          String(val).toLowerCase().includes(value.toLowerCase())
+        )
+      );
+      setFilteredCompanies(filtered);
+    }
+  };
+
   const columns = [
     {
       title: " Name",
-      dataIndex: "first_name",
-      key: "first_name",
+      dataIndex: "full_name",
+      key: "full_name",
     },
     {
       title: "Registration ID",
-      dataIndex: "registration_id",
-      key: "registration_id",
+      dataIndex: "id",
+      key: "id",
     },
     {
       title: "Email",
@@ -30,14 +79,9 @@ const Index = () => {
       key: "phone_number",
     },
     {
-      title: "Date of Registration",
-      dataIndex: "date_of_registration",
-      key: "date_of_registration",
-    },
-    {
       title: "Services Enrolled",
-      dataIndex: "services_enrolled",
-      key: "services_enrolled",
+      dataIndex: "trade",
+      key: "trade",
     },
     {
       title: "Status",
@@ -53,93 +97,44 @@ const Index = () => {
     },
   ];
 
-  const managerTaskData = {
-    tasks: [
-      {
-        key: "1",
-        first_name: "John",
-        registration_id: "123",
-        email: "john@example.com",
-        phone_number: "123-456-7890",
-        date_of_registration: "2023-12-01",
-        services_enrolled: "Service A, Service B",
-        status: "Pending",
-        contact_id: "456",
+  const companiesColumns = [
+    {
+      title: "Company Name",
+      dataIndex: "company_name",
+      key: "company_name",
+    },
+    {
+      title: "Company ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Job poster Email Id",
+      dataIndex: "job_poster_email",
+      key: "job_poster_email",
+    },
+    {
+      title: "Job poster Phone Number",
+      dataIndex: "job_poster_phone_number",
+      key: "job_poster_phone_number",
+    },
+    {
+      title: "Date of Registration",
+      dataIndex: "date_of_registration",
+      key: "date_of_registration",
+    },
+    {
+      title: "Address",
+      dataIndex: "registered_address",
+      key: "registered_address",
+    },
+    {
+      title: "Verification Status",
+      render: (_, { verified }) => {
+        return verified ? "Verified" : "Pending";
       },
-      {
-        key: "2",
-        first_name: "Jane",
-        registration_id: "124",
-        email: "jane@example.com",
-        phone_number: "987-654-3210",
-        date_of_registration: "2023-12-02",
-        services_enrolled: "Service C",
-        status: "Completed",
-        contact_id: null,
-      },
-    ],
-    teamTasks: [
-      {
-        key: "3",
-        first_name: "Alice",
-        registration_id: "125",
-        email: "alice@example.com",
-        phone_number: "555-666-7777",
-        date_of_registration: "2023-12-03",
-        services_enrolled: "Service D, Service E",
-        status: "In Progress",
-        contact_id: "789",
-      },
-      {
-        key: "4",
-        first_name: "Bob",
-        registration_id: "126",
-        email: "bob@example.com",
-        phone_number: "888-999-0000",
-        date_of_registration: "2023-12-04",
-        services_enrolled: "Service F",
-        status: "Pending",
-        contact_id: null,
-      },
-    ],
-  };
-
-  const handleSearch = (value) => {
-    setSearchText(value);
-    if (value === "") {
-      setFilteredTasks(managerTaskData.tasks);
-      setFilteredTeamTasks(managerTaskData.teamTasks);
-    } else {
-      const filteredTasks = managerTaskData.tasks.filter((task) =>
-        Object.values(task).some(
-          (val) =>
-            typeof val === "string" &&
-            val.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-      const filteredTeamTasks = managerTaskData.teamTasks.filter((task) =>
-        Object.values(task).some(
-          (val) =>
-            typeof val === "string" &&
-            val.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-      setFilteredTasks(filteredTasks);
-      setFilteredTeamTasks(filteredTeamTasks);
-    }
-  };
-
-  const handleFilter = () => {
-    // Define your filtering logic here
-    const filteredTasks = managerTaskData.tasks.filter(
-      (task) => task.status === "Pending"
-    );
-    const filteredTeamTasks = managerTaskData.teamTasks.filter(
-      (task) => task.status === "Pending"
-    );
-    setFilteredTasks(filteredTasks);
-    setFilteredTeamTasks(filteredTeamTasks);
-  };
+    },
+  ];
 
   return (
     <div className="p-5">
@@ -159,39 +154,34 @@ const Index = () => {
           key="1"
           className="overflow-x-auto"
         >
-          <div className="flex justify-between">
-            <div></div>
+          <div className="flex justify-end">
             <Search
               className="mb-4 w-80"
               placeholder="Search..."
-              onSearch={handleSearch}
+              onChange={(e) => handleSearch(e.target.value, "individuals")}
+              onSearch={(value) => handleSearch(value, "individuals")}
             />
           </div>
           <Table
             columns={columns}
-            dataSource={searchText ? filteredTasks : managerTaskData.tasks}
+            dataSource={filteredIndividualUsers}
             pagination={false}
           />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Companies" key="2" className="overflow-x-auto">
-          <div className="flex justify-between">
-            <div></div>
+          <div className="flex justify-end">
             <div className="flex gap-5">
               <Search
                 className="mb-4 w-80"
                 placeholder="Search..."
-                onSearch={handleSearch}
+                onChange={(e) => handleSearch(e.target.value, "companies")}
+                onSearch={(value) => handleSearch(value, "companies")}
               />
-              <Button icon={<FilterOutlined />} onClick={handleFilter}>
-                Filters
-              </Button>
             </div>
           </div>
           <Table
-            columns={columns}
-            dataSource={
-              searchText ? filteredTeamTasks : managerTaskData.teamTasks
-            }
+            columns={companiesColumns}
+            dataSource={filteredCompanies}
             pagination={false}
           />
         </Tabs.TabPane>
