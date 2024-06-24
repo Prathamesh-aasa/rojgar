@@ -55,6 +55,48 @@ const Index = () => {
     setWorkshops(newWorkshops);
   };
 
+  const [selectedPlan, setSelectedPlan] = useState("Basic Plan");
+
+  const plans = {
+    "Basic Plan": {
+      benefits: [
+        "25 Different Posts",
+        "25 Different Posts",
+        "25 Different Posts",
+      ],
+      tenure: "Yearly",
+      price: "999",
+    },
+    "Business Plan": {
+      benefits: [
+        "50 Different Posts",
+        "50 Different Posts",
+        "50 Different Posts",
+      ],
+      tenure: "Yearly",
+      price: "1999",
+    },
+    "Premium Plan": {
+      benefits: ["Unlimited Posts", "Unlimited Posts", "Unlimited Posts"],
+      tenure: "Yearly",
+      price: "2999",
+    },
+  };
+
+  const [selectedTrade, setSelectedTrade] = useState("");
+  const [showButton, setShowButton] = useState(false);
+
+  const handleSelectChange = (event) => {
+    const value = event.target.value;
+    setSelectedTrade(value);
+    setShowButton(value !== "");
+  };
+
+  const [tabPosition, setTabPosition] = useState("left");
+  const changeTabPosition = (e) => {
+    setTabPosition(e.target.value);
+  };
+
   return (
     <div className="p-5">
       <div>
@@ -434,8 +476,85 @@ const Index = () => {
             </div>
           </div>
         </TabPane>
-        <TabPane tab="Subscription Plan" key="6"></TabPane>
-        <TabPane tab="Suggestive Lists" key="7"></TabPane>
+        <TabPane tab="Subscription Plan" key="6">
+          <div className="flex gap-5 p-4 mx-auto w-[85%]">
+            <div className="flex flex-col w-96 border p-4 gap-5 rounded-lg">
+              <Button
+                onClick={() => setSelectedPlan("Basic Plan")}
+                className={`p-2 ${
+                  selectedPlan === "Basic Plan" ? "bg-blue-500 text-white" : ""
+                }`}
+              >
+                Basic Plan
+              </Button>
+              <Button
+                onClick={() => setSelectedPlan("Business Plan")}
+                className={`p-2 ${
+                  selectedPlan === "Business Plan"
+                    ? "bg-blue-500 text-white"
+                    : ""
+                }`}
+              >
+                Business Plan
+              </Button>
+              <Button
+                onClick={() => setSelectedPlan("Premium Plan")}
+                className={`p-2 ${
+                  selectedPlan === "Premium Plan"
+                    ? "bg-blue-500 text-white"
+                    : ""
+                }`}
+              >
+                Premium Plan
+              </Button>
+              <Button className="mt-auto p-2 bg-blue-100 text-blue-500 rounded-lg">
+                Add New Plan
+              </Button>
+            </div>
+            <div className="flex-grow flex gap-5 p-4">
+              <div className="flex justify-between mb-4 border rounded-lg h-[120px] w-[250px]">
+                <ul className="list-decimal   p-4 ">
+                  <h2 className="text-xl font-bold">Benefits</h2>
+                  {plans[selectedPlan].benefits.map((benefit, index) => (
+                    <li key={index}>{benefit}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex mt-4 gap-5">
+                <div className="flex-grow border h-[100px] w-[250px] p-4 rounded-lg">
+                  <h3 className="font-semibold">Plan Tenure</h3>
+                  <p>{plans[selectedPlan].tenure}</p>
+                </div>
+                <div className="flex-grow  border h-[100px] w-[150px] p-4 rounded-lg">
+                  <h3 className="font-semibold">Price (₹)</h3>
+                  <p>{plans[selectedPlan].price}</p>
+                </div>
+              </div>
+              <div></div>
+            </div>
+            <div>
+              <Button className="bg-[#013D9D] text-white px-4 py-4">
+                {" "}
+                <EditOutlined />
+                Edit
+              </Button>
+            </div>
+          </div>
+        </TabPane>
+        <TabPane tab="Suggestive Lists" key="7" className="w-[80%] flex items-center justify-center mx-auto">
+          <Tabs className="w-[80%] border flex"
+            tabPosition={"left"}
+            items={new Array(3).fill(null).map((_, i) => {
+              const id = String(i + 1);
+              return {
+                label: `Tab ${id}`,
+                key: id,
+                children: `Content of Tab ${id}`,
+              };
+            })}
+          />
+        </TabPane>
       </Tabs>
     </div>
   );
