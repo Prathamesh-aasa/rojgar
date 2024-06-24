@@ -1,6 +1,16 @@
 import React, { useRef, useState } from "react";
-import { Button, Tabs, Form, Input, Space, Select, Modal, Divider } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Tabs,
+  Form,
+  Input,
+  Space,
+  Select,
+  Modal,
+  Divider,
+  Radio,
+} from "antd";
+import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
 
 let index1 = 0;
@@ -16,24 +26,6 @@ const Index = () => {
   const [name, setName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const inputRef = useRef(null);
-
-  const onNameChange = (event) => {
-    setName(event.target.value);
-  };
-
-  const addItem = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    setItems([...items, name || `New item ${index1++}`]);
-    setName("");
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
 
   const options = [];
   for (let i = 10; i < 36; i++) {
@@ -51,6 +43,16 @@ const Index = () => {
 
   const removeCourse = (key) => {
     setCourses(courses.filter((course) => course.key !== key));
+  };
+  const [workshops, setWorkshops] = useState([""]);
+  const addWorkshopInput = () => {
+    setWorkshops([...workshops, ""]);
+  };
+
+  const handleWorkshopChange = (index, value) => {
+    const newWorkshops = [...workshops];
+    newWorkshops[index] = value;
+    setWorkshops(newWorkshops);
   };
 
   return (
@@ -329,39 +331,41 @@ const Index = () => {
             <div className="flex justify-between">
               <div className="w-1/2 pr-4">
                 <Form layout="vertical">
-                  <Form.Item label="Skilling Workshops">
-                    <Select defaultValue="Interview Preparation Sessions">
-                      <Option value="Interview Preparation Sessions">
-                        Interview Preparation Sessions
-                      </Option>
-                      <Option value="Rozgar Camp Coordination">
-                        Rozgar Camp Coordination
-                      </Option>
-                      <Option value="Mentorship and Support">
-                        Mentorship and Support
-                      </Option>
-                      <Option value="Financial Literacy Workshops">
-                        Financial Literacy Workshops
-                      </Option>
-                      <Option value="Entrepreneurship Development Sessions">
-                        Entrepreneurship Development Sessions
-                      </Option>
-                    </Select>
-                  </Form.Item>
-                  <Button type="primary" block>
-                    Add New Category
-                  </Button>
+                  {workshops.map((workshop, index) => (
+                    <div key={index} className="mb-4">
+                      <input
+                        type="text"
+                        id={`workshop${index + 1}`}
+                        name={`workshop${index + 1}`}
+                        placeholder={`Enter Workshop ${index + 1}`}
+                        className="p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        value={workshop}
+                        onChange={(e) =>
+                          handleWorkshopChange(index, e.target.value)
+                        }
+                      />
+                    </div>
+                  ))}
+                  <div className="flex justify-between">
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none"
+                      onClick={addWorkshopInput}
+                    >
+                      Add Workshop
+                    </button>
+                  </div>
                 </Form>
               </div>
               <div className="w-1/2 pl-4">
-              <div className="flex justify-end mb-4">
-            <Button type="default">Edit</Button>
-          </div>
+                <div className="flex justify-end mb-4">
+                  <Button type="default">Edit</Button>
+                </div>
                 <Form layout="vertical">
-                  <Form.Item label="Training Program">
+                  <Form.Item label="Training Program 1">
                     <Input defaultValue="Basic Computer Skills Training" />
                   </Form.Item>
-                  <Form.Item label="Training Program">
+                  <Form.Item label="Training Program 2">
                     <Input defaultValue="Communication Skills Development" />
                   </Form.Item>
                   <div className="flex justify-between">
@@ -373,8 +377,63 @@ const Index = () => {
             </div>
           </div>
         </TabPane>
-        <TabPane tab="Document" key="4"></TabPane>
-        <TabPane tab="Welfare Scheme" key="5"></TabPane>
+
+        <TabPane tab="Document" key="4">
+          <div className="max-w-4xl mx-auto mt-10">
+            <div className="flex justify-between">
+              <h1 className="text-[#013D9D] font-semibold text-base">
+                Document Services
+              </h1>
+              <Button className="bg-[#013D9D] text-white">
+                <EditOutlined />
+                Edit
+              </Button>
+            </div>
+            <div className="flex items-center justify-center mt-20">
+              <div className="flex flex-wrap gap-5 bg-[#EEF2F9] p-5 rounded-lg">
+                <Button>Pan Card</Button>
+                <Button>E-Shram Card</Button>
+                <Button>Aadhaar Card Correction</Button>
+                <Button>Caste Certificate</Button>
+                <div className="flex gap-5">
+                  <Button>Income Certificate</Button>
+                  <Button>Domicile Certificate</Button>
+                  <Button>Khasra</Button>
+                  <Button>Birth Certificate</Button>
+                  <Button>Train Support</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabPane>
+        <TabPane tab="Welfare Scheme" key="5">
+          <div className="max-w-4xl mx-auto mt-10">
+            <div className="flex justify-between">
+              <h1 className="text-[#013D9D] font-semibold text-base">
+                Welfare Schemes
+              </h1>
+              <Button className="bg-[#013D9D] text-white">
+                <EditOutlined />
+                Edit
+              </Button>
+            </div>
+            <div className="flex items-center justify-center mt-20">
+              <div className="flex flex-wrap gap-5 bg-[#EEF2F9] p-5 rounded-lg">
+                <Button>Pan Card</Button>
+                <Button>E-Shram Card</Button>
+                <Button>Aadhaar Card Correction</Button>
+                <Button>Caste Certificate</Button>
+                <div className="flex gap-5">
+                  <Button>Income Certificate</Button>
+                  <Button>Domicile Certificate</Button>
+                  <Button>Khasra</Button>
+                  <Button>Birth Certificate</Button>
+                  <Button>Train Support</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabPane>
         <TabPane tab="Subscription Plan" key="6"></TabPane>
         <TabPane tab="Suggestive Lists" key="7"></TabPane>
       </Tabs>
