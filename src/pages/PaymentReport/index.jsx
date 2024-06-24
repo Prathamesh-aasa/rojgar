@@ -1,5 +1,5 @@
-import React from "react";
-import { Table, Button, Dropdown, Menu, Input, Tabs, Select } from "antd";
+import React, { useState } from "react";
+import { Table, Button, Dropdown, Menu, Input, Tabs, Select, Modal } from "antd";
 import {
   SearchOutlined,
   DownloadOutlined,
@@ -7,9 +7,13 @@ import {
 } from "@ant-design/icons";
 
 const { TabPane } = Tabs;
-const { Search } = Input;
+const { Option } = Select;
 
 const index = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [filterMethod, setFilterMethod] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+
   const menu = (
     <Menu>
       <Menu.Item key="1">Online Payments</Menu.Item>
@@ -30,7 +34,7 @@ const index = () => {
       paymentStatus: "Failed",
     },
     {
-      key: "1",
+      key: "2",
       registrationId: "ABCD1245",
       paymentFrom: "UPI id",
       transactionId: "93DJ2231AD0356656",
@@ -41,6 +45,7 @@ const index = () => {
     },
     // Add more sample data as needed
   ];
+
   const columns = [
     {
       title: "Registration Id",
@@ -91,16 +96,23 @@ const index = () => {
       ),
     },
   ];
+
   const handleFilter = () => {
-    // Define your filtering logic here
-    const filteredTasks = managerTaskData.tasks.filter(
-      (task) => task.status === "Pending"
-    );
-    const filteredTeamTasks = managerTaskData.teamTasks.filter(
-      (task) => task.status === "Pending"
-    );
-    setFilteredTasks(filteredTasks);
-    setFilteredTeamTasks(filteredTeamTasks);
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    // Implement your filter logic here using filterMethod and selectedMonth
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleFilterMethodChange = (value) => {
+    setFilterMethod(value);
+    setSelectedMonth("");
   };
 
   return (
@@ -111,7 +123,7 @@ const index = () => {
           Registration List
         </p>
         <h1 className="text-2xl text-[#013D9D] mb-5 font-semibold">
-        Payment Report
+          Payment Report
         </h1>
       </div>
       <Tabs defaultActiveKey="1">
@@ -127,11 +139,12 @@ const index = () => {
               <Select
                 placeholder="Select payment method"
                 style={{ width: 200 }}
-                onChange={handleFilter}
+                onChange={handleFilterMethodChange}
               >
                 <Option value="">All</Option>
                 <Option value="Online Payment">Online Payment</Option>
                 <Option value="Manual Payment">Manual Payment</Option>
+                <Option value="Month">Month</Option>
               </Select>
               <div className="flex gap-2">
                 <Button icon={<DownloadOutlined />} type="primary">
@@ -149,6 +162,45 @@ const index = () => {
           <Table columns={columns} dataSource={data} pagination={false} />
         </TabPane>
       </Tabs>
+      <Modal
+        title="Filter Payments"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <Select
+          placeholder="Select filter method"
+          style={{ width: "100%" }}
+          onChange={handleFilterMethodChange}
+          value={filterMethod}
+        >
+          <Option value="">All</Option>
+          <Option value="Online Payment">Online Payment</Option>
+          <Option value="Manual Payment">Manual Payment</Option>
+          <Option value="Month">Month</Option>
+        </Select>
+        {filterMethod === "Month" && (
+          <Select
+            placeholder="Select month"
+            style={{ width: "100%", marginTop: 16 }}
+            onChange={(value) => setSelectedMonth(value)}
+            value={selectedMonth}
+          >
+            <Option value="January">January</Option>
+            <Option value="February">February</Option>
+            <Option value="March">March</Option>
+            <Option value="April">April</Option>
+            <Option value="May">May</Option>
+            <Option value="June">June</Option>
+            <Option value="July">July</Option>
+            <Option value="August">August</Option>
+            <Option value="September">September</Option>
+            <Option value="October">October</Option>
+            <Option value="November">November</Option>
+            <Option value="December">December</Option>
+          </Select>
+        )}
+      </Modal>
     </div>
   );
 };

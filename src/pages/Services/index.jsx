@@ -1,49 +1,251 @@
-import React from 'react'
-import { Input, Button, Select } from 'antd';;
-
-const { Option } = Select;
+import React from "react";
+import { Button, Tabs } from "antd";
+import { Alert, Form, Input } from "antd";
+import TabPane from "antd/es/tabs/TabPane";
+import { Select } from "antd";
 
 const index = () => {
-  return (
-    <div className="p-8 bg-white shadow-md rounded-md max-w-3xl mx-auto">
-    <h2 className="text-2xl font-bold mb-4">Services</h2>
-    <div className="mb-8">
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <Input placeholder="Company Name" />
-        <Input placeholder="Company GSTIN No" />
-        <Input placeholder="Company Pan Card No" />
-        <Input placeholder="PIN" />
-        <Input placeholder="State" />
-        <Input placeholder="Registered Address" />
-      </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <Input placeholder="Job Position" />
-        <Select placeholder="Education Qualification">
-          <Option value="high-school">High School</Option>
-          <Option value="bachelor">Bachelor's</Option>
-          <Option value="master">Master's</Option>
-        </Select>
-        <Select placeholder="Job Place">
-          <Option value="onsite">Onsite</Option>
-          <Option value="remote">Remote</Option>
-        </Select>
-        <Select placeholder="Experience Required">
-          <Option value="0-1">0-1 years</Option>
-          <Option value="1-3">1-3 years</Option>
-          <Option value="3-5">3-5 years</Option>
-        </Select>
-        <Input placeholder="Skill Required" />
-        <Input placeholder="Number of Openings" />
-        <Input placeholder="Payout" />
-        <Input placeholder="Other Benefit" />
-      </div>
-      <div className="flex justify-end">
-        <Button type="default" className="mr-2">Cancel</Button>
-        <Button type="primary">Post</Button>
-      </div>
-    </div>
-  </div>
-  )
+  const handleChange = (value) => {
+    console.log(`selected ${value}`);
+  };
+  const options = [];
+for (let i = 10; i < 36; i++) {
+  options.push({
+    value: i.toString(36) + i,
+    label: i.toString(36) + i,
+  });
 }
+  return (
+    <div className="p-5">
+      <div>
+        <p className="text-base mb-5">
+          Dashboard <span className="text-[#F7B652]">&gt;</span> New
+          Registration List
+        </p>
+        <span className="text-2xl font-semibold text-[#013D9D]">Services</span>
+      </div>
+      <Tabs centered>
+        <TabPane tab="Job Post" key="1" className="p-4">
+          <div>
+            <div>
+              <Form name="contactForm" layout="vertical" autoComplete="on">
+                <h1 className="text-lg font-medium text-[#013D9D] mb-8 ml-32">
+                  Company Details
+                </h1>
+                <div className="grid grid-cols-3 gap-2 w-[80%] mx-auto">
+                  <Form.Item
+                    label="Company Name *"
+                    name="companyName"
+                    className="w-full mb-2"
+                  >
+                    <Input placeholder="Enter Company Name" />
+                  </Form.Item>
+                  <Form.Item
+                    label="Company GSTIN No *"
+                    name="name"
+                    className="w-full mb-2"
+                  >
+                    <Input placeholder="Enter GST Number" />
+                  </Form.Item>
 
-export default index
+                  <Form.Item
+                    name="name"
+                    label="Company Pan Card No *"
+                    className="mb-2"
+                  >
+                    <Input placeholder="Enter PAN number" />
+                  </Form.Item>
+                  <Form.Item name="pin" label="PIN*" className="mb-2">
+                    <Input placeholder="Eg. 741234" />
+                  </Form.Item>
+                  <Form.Item name="name" label="State*" className="mb-2">
+                    <Input placeholder="Eg. Hyderbad" />
+                  </Form.Item>
+                  <Form.Item
+                    name="name"
+                    label="Registered Address *"
+                    className="mb-8"
+                  >
+                    <Input placeholder="Eg. 24 Bombay House" />
+                  </Form.Item>
+                </div>
+              </Form>
+            </div>
+            <div>
+              <Form name="contactForm" layout="vertical" autoComplete="on">
+                <h1 className="text-lg font-medium text-[#013D9D] mb-4 ml-32">
+                  Job Details
+                </h1>
+                <div className="grid grid-cols-3 gap-2 w-[80%] mx-auto">
+                  <Form.Item
+                    label="Job Position*"
+                    name="companyName"
+                    className="w-full mb-2"
+                  >
+                    <Input placeholder="Eg. Tecnician" />
+                  </Form.Item>
+                  <Form.Item
+                    label="Education Qualification *"
+                    name="name"
+                    className="w-full mb-2"
+                  >
+                    <Select
+                      placeholder="Choose from dropdown"
+                      style={{
+                        flex: 1,
+                      }}
+                      options={[
+                        {
+                          value: "jack",
+                          label: "Jack",
+                        },
+                        {
+                          value: "lucy",
+                          label: "Lucy",
+                        },
+                        {
+                          value: "Yiminghe",
+                          label: "yiminghe",
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+
+                  <Form.Item name="jobname" label="Job Place *" className="mb-2">
+                    <Select
+                      placeholder="Choose from dropdown"
+                      mode="tags"
+                      style={{
+                        flex: 1,
+                      }}
+                      options={[
+                        {
+                          value: "jack",
+                          label: "Jack",
+                        },
+                        {
+                          value: "lucy",
+                          label: "Lucy",
+                        },
+                        {
+                          value: "Yiminghe",
+                          label: "yiminghe",
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="pin"
+                    label="Experience Required **"
+                    className="mb-2"
+                  >
+                    <Select
+                      placeholder="Choose from dropdown"
+                      style={{
+                        flex: 1,
+                      }}
+                      options={[
+                        {
+                          value: "jack",
+                          label: "Jack",
+                        },
+                        {
+                          value: "lucy",
+                          label: "Lucy",
+                        },
+                        {
+                          value: "Yiminghe",
+                          label: "yiminghe",
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="skillname"
+                    label="Skill Required*"
+                    className="mb-2"
+                  >
+                   <Select
+                      placeholder="Choose from dropdown"
+                      mode="tags"
+                      style={{
+                        flex: 1,
+                      }}
+                      options={[
+                        {
+                          value: "jack",
+                          label: "Jack",
+                        },
+                        {
+                          value: "lucy",
+                          label: "Lucy",
+                        },
+                        {
+                          value: "Yiminghe",
+                          label: "yiminghe",
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="openingname"
+                    label="Number of Opennings *"
+                    className="mb-2"
+                  >
+                    <Input placeholder="Eg.100" />
+                  </Form.Item>
+                  <Form.Item name="payoutname" label="Payout *" className="mb-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <Input placeholder="Eg.741234" />
+                      <p>To</p>
+                      <Input placeholder="Eg.741234" />
+                    </div>
+                  </Form.Item>
+                  <Form.Item
+                    name="benefitname"
+                    label="Other Benefit *"
+                    className="mb-2"
+                  >
+                    <Select
+                      placeholder="Choose from dropdown"
+                      mode="tags"
+                      style={{
+                        flex: 1,
+                      }}
+                      options={[
+                        {
+                          value: "jack",
+                          label: "Jack",
+                        },
+                        {
+                          value: "lucy",
+                          label: "Lucy",
+                        },
+                        {
+                          value: "Yiminghe",
+                          label: "yiminghe",
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                </div>
+                <div className="flex justify-end gap-8">
+                  <Button>Cancel</Button>
+                  <Button>Post</Button>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </TabPane>
+        <TabPane tab="Skiling" key="2"></TabPane>
+        <TabPane tab="Volunteer" key="3"></TabPane>
+        <TabPane tab="Document" key="4"></TabPane>
+        <TabPane tab="Welfare Scheme" key="5"></TabPane>
+        <TabPane tab="Subscription Plan" key="6"></TabPane>
+        <TabPane tab="Suggestive Lists" key="7"></TabPane>
+      </Tabs>
+    </div>
+  );
+};
+
+export default index;
