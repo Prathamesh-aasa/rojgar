@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import * as Pages from "../pages";
@@ -21,7 +20,7 @@ const Navigation = () => {
           <Route path="/verify-otp" element={<Pages.VerifyOTP/>}/>
           <Route path="/dashboard-registration" element={<Pages.NewRegistration/>}/>
           <Route path="/dashboard-payment-report" element={<Pages.PaymentReport/>}/>
-          <Route path="/payment-view-details" element={<Pages.PaymentViewDetails/>}/>
+          <Route path="/payment-view-details/:id" element={<Pages.PaymentViewDetails/>}/>
           <Route path="/application" element={<Pages.Application/>}/>
           <Route path="/companies" element={<Pages.Companies/>}/>
           <Route path="/services" element={<Pages.Services/>}/>
