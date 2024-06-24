@@ -4,6 +4,12 @@ import { Mail } from "lucide-react";
 import img from "../../assets/OBJECTS.png";
 
 const Login = () => {
+
+  const handelFinish = async (values) => {
+    console.log(values);
+
+  }
+
   return (
     <div className=" flex items-center justify-evenly mt-10">
       <div className="">
@@ -15,6 +21,7 @@ const Login = () => {
         className="w-[35%]"
         layout="vertical"
         autoComplete="on"
+        onFinish={handelFinish}
       >
         <h1 className="text-[#013D9D] text-4xl font-bold   mb-5">
           Admin Log In
