@@ -28,19 +28,19 @@ function App() {
             Dashboard
           </a>
           <a
-            href="#"
+            href="/application"
             className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
           >
             Application
           </a>
           <a
-            href="#"
+            href="/companies"
             className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
           >
             Company
           </a>
           <a
-            href="#"
+            href="/services"
             className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
           >
             Services

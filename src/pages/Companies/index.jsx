@@ -1,14 +1,25 @@
-import React from "react";
-import { Table, Button, Dropdown, Menu, Tabs, Select, Input } from "antd";
+import React, { useState } from "react";
+import { Table, Button, Menu, Tabs, Select, Input, Modal } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
-import {
-  FilterOutlined,
-  DownloadOutlined,
-  SendOutlined,
-} from "@ant-design/icons";
+import { FilterOutlined, DownloadOutlined, SendOutlined } from "@ant-design/icons";
 
 const index = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState('');
+
+  const showModal = (status) => {
+    setSelectedStatus(status);
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
   const columns = [
     {
       title: "Name",
@@ -19,6 +30,11 @@ const index = () => {
       title: "Company ID",
       dataIndex: "CompanyId",
       key: "CompanyId",
+    },
+    {
+      title: "Job poster Email Id",
+      dataIndex: "JobposterEmail",
+      key: "JobposterEmail",
     },
     {
       title: "Job poster Ph No.",
@@ -41,23 +57,15 @@ const index = () => {
       key: "NoofJobpos",
     },
     {
-      title: "Status",
-      key: "status",
+      title: "Applied Post",
+      key: "appliedPost",
       render: () => (
-        <Dropdown
-          overlay={
-            <Menu>
-              <Menu.Item key="1">Pending</Menu.Item>
-              <Menu.Item key="2">In-Progress</Menu.Item>
-              <Menu.Item key="3">Completed</Menu.Item>
-              <Menu.Item key="4">Rejected</Menu.Item>
-            </Menu>
-          }
+        <Button
+          onClick={() => showModal("Status")}
+          className=" w-full border-none"
         >
-          <Button>
-            Select <DownOutlined />
-          </Button>
-        </Dropdown>
+          Technician <DownOutlined />
+        </Button>
       ),
     },
   ];
@@ -66,21 +74,21 @@ const index = () => {
       key: index,
       name: "Company Name",
       CompanyId: "ABCD1234",
-      JobposterPhNo: "candidate@gmail.com",
+      JobposterEmail: "candidate@gmail.com",
       JobposterPhNo: "+91 9876543210",
       dateRegistration: "31 March 2023",
       Address: "Pune",
       NoofJobpost: "Technician",
     },
     {
-        key: index,
-        name: "Company Name",
-        CompanyId: "ABCD1234",
-        JobposterPhNo: "candidate@gmail.com",
-        JobposterPhNo: "+91 9876543210",
-        dateRegistration: "31 March 2023",
-        Address: "Pune",
-        NoofJobpost: "Technician",
+      key: index,
+      name: "Company Name",
+      CompanyId: "ABCD1234",
+      JobposterEmail: "candidate@gmail.com",
+      JobposterPhNo: "+91 9876543210",
+      dateRegistration: "31 March 2023",
+      Address: "Pune",
+      NoofJobpost: "Technician",
     },
   ];
   return (
@@ -118,6 +126,16 @@ const index = () => {
         </div>
       </div>
       <Table columns={columns} dataSource={data} pagination={false} />
+      <Modal title="Update Status"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        style={{ top: 0 }}
+        width="100%"
+        bodyStyle={{ height: "80vh", padding: 0 }}>
+        <p>{`Selected Status: ${selectedStatus}`}</p>
+        {/* Add form elements here to handle status update if needed */}
+      </Modal>
     </div>
   );
 };
