@@ -18,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { db } from "../../../firebase";
 import { collection, doc, getDocs, query, updateDoc } from "firebase/firestore";
+import moment from "moment";
 
 const { Option } = Select;
 
@@ -33,6 +34,13 @@ const Applications = () => {
   const [jobSeekerData, setJobSeekerData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [coursess, setCourses] = useState([]);
+  const [skill, setSkills] = useState([]);
+  const [volunteerData, setVolunteerData] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [welfares, setWelfares] = useState([]);
+  const [isVolunteerModal, setIsVolunteerModal] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState([]);
 
   const getColumns = (tab) => {
     const commonColumns = [
@@ -56,6 +64,7 @@ const Applications = () => {
         title: "Date of Registration",
         dataIndex: "date_of_registration",
         key: "date_of_registration",
+        render: (text) => moment(text).format("DD-MM-YYYY"),
       },
       {
         title: "Status",
@@ -118,6 +127,94 @@ const Applications = () => {
           ),
         },
       ];
+    } else if (tab === "3") {
+      return [
+        ...commonColumns,
+        {
+          title: "Email",
+          dataIndex: "email_id",
+          key: "email_id",
+        },
+        // {
+        //   title: "Date & Time",
+        //   dataIndex: "email_id",
+        //   key: "email_id",
+        // },
+        {
+          title: "Training Program(s)",
+          dataIndex: "skills_name",
+          key: "skills_name",
+        },
+        {
+          title: "Course(s)",
+          dataIndex: "courses",
+          key: "courses",
+        },
+        {
+          title: "Action",
+          render: (text, record) => (
+            <Button
+              onClick={() => {
+                setSelectedVolunteer(record);
+                setIsVolunteerModal(true);
+              }}
+              type="link"
+            >
+              <DownOutlined />
+            </Button>
+          ),
+        },
+      ];
+    } else if (tab == "4") {
+      return [
+        ...commonColumns,
+        {
+          title: "Email",
+          dataIndex: "email",
+          key: "email",
+        },
+        {
+          title: "Document(s)",
+          dataIndex: "document_service",
+          key: "document_service",
+        },
+
+        {
+          title: "Action",
+          render: (text, record) => (
+            <Button onClick={() => showModal(record)} type="link">
+              <DownOutlined />
+            </Button>
+          ),
+        },
+      ];
+    } else if (tab == "5") {
+      return [
+        ...commonColumns,
+        {
+          title: "Email",
+          dataIndex: "email",
+          key: "email",
+        },
+        {
+          title: "Family Income",
+          dataIndex: "family_income",
+          key: "family_income",
+        },
+        {
+          title: "Scheme(s)",
+          dataIndex: "welfare_schemes",
+          key: "welfare_schemes",
+        },
+        {
+          title: "Action",
+          render: (text, record) => (
+            <Button onClick={() => showModal(record)} type="link">
+              <DownOutlined />
+            </Button>
+          ),
+        },
+      ];
     }
 
     return commonColumns;
@@ -141,6 +238,7 @@ const Applications = () => {
       id: doc.id,
       ...doc.data(),
     }));
+    setCourses(courses);
 
     const skillCollection = collection(db, "Skills");
     const skillSnapshot = await getDocs(query(skillCollection));
@@ -148,6 +246,8 @@ const Applications = () => {
       id: doc.id,
       ...doc.data(),
     }));
+
+    setSkills(skills);
 
     return { courses, skills };
   };
@@ -177,12 +277,65 @@ const Applications = () => {
     });
 
     setAggregatedData(aggregatedData);
-    console.log("🚀 ~ getSkilling ~ aggregatedData:", aggregatedData);
+  };
+
+  const getVolunteer = async () => {
+    const volunteerCollection = collection(db, "Volunteer");
+    const volunteerSnapshot = await getDocs(query(volunteerCollection));
+    const volunteers = volunteerSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const { courses, skills } = await getCoursesAndSkills();
+
+    const aggregatedData = volunteers.map((volunteer) => {
+      const courseInfo = volunteer.volunteer_program_model.map((courseId) => {
+        return courses.find((c) => c.id === courseId);
+      });
+
+      const skills_name = courseInfo.map((course) => {
+        return skills.find((sk) => sk.id == course?.skillId)?.name;
+      });
+
+      const names = courseInfo.map((course) => course?.name);
+      volunteer.courses = names.join(",");
+      volunteer.skills_name = skills_name.join(",");
+
+      return volunteer;
+    });
+
+    setVolunteerData(aggregatedData);
+  };
+
+  const getDocuments = async () => {
+    const documentsCollection = collection(db, "Document");
+    const qry = query(documentsCollection);
+    const snapshot = await getDocs(qry);
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setDocuments(data);
+  };
+
+  const getWelfare = async () => {
+    const welfareCollection = collection(db, "Welfare");
+    const qry = query(welfareCollection);
+    const snapshot = await getDocs(qry);
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setWelfares(data);
   };
 
   useEffect(() => {
     getJobSeekers();
     getSkilling();
+    getVolunteer();
+    getDocuments();
+    getWelfare();
   }, []);
 
   const handleSearchChange = (e) => {
@@ -240,90 +393,6 @@ const Applications = () => {
     setIsFilterModalVisible(false);
   };
 
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "full_name",
-      key: "full_name",
-    },
-    {
-      title: "Registration ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Phone Number",
-      dataIndex: "phone_number",
-      key: "phone_number",
-    },
-    {
-      title: "Date of Registration",
-      dataIndex: "date_of_registration",
-      key: "date_of_registration",
-    },
-    tab == "1" && {
-      title: "Applied Company",
-      dataIndex: "company_name",
-      key: "company_name",
-    },
-    tab == "1" && {
-      title: "Applied Post",
-      key: "job_you_want_to_apply",
-      dataIndex: "job_you_want_to_apply",
-    },
-    tab == "2" && {
-      title: "Skilling Program",
-      dataIndex: "company_name",
-      key: "company_name",
-    },
-    tab == "2" && {
-      title: "Course",
-      key: "job_you_want_to_apply",
-      dataIndex: "job_you_want_to_apply",
-    },
-    {
-      title: "Status",
-      key: "status",
-      dataIndex: "status",
-    },
-    {
-      title: "Action",
-      render: (text, record) => (
-        <Button onClick={() => showModal(record)} type="link">
-          <DownOutlined />
-        </Button>
-      ),
-    },
-  ];
-
-  const data = [
-    {
-      key: 1,
-      name: "Candidate Name",
-      registrationId: "ABCD1234",
-      email: "candidate@gmail.com",
-      phoneNumber: "+91 9876543210",
-      dateOfRegistration: "31 March 2023",
-      appliedCompany: "Tata Motors",
-      appliedPost: "Technician",
-    },
-    {
-      key: 2,
-      name: "Candidate Name",
-      registrationId: "ABCD1254",
-      email: "candidate@gmail.com",
-      phoneNumber: "+91 987654546",
-      dateOfRegistration: "31 March 2020",
-      appliedCompany: "Tata Motors car",
-      appliedPost: "Technician",
-    },
-  ];
-
   const handelUpdate = async (status) => {
     try {
       const jobSeekerDoc = doc(db, "Job Seekers", selectedItem?.id);
@@ -356,6 +425,47 @@ const Applications = () => {
       });
       handleCancel();
       getSkilling();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to Update Please try again later.",
+      });
+    }
+  };
+
+  const handelUpdateDocuments = async (status) => {
+    try {
+      const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
+      await updateDoc(jobSeekerDoc, {
+        status: status,
+      });
+      notification.success({
+        message: "Status Updated",
+        description: `Document ${selectedItem?.id} has been ${status} successfully.`,
+      });
+      handleCancel();
+      getDocuments();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to Update Please try again later.",
+      });
+    }
+  };
+  const handelUpdateWelfare = async (status) => {
+    try {
+      const jobSeekerDoc = doc(db, "Welfare", selectedItem?.id);
+      await updateDoc(jobSeekerDoc, {
+        status: status,
+      });
+      notification.success({
+        message: "Status Updated",
+        description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
+      });
+      handleCancel();
+      getDocuments();
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -440,7 +550,6 @@ const Applications = () => {
                 <Option value="">All</Option>
                 <Option value="Pending">Pending</Option>
                 <Option value="Completed">Completed</Option>
-                {/* <Option value="Rejected">Rejected</Option> */}
               </Select>
               {/* <div className="flex gap-2">
                 <Button icon={<FilterOutlined />} onClick={showFilterModal}>
@@ -460,25 +569,32 @@ const Applications = () => {
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
-              <Input placeholder="Search" className="w-full" />
+              <Input
+                placeholder="Search"
+                className="w-full"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
               <Select
                 placeholder="Select payment method"
                 style={{ width: 200 }}
+                value={filterStatus}
+                onChange={handleFilterChange}
               >
                 <Option value="">All</Option>
-                <Option value="Online Payment">Online Payment</Option>
-                <Option value="Manual Payment">Manual Payment</Option>
+                <Option value="Pending">Pending</Option>
+                <Option value="Completed">Completed</Option>
               </Select>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button icon={<FilterOutlined />} onClick={showFilterModal}>
                   Filters
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
           <Table
             columns={getColumns("3")}
-            dataSource={data}
+            dataSource={filterData(volunteerData)}
             pagination={false}
           />
         </TabPane>
@@ -486,45 +602,69 @@ const Applications = () => {
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
-              <Input placeholder="Search" className="w-full" />
+              <Input
+                placeholder="Search"
+                className="w-full"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
               <Select
                 placeholder="Select payment method"
                 style={{ width: 200 }}
+                value={filterStatus}
+                onChange={handleFilterChange}
               >
                 <Option value="">All</Option>
-                <Option value="Online Payment">Online Payment</Option>
-                <Option value="Manual Payment">Manual Payment</Option>
+                <Option value="Pending">Pending</Option>
+                <Option value="Approved">Approved</Option>
+                <Option value="Rejected">Rejected</Option>
               </Select>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button icon={<FilterOutlined />} onClick={showFilterModal}>
                   Filters
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
-          <Table columns={columns} dataSource={data} pagination={false} />
+          <Table
+            columns={getColumns("4")}
+            dataSource={filterData(documents)}
+            pagination={false}
+          />
         </TabPane>
         <TabPane tab="Welfare Scheme" key="5">
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
-              <Input placeholder="Search" className="w-full" />
+              <Input
+                placeholder="Search"
+                className="w-full"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
               <Select
                 placeholder="Select payment method"
                 style={{ width: 200 }}
+                value={filterStatus}
+                onChange={handleFilterChange}
               >
                 <Option value="">All</Option>
-                <Option value="Online Payment">Online Payment</Option>
-                <Option value="Manual Payment">Manual Payment</Option>
+                <Option value="Pending">Pending</Option>
+                <Option value="Completed">Completed</Option>
+                <Option value="Rejected">Rejected</Option>
               </Select>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button icon={<FilterOutlined />} onClick={showFilterModal}>
                   Filters
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
-          <Table columns={columns} dataSource={data} pagination={false} />
+          <Table
+            columns={getColumns("5")}
+            dataSource={filterData(welfares)}
+            pagination={false}
+          />
         </TabPane>
       </Tabs>
       <Modal
@@ -558,6 +698,38 @@ const Applications = () => {
                     onClick={() => handelCompleteSkilling()}
                   >
                     Complete
+                  </Button>
+                </>
+              )}
+              {tab == "4" && (
+                <>
+                  <Button
+                    danger
+                    onClick={() => handelUpdateDocuments("Rejected")}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => handelUpdateDocuments("Approved")}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+              {tab == "5" && (
+                <>
+                  <Button
+                    danger
+                    onClick={() => handelUpdateWelfare("Rejected")}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => handelUpdateWelfare("Approved")}
+                  >
+                    Approve
                   </Button>
                 </>
               )}
@@ -714,59 +886,64 @@ const Applications = () => {
               <h1 className="text-[#013D9D] font-medium text-xl mb-5">
                 Additional Details
               </h1>
-              {tab == "1" ? (
-                <>
-                  <div className="grid grid-cols-3">
-                    <div className="flex flex-col gap-2">
-                      <p>No. of family member</p>
-                      <span>{selectedItem?.number_of_family_members}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>No. of female children</p>
-                      <span>{selectedItem?.number_of_female_children}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>No. of male children</p>
-                      <span>{selectedItem?.number_of_male_children}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>Main occupation of the family</p>
-                      <span>{selectedItem?.main_occupation_of_family}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>Need any agricultural products?</p>
-                      <span>
-                        {selectedItem?.do_you_need_any_farming_products
-                          ? "Yes"
-                          : "No"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>have agricultural land?</p>
-                      <span>
-                        {selectedItem?.do_you_have_agriculture_land
-                          ? "Yes"
-                          : "No"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>Mention agricultural products</p>
-                      <span>{selectedItem?.farming_product}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p>Have a toilet at home?</p>
-                      <span>
-                        {selectedItem?.do_you_have_toilet_at_home
-                          ? "Yes"
-                          : "No"}
-                      </span>
-                    </div>
-                  </div>
-                  <a href={selectedItem?.resume_link}>resume</a>
-                </>
-              ) : (
-                "No information available"
-              )}
+
+              <div className="grid grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <p>No. of family member</p>
+                  <span>{selectedItem?.number_of_family_members}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>No. of female children</p>
+                  <span>{selectedItem?.number_of_female_children}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>No. of male children</p>
+                  <span>{selectedItem?.number_of_male_children}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Main occupation of the family</p>
+                  <span>{selectedItem?.main_occupation_of_family}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Need any agricultural products?</p>
+                  <span>
+                    {selectedItem?.do_you_need_any_farming_products
+                      ? "Yes"
+                      : "No"}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>have agricultural land?</p>
+                  <span>
+                    {selectedItem?.do_you_have_agriculture_land ? "Yes" : "No"}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Mention agricultural products</p>
+                  <span>{selectedItem?.farming_product}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Have a toilet at home?</p>
+                  <span>
+                    {selectedItem?.do_you_have_toilet_at_home ? "Yes" : "No"}
+                  </span>
+                </div>
+              </div>
+              <a href={selectedItem?.resume_link}>resume</a>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        title="Personal Details"
+        open={isVolunteerModal}
+        onCancel={() => setIsVolunteerModal(false)}
+      >
+        {selectedVolunteer && (
+          <div>
+            <div>
+              <h1>Personal Details</h1>
             </div>
           </div>
         )}
