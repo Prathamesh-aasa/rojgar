@@ -197,6 +197,10 @@ const index = () => {
             </div>
           </div>
         </div>
+        <div className="flex justify-end gap-4">
+          <Button className="text-[#CD2424] bg-[#FFE4E4]">Reject</Button>
+          <Button className="text-[#FFFFFF] bg-[#013D9D]">Approve</Button>
+          </div>
         {/* Add form elements here to handle status update if needed */}
       </Modal>
     </div>
