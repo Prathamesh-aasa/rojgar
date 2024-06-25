@@ -7,3 +7,4 @@ export { default as PaymentViewDetails } from "./payment-view-details/index";
 export { default as Application } from "./Application/index";
 export { default as Companies } from "./Companies/index";
 export { default as Services } from "./Services/index";
+export { default as Details } from "./Companies/details"

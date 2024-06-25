@@ -126,14 +126,81 @@ const index = () => {
         </div>
       </div>
       <Table columns={columns} dataSource={data} pagination={false} />
-      <Modal title="Update Status"
-        visible={isModalVisible}
+      <Modal title="Details"
+        open={isModalVisible}
+        footer={null}
         onOk={handleOk}
         onCancel={handleCancel}
         style={{ top: 0 }}
         width="100%"
-        bodyStyle={{ height: "80vh", padding: 0 }}>
-        <p>{`Selected Status: ${selectedStatus}`}</p>
+         className="h-fit">
+        <div className="flex justify-evenly">
+          <div>
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">Company’s Details</h1>
+            <div className="grid grid-cols-3">
+              <div className="flex flex-col mb-2 mr-2 gap-1">
+                <p>Company ID</p>
+                <span>ABCD1234</span>
+              </div>
+              <div className="flex flex-col mb-2 mr-2 gap-1">
+                <p>Company Name</p>
+                <span>USER NAME</span>
+              </div>
+              <div className="flex flex-col mb-2 mr-2 gap-1">
+                <p>GSTIN No.</p>
+                <span>32345545668</span>
+              </div>
+              <div className="flex flex-col mb-5 gap-1">
+                <p>Email Id</p>
+                <span>ABCD@gmail.com</span>
+              </div>
+            </div>
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">Address Details</h1>
+            <div className="grid grid-cols-3">
+              <div className="flex flex-col gap-2 ml-2 p-1 mb-2">
+                <p>PIN </p>
+                <span>500049</span>
+              </div>
+              <div className="flex flex-col gap-2 ml-2 p-1">
+                <p>State</p>
+                <span>TELENGANA</span>
+              </div>
+              <div className="flex flex-col gap-2 ml-2 p-1">
+                <p>District</p>
+                <span>9876543210</span>
+              </div>
+              <div className="flex flex-col gap-2 ml-2 p-1">
+                <p>City/village</p>
+                <span>Hyderabad</span>
+              </div>
+              <div className="flex flex-col gap-2 mb-4 ml-2 p-1">
+                <p>Address</p>
+                <span>10/30 h</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">Job Poster Details</h1>
+            <div className="grid grid-cols-3">
+              <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
+                <p>Full Name</p>
+                <span>JOB POSTER NAME</span>
+              </div>
+              <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
+                <p>Email Id</p>
+                <span>candidate@gmail.com</span>
+              </div>
+              <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
+                <p>Phone Number</p>
+                <span>9876543210</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-4">
+          <Button className="text-[#CD2424] bg-[#FFE4E4]">Reject</Button>
+          <Button className="text-[#FFFFFF] bg-[#013D9D]">Approve</Button>
+          </div>
         {/* Add form elements here to handle status update if needed */}
       </Modal>
     </div>

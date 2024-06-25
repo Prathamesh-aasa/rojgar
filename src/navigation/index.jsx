@@ -23,6 +23,7 @@ const Navigation = () => {
           <Route path="/payment-view-details/:id" element={<Pages.PaymentViewDetails/>}/>
           <Route path="/application" element={<Pages.Application/>}/>
           <Route path="/companies" element={<Pages.Companies/>}/>
+          <Route path="/companies/details/:id" element={<Pages.Details/>}/>
           <Route path="/services" element={<Pages.Services/>}/>
         </Route>
       </Routes>
