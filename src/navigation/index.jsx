@@ -25,6 +25,7 @@ const Navigation = () => {
           <Route path="/companies" element={<Pages.Companies/>}/>
           <Route path="/companies/details/:id" element={<Pages.Details/>}/>
           <Route path="/services" element={<Pages.Services/>}/>
+          <Route path="/dashboard" element={<Pages.Dashboard/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
