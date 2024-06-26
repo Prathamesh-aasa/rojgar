@@ -2,7 +2,7 @@ import { Button } from "antd";
 import React from "react";
 import { Link } from "react-router-dom";
 
-function index() {
+function CompanyInfo() {
   return (
     <div className="p-8">
       <div>
@@ -226,4 +226,4 @@ function index() {
   );
 }
 
-export default index;
+export default CompanyInfo;
