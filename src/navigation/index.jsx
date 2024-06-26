@@ -19,12 +19,16 @@ const Navigation = () => {
           <Route path="/forgot-password" element={<Pages.ForgetPassword />} />
           <Route path="/verify-otp" element={<Pages.VerifyOTP/>}/>
           <Route path="/dashboard-registration" element={<Pages.NewRegistration/>}/>
+          <Route path="/admin-profile" element={<Pages.AdminProfile/>}/>
           <Route path="/dashboard-payment-report" element={<Pages.PaymentReport/>}/>
           <Route path="/payment-view-details/:id" element={<Pages.PaymentViewDetails/>}/>
           <Route path="/application" element={<Pages.Application/>}/>
+          <Route path="/application/sent-application/:id" element={<Pages.SentApplication/>}/>
           <Route path="/companies" element={<Pages.Companies/>}/>
           <Route path="/companies/details/:id" element={<Pages.Details/>}/>
           <Route path="/services" element={<Pages.Services/>}/>
+          <Route path="/setting" element={<Pages.Setting/>}/>
+          <Route path="/notification" element={<Pages.Notification/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
