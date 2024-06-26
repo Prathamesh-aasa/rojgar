@@ -19,6 +19,7 @@ import {
 import { db } from "../../../firebase";
 import { collection, doc, getDocs, query, updateDoc } from "firebase/firestore";
 import moment from "moment";
+import img from "../../assets/download-1.jpeg";
 
 const { Option } = Select;
 
@@ -936,14 +937,133 @@ const Applications = () => {
       </Modal>
 
       <Modal
-        title="Personal Details"
         open={isVolunteerModal}
         onCancel={() => setIsVolunteerModal(false)}
+        width="100%"
+        footer={null}
       >
         {selectedVolunteer && (
-          <div>
+          <div className="flex  gap-8">
             <div>
-              <h1>Personal Details</h1>
+              <img src={img} alt="" className="rounded-full w-20" />
+            </div>
+            <div className="w-full">
+              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                Personal Details
+              </h1>
+              <div className="grid grid-cols-5 mb-8">
+                <div className="flex flex-col">
+                  <p>Registration ID</p>
+                  <span>ABCD12345</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Full Name</p>
+                  <span>User Name</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Phone No.</p>
+                  <span>6390569706</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Email ID</p>
+                  <span>ABCD@gmail.com</span>
+                </div>
+                <div className="flex flex-col mb-5">
+                  <p>Linkedin Link</p>
+                  <span>https://www.linkedin.com</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Other Social Media Link</p>
+                  <span>https://www.facebook.com</span>
+                </div>
+              </div>
+              <h1 className="mb-8 text-xl text-[rgb(1,61,157)] font-medium">
+                Address Details
+              </h1>
+              <div className="grid grid-cols-5 mb-8">
+                <div className="flex flex-col">
+                  <p>PIN</p>
+                  <span>50049</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>State</p>
+                  <span>TELENGANA</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>District</p>
+                  <span>HYDERBAD</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>City/Village</p>
+                  <span>HYDERBAD</span>
+                </div>
+              </div>
+
+              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                Services Details
+              </h1>
+              <div className="grid grid-cols-5 mb-8">
+                <div className="flex flex-col">
+                  <p>Service Selected</p>
+                  <span>VOLUNTEER</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Date</p>
+                  <span>June 06</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Time</p>
+                  <span>10:00AM - 12:00 PM </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Training Program(s)</p>
+                  <span>DIGITAL SHALA</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>course(s)</p>
+                  <span>BASIC EXCEL,BASIC PPT</span>
+                </div>
+              </div>
+              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                Additional Details
+              </h1>
+              <div className="grid grid-cols-5">
+                <div className="flex flex-col">
+                  <p>No. of family member</p>
+                  <span>5</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>No. of female children</p>
+                  <span>2</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>No. of male children</p>
+                  <span>1</span>
+                </div>
+                <div className="flex flex-col mb-5">
+                  <p>Main occupation of the family</p>
+                  <span>AGRICULTURE</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>have agricultural land?</p>
+                  <span>YES</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Need any agricultural products?</p>
+                  <span>YES</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Mention agricultural products</p>
+                  <span>NA</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Have a toilet at home?</p>
+                  <span>YES</span>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button className="bg-[#013D9D] text-white">Complete</Button>
+              </div>
             </div>
           </div>
         )}
