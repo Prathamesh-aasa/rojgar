@@ -42,6 +42,10 @@ const Applications = () => {
   const [welfares, setWelfares] = useState([]);
   const [isVolunteerModal, setIsVolunteerModal] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState([]);
+  const [filterMethod, setFilterMethod] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [filteredDatatwo, setFilteredDatatwo] = useState([]);
 
   const getColumns = (tab) => {
     const commonColumns = [
@@ -476,6 +480,32 @@ const Applications = () => {
     }
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState(null);
+
+  const showModaltwo = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOktwo = () => {
+    setIsModalOpen(false);
+    filterData();
+  };
+
+  const handleCanceltwo = () => {
+    setIsModalOpen(false);
+  };
+  const handleFilterChangetwo = (value) => {
+    setSelectedFilter(value);
+  };
+  const handleFilterMethodChange = (value) => {
+    setFilterMethod(value);
+    setSelectedMonth("");
+  };
+
+
+
+
   return (
     <div className="p-6">
       <div>
@@ -524,13 +554,53 @@ const Applications = () => {
                 <Option value="Approved">Approved</Option>
                 <Option value="Rejected">Rejected</Option>
               </Select>
+              <div className="flex gap-2">
+                <Button icon={<FilterOutlined />} onClick={showModaltwo}>
+                  Filters
+                </Button>
+                <Modal
+                  title="Filter Jobseekers"
+                  visible={isModalOpen}
+                  onOk={handleOktwo}
+                  onCancel={handleCanceltwo}
+                >
+                  <Select
+                    placeholder="Select filter method"
+                    style={{ width: "100%" }}
+                    onChange={handleFilterMethodChange}
+                    value={filterMethod}
+                  >
+                    <Option value="">All</Option>
+                    <Option value="Online Payment">Online Payment</Option>
+                    <Option value="Manual Payment">Manual Payment</Option>
+                    <Option value="Month">Month</Option>
+                  </Select>
+                  {filterMethod === "Month" && (
+                    <Select
+                      placeholder="Select month"
+                      style={{ width: "100%", marginTop: 16 }}
+                      onChange={(value) => setSelectedMonth(value)}
+                      value={selectedMonth}
+                    >
+                      <Option value="January">January</Option>
+                      <Option value="February">February</Option>
+                      
+                      <Option value="March">March</Option>
+                      <Option value="April">April</Option>
+                      <Option value="May">May</Option>
+                      <Option value="June">June</Option>
+                      <Option value="July">July</Option>
+                      <Option value="August">August</Option>
+                      <Option value="September">September</Option>
+                      <Option value="October">October</Option>
+                      <Option value="November">November</Option>
+                      <Option value="December">December</Option>
+                    </Select>
+                  )}
+                </Modal>
+              </div>
             </div>
           </div>
-          <Table
-            columns={getColumns("1")}
-            dataSource={filterData(jobSeekerData)}
-            pagination={false}
-          />
         </TabPane>
         <TabPane tab="Skilling" key="2">
           <div className="flex justify-between mb-4">

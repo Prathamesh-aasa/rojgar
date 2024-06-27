@@ -2,11 +2,17 @@ import React, { useState } from "react";
 import { Table, Button, Menu, Tabs, Select, Input, Modal } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
-import { FilterOutlined, DownloadOutlined, SendOutlined } from "@ant-design/icons";
+import {
+  FilterOutlined,
+  DownloadOutlined,
+  SendOutlined,
+  FileOutlined,
+} from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const index = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const showModal = (status) => {
     setSelectedStatus(status);
@@ -91,6 +97,20 @@ const index = () => {
       NoofJobpost: "Technician",
     },
   ];
+
+  const [isModalVisible2, setIsModalVisible2] = useState(false);
+
+  const showModal2 = () => {
+    setIsModalVisible2(true);
+  };
+
+  const handleOk2 = () => {
+    setIsModalVisible2(false);
+  };
+
+  const handleCancel2 = () => {
+    setIsModalVisible2(false);
+  };
   return (
     <div className="p-6">
       <div>
@@ -103,10 +123,46 @@ const index = () => {
         <h1 className="text-2xl font-semibold text-[#013D9D]">Companies</h1>
         <div className="flex gap-4">
           <Button type="primary">
-            <SendOutlined /> Send Notification
-          </Button>
-          <Button type="primary">
             <DownloadOutlined /> Download
+          </Button>
+          <Modal
+            visible={isModalVisible2}
+            onOk={handleOk2}
+            onCancel={handleCancel2}
+            width="50%"
+            footer={null}
+          >
+            <div>
+              <p className="text-[#013D9D] text-2xl font-semibold text-center mb-5">
+                You are sending 100 applications to Tata motors
+              </p>
+              <div className="text-center mb-5">
+                <p>
+                  All details except Additional details of each candidate are
+                  sent to
+                </p>
+                <p>
+                  Tata Motors in excel file, once you send you can not undo
+                  file.
+                </p>
+              </div>
+              <div className="border flex items-center justify-center w-52 h-14  rounded-lg  mx-auto bg-[#EEF2F9]">
+                <Link className="border-none flex  gap-3 bg-[#EEF2F9]">
+                  <FileOutlined />
+                  <div className="flex flex-col text-sm">
+                    Apllication (Tecnician).xls
+                    <span>Upload 12-02-24</span>
+                  </div>
+                </Link>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button>Cancel</Button>
+                <Button className="bg-[#013D9D] text-white">Send</Button>
+              </div>
+            </div>
+          </Modal>
+          <Button type="primary" icon={<SendOutlined />} onClick={showModal2}>
+            Send Notification
           </Button>
         </div>
       </div>
@@ -126,17 +182,21 @@ const index = () => {
         </div>
       </div>
       <Table columns={columns} dataSource={data} pagination={false} />
-      <Modal title="Details"
+      <Modal
+        title="Details"
         open={isModalVisible}
         footer={null}
         onOk={handleOk}
         onCancel={handleCancel}
         style={{ top: 0 }}
         width="100%"
-         className="h-fit">
+        className="h-fit"
+      >
         <div className="flex justify-evenly">
           <div>
-            <h1 className="text-[#013D9D] font-medium text-xl mb-5">Company’s Details</h1>
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+              Company’s Details
+            </h1>
             <div className="grid grid-cols-3">
               <div className="flex flex-col mb-2 mr-2 gap-1">
                 <p>Company ID</p>
@@ -155,7 +215,9 @@ const index = () => {
                 <span>ABCD@gmail.com</span>
               </div>
             </div>
-            <h1 className="text-[#013D9D] font-medium text-xl mb-5">Address Details</h1>
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+              Address Details
+            </h1>
             <div className="grid grid-cols-3">
               <div className="flex flex-col gap-2 ml-2 p-1 mb-2">
                 <p>PIN </p>
@@ -180,7 +242,9 @@ const index = () => {
             </div>
           </div>
           <div>
-            <h1 className="text-[#013D9D] font-medium text-xl mb-5">Job Poster Details</h1>
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+              Job Poster Details
+            </h1>
             <div className="grid grid-cols-3">
               <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
                 <p>Full Name</p>
@@ -200,7 +264,7 @@ const index = () => {
         <div className="flex justify-end gap-4">
           <Button className="text-[#CD2424] bg-[#FFE4E4]">Reject</Button>
           <Button className="text-[#FFFFFF] bg-[#013D9D]">Approve</Button>
-          </div>
+        </div>
         {/* Add form elements here to handle status update if needed */}
       </Modal>
     </div>
