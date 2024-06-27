@@ -29,6 +29,7 @@ const Navigation = () => {
           <Route path="/services" element={<Pages.Services/>}/>
           <Route path="/setting" element={<Pages.Setting/>}/>
           <Route path="/notification" element={<Pages.Notification/>}/>
+          <Route path="/dashboard" element={<Pages.Dashboard/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
