@@ -38,6 +38,7 @@ const Index = () => {
   const [addNewCourseForm] = Form.useForm();
   const [createSubscriptionForm] = Form.useForm();
   const [welfareForm] = Form.useForm();
+  const [createNewVolunteer] = Form.useForm();
   const [documentService] = Form.useForm();
   const [suggestiveForm] = Form.useForm();
   const [companyForm] = Form.useForm();
@@ -75,6 +76,8 @@ const Index = () => {
   const [skilling, setSkilling] = useState([]);
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [isSkillingModalVisible, setIsSkillingModalVisible] = useState(false);
+  const [isAddNewVolunteerModalVisible, setIsAddNewVolunteerModal] =
+    useState(false);
   const [volunteer, setVolunteer] = useState([]);
 
   const getVolunteer = async () => {
@@ -650,7 +653,35 @@ const Index = () => {
       console.log("🚀 ~ handleAddCourse ~ error:", error);
     }
   };
-
+  const handelCreateVolunteer = async (value) => {
+    try {
+      const volunteer = {
+        name: value?.volunteerName,
+        is_volunteer: true,
+        is_free: true,
+        session: {
+          name_1: value?.sessionName1,
+          name_2: value?.sessionName2,
+        },
+        skillId: "",
+        video_link: "",
+      };
+      await addDoc(collection(db, "Courses"), volunteer);
+      getVolunteer();
+      notification.success({
+        message: "Success",
+        description: "Volunteer added successfully!",
+      });
+      createNewVolunteer.resetFields();
+      setIsAddNewVolunteerModal(false);
+    } catch (error) {
+      console.log("🚀 ~ handelCreateVolunteer ~ error:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to add volunteer. Please try again later.",
+      });
+    }
+  };
   useEffect(() => {
     getSuggestiveList();
     getWelfare();
@@ -1389,7 +1420,61 @@ const Index = () => {
           </div>
         </TabPane>
         <TabPane tab="Volunteer" key="3">
+          <Modal
+            open={isAddNewVolunteerModalVisible}
+            onClose={() => setIsAddNewVolunteerModal(false)}
+            onCancel={() => setIsAddNewVolunteerModal(false)}
+            title="Add New Volunteer"
+            footer={null}
+          >
+            <Form
+              form={createNewVolunteer}
+              layout="vertical"
+              onFinish={handelCreateVolunteer}
+            >
+              <Form.Item
+                name="volunteerName"
+                label="Volunteer Name"
+                rules={[
+                  { required: true, message: "Please enter volunteer name" },
+                ]}
+              >
+                <Input placeholder="Enter volunteer name" />
+              </Form.Item>
+              <Form.Item
+                name="sessionName1"
+                label="Session 1 Name"
+                rules={[
+                  { required: true, message: "Please enter session 1 name" },
+                ]}
+              >
+                <Input placeholder="Enter session 1 name" />
+              </Form.Item>
+              <Form.Item
+                name="sessionName2"
+                label="Session 2 Name"
+                rules={[
+                  { required: true, message: "Please enter session 2 name" },
+                ]}
+              >
+                <Input placeholder="Enter session 2 name" />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Add
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
           <div>
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setIsAddNewVolunteerModal(true)}
+                type="primary"
+              >
+                Add New Volunteer
+              </Button>
+            </div>
             <Tabs type="card" tabPosition={"left"}>
               {volunteer?.map((course) => (
                 <TabPane tab={course.name} key={course.id}>

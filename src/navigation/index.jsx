@@ -61,7 +61,7 @@ const Navigation = () => {
   return (
     <>
       {loading && (
-        <div className="h-screen w-screen flex items-center justify-center">
+        <div className="h-screen w-screen flex items-center justify-center absolute top-0 left-0">
           <Spin size="large" />
         </div>
       )}
