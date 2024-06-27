@@ -43,7 +43,9 @@ const Applications = () => {
   const [isVolunteerModal, setIsVolunteerModal] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState([]);
   const [filterMethod, setFilterMethod] = useState("");
+  const [filterMethodcompany, setFilterMethodcompany] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedcompany, setSelectedcompany] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [filteredDatatwo, setFilteredDatatwo] = useState([]);
 
@@ -501,10 +503,9 @@ const Applications = () => {
   const handleFilterMethodChange = (value) => {
     setFilterMethod(value);
     setSelectedMonth("");
+    setFilterMethodcompany(value);
+    setSelectedcompany("");
   };
-
-
-
 
   return (
     <div className="p-6">
@@ -559,43 +560,69 @@ const Applications = () => {
                   Filters
                 </Button>
                 <Modal
-                  title="Filter Jobseekers"
+                  title=""
                   visible={isModalOpen}
                   onOk={handleOktwo}
                   onCancel={handleCanceltwo}
+                  footer={null}
                 >
-                  <Select
-                    placeholder="Select filter method"
-                    style={{ width: "100%" }}
-                    onChange={handleFilterMethodChange}
-                    value={filterMethod}
-                  >
-                    <Option value="">All</Option>
-                    <Option value="Online Payment">Online Payment</Option>
-                    <Option value="Manual Payment">Manual Payment</Option>
-                    <Option value="Month">Month</Option>
-                  </Select>
-                  {filterMethod === "Month" && (
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Jobseekers</h1>
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Fillter by</label>
                     <Select
-                      placeholder="Select month"
-                      style={{ width: "100%", marginTop: 16 }}
-                      onChange={(value) => setSelectedMonth(value)}
-                      value={selectedMonth}
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+                      onChange={handleFilterMethodChange}
+                      value={filterMethod}
+                      className=" mx-auto "
                     >
-                      <Option value="January">January</Option>
-                      <Option value="February">February</Option>
-                      
-                      <Option value="March">March</Option>
-                      <Option value="April">April</Option>
-                      <Option value="May">May</Option>
-                      <Option value="June">June</Option>
-                      <Option value="July">July</Option>
-                      <Option value="August">August</Option>
-                      <Option value="September">September</Option>
-                      <Option value="October">October</Option>
-                      <Option value="November">November</Option>
-                      <Option value="December">December</Option>
+                      <Option value="Company">company</Option>
+                      <Option value="Month">Month</Option>
                     </Select>
+                  </div>
+
+                  {filterMethod === "Company" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center">
+                        {" "}
+                        Select Company
+                      </label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "60%" }}
+                        onChange={(value) => setSelectedcompany(value)}
+                        value={selectedcompany}
+                        className="flex items-center"
+                      >
+                        <Option value="CompanyName">Company Name</Option>
+                        <Option value="comapanyname">Comapany Name2</Option>
+                      </Select>
+                    </div>
+                  )}
+                  {filterMethod === "Month" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center"> Select Month</label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedMonth(value)}
+                        value={selectedMonth}
+                        className="flex items-center"
+                      >
+                        <Option value="January">January</Option>
+                        <Option value="February">February</Option>
+                        <Option value="March">March</Option>
+                        <Option value="April">April</Option>
+                        <Option value="May">May</Option>
+                        <Option value="June">June</Option>
+                        <Option value="July">July</Option>
+                        <Option value="August">August</Option>
+                        <Option value="September">September</Option>
+                        <Option value="October">October</Option>
+                        <Option value="November">November</Option>
+                        <Option value="December">December</Option>
+                      </Select>
+                    </div>
                   )}
                 </Modal>
               </div>
@@ -622,11 +649,78 @@ const Applications = () => {
                 <Option value="Pending">Pending</Option>
                 <Option value="Completed">Completed</Option>
               </Select>
-              {/* <div className="flex gap-2">
-                <Button icon={<FilterOutlined />} onClick={showFilterModal}>
+              <div className="flex gap-2">
+                <Button icon={<FilterOutlined />} onClick={showModaltwo}>
                   Filters
                 </Button>
-              </div> */}
+                <Modal
+               
+                  visible={isModalOpen}
+                  onOk={handleOktwo}
+                  onCancel={handleCanceltwo}
+                  footer={null}
+                > 
+                <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Skilling</h1>
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Fillter by</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+                      onChange={handleFilterMethodChange}
+                      value={filterMethod}
+                      className=" mx-auto "
+                    >
+                      <Option value="Registered">Non-Registered</Option>
+                      <Option value="MonSkillingth">Skilling Program</Option>
+                      <Option value="Month">Month</Option>
+                    </Select>
+                  </div>
+
+                  {filterMethod === "Company" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center">
+                        {" "}
+                        Select Company
+                      </label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "60%" }}
+                        onChange={(value) => setSelectedcompany(value)}
+                        value={selectedcompany}
+                        className="flex items-center"
+                      >
+                        <Option value="CompanyName">Company Name</Option>
+                        <Option value="comapanyname">Comapany Name2</Option>
+                      </Select>
+                    </div>
+                  )}
+                  {filterMethod === "Month" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center"> Select Month</label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedMonth(value)}
+                        value={selectedMonth}
+                        className="flex items-center"
+                      >
+                        <Option value="January">January</Option>
+                        <Option value="February">February</Option>
+                        <Option value="March">March</Option>
+                        <Option value="April">April</Option>
+                        <Option value="May">May</Option>
+                        <Option value="June">June</Option>
+                        <Option value="July">July</Option>
+                        <Option value="August">August</Option>
+                        <Option value="September">September</Option>
+                        <Option value="October">October</Option>
+                        <Option value="November">November</Option>
+                        <Option value="December">December</Option>
+                      </Select>
+                    </div>
+                  )}
+                </Modal>
+              </div>
             </div>
           </div>
           <Table
@@ -656,11 +750,77 @@ const Applications = () => {
                 <Option value="Pending">Pending</Option>
                 <Option value="Completed">Completed</Option>
               </Select>
-              {/* <div className="flex gap-2">
-                <Button icon={<FilterOutlined />} onClick={showFilterModal}>
+              <div className="flex gap-2">
+                <Button icon={<FilterOutlined />} onClick={showModaltwo}>
                   Filters
                 </Button>
-              </div> */}
+                <Modal
+                
+                  visible={isModalOpen}
+                  onOk={handleOktwo}
+                  onCancel={handleCanceltwo}
+                  footer={null}
+                >
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Volunteer</h1>
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Fillter by</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+                      onChange={handleFilterMethodChange}
+                      value={filterMethod}
+                      className=" mx-auto "
+                    >
+                      <Option value="Traning">Traning Program</Option>
+                      <Option value="Month">Month</Option>
+                    </Select>
+                  </div>
+
+                  {filterMethod === "Traning" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center">
+                        {" "}
+                        Select traning
+                      </label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedcompany(value)}
+                        value={selectedcompany}
+                        className="flex items-center"
+                      >
+                        <Option value="CompanyName">Company Name</Option>
+                        <Option value="comapanyname">Comapany Name2</Option>
+                      </Select>
+                    </div>
+                  )}
+                  {filterMethod === "Month" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center"> Select Month</label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedMonth(value)}
+                        value={selectedMonth}
+                        className="flex items-center"
+                      >
+                        <Option value="January">January</Option>
+                        <Option value="February">February</Option>
+                        <Option value="March">March</Option>
+                        <Option value="April">April</Option>
+                        <Option value="May">May</Option>
+                        <Option value="June">June</Option>
+                        <Option value="July">July</Option>
+                        <Option value="August">August</Option>
+                        <Option value="September">September</Option>
+                        <Option value="October">October</Option>
+                        <Option value="November">November</Option>
+                        <Option value="December">December</Option>
+                      </Select>
+                    </div>
+                  )}
+                </Modal>
+              </div>
             </div>
           </div>
           <Table
@@ -690,11 +850,97 @@ const Applications = () => {
                 <Option value="Approved">Approved</Option>
                 <Option value="Rejected">Rejected</Option>
               </Select>
-              {/* <div className="flex gap-2">
-                <Button icon={<FilterOutlined />} onClick={showFilterModal}>
+              <div className="flex gap-2">
+                <Button icon={<FilterOutlined />} onClick={showModaltwo}>
                   Filters
                 </Button>
-              </div> */}
+                <Modal
+                  visible={isModalOpen}
+                  onOk={handleOktwo}
+                  onCancel={handleCanceltwo}
+                  footer={null}
+                >
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Document</h1>
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Fillter by</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+                      onChange={handleFilterMethodChange}
+                      value={filterMethod}
+                      className=" mx-auto "
+                    >
+                      <Option value="Individual">Individual</Option>
+                      <Option value="Company">Company</Option>
+                      <Option value="Month">Month</Option>
+                    </Select>
+                  </div>
+
+                  {filterMethod === "Individual" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center">
+                        {" "}
+                        Select Individual
+                      </label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedcompany(value)}
+                        value={selectedcompany}
+                        className="flex items-center"
+                      >
+                        <Option value="CompanyName">Company Name</Option>
+                        <Option value="comapanyname">Comapany Name2</Option>
+                      </Select>
+                    </div>
+                  )}
+
+                  {filterMethod === "Company" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center">
+                        {" "}
+                        Select Company
+                      </label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedcompany(value)}
+                        value={selectedcompany}
+                        className="flex items-center"
+                      >
+                        <Option value="CompanyName">Company Name</Option>
+                        <Option value="comapanyname">Comapany Name2</Option>
+                      </Select>
+                    </div>
+                  )}
+
+                  {filterMethod === "Month" && (
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center"> Select Month</label>
+                      <Select
+                        placeholder="Select month"
+                        style={{ width: "70%" }}
+                        onChange={(value) => setSelectedMonth(value)}
+                        value={selectedMonth}
+                        className="flex items-center"
+                      >
+                        <Option value="January">January</Option>
+                        <Option value="February">February</Option>
+                        <Option value="March">March</Option>
+                        <Option value="April">April</Option>
+                        <Option value="May">May</Option>
+                        <Option value="June">June</Option>
+                        <Option value="July">July</Option>
+                        <Option value="August">August</Option>
+                        <Option value="September">September</Option>
+                        <Option value="October">October</Option>
+                        <Option value="November">November</Option>
+                        <Option value="December">December</Option>
+                      </Select>
+                    </div>
+                  )}
+                </Modal>
+              </div>
             </div>
           </div>
           <Table
@@ -724,11 +970,102 @@ const Applications = () => {
                 <Option value="Completed">Completed</Option>
                 <Option value="Rejected">Rejected</Option>
               </Select>
-              {/* <div className="flex gap-2">
-                <Button icon={<FilterOutlined />} onClick={showFilterModal}>
+              <div className="flex gap-2">
+                <Button icon={<FilterOutlined />} onClick={showModaltwo}>
                   Filters
                 </Button>
-              </div> */}
+                <Modal
+               
+                  visible={isModalOpen}
+                  onOk={handleOktwo}
+                  onCancel={handleCanceltwo}
+                  footer={null}
+                  width="40%"
+                >
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Scheme</h1>
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Schemes</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+
+                      className=" mx-auto "
+                    >
+                      <Option value="name">Individual</Option>
+                      <Option value="Companys">Company</Option>
+                      <Option value="Months">Month</Option>
+                    </Select>
+                  </div>        
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Have Health Insurance</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+
+                      className=" mx-auto "
+                    >
+                      <Option value="Individuals">Individual</Option>
+                      <Option value="Companys">Company</Option>
+                      <Option value="Months">Month</Option>
+                    </Select>
+                  </div>        
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Have Toilet</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+
+                      className=" mx-auto "
+                    >
+                      <Option value="Individuals">Individual</Option>
+                      <Option value="Companys">Company</Option>
+                      <Option value="Months">Month</Option>
+                    </Select>
+                  </div>        
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Have Agricuture Land</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+
+                      className=" mx-auto "
+                    >
+                      <Option value="Individual">Individual</Option>
+                      <Option value="Company">Company</Option>
+                      <Option value="Month">Month</Option>
+                    </Select>
+                  </div>        
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Need Farm Products</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+
+                      className=" mx-auto "
+                    >
+                      <Option value="Individuals">Individual</Option>
+                      <Option value="Companys">Company</Option>
+                      <Option value="Months">Month</Option>
+                    </Select>
+                  </div>        
+                  <div className="flex mb-6">
+                    <label className="flex items-center">Month</label>
+                    <Select
+                      placeholder="Select filter method"
+                      style={{ width: "70%" }}
+
+                      className=" mx-auto "
+                    >
+                      <Option value="Individuals">Individual</Option>
+                      <Option value="Companys">Company</Option>
+                      <Option value="Months">Month</Option>
+                    </Select>
+                  </div>  
+                  <div className="flex justify-end">
+                    <Button className="bg-[#013D9D] text-white">Apply</Button>
+                    </div>      
+                </Modal>
+              </div>
             </div>
           </div>
           <Table
