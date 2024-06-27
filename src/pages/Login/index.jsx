@@ -1,17 +1,38 @@
 import React from "react";
-import { Form, Input, Button, Flex, Checkbox } from "antd";
+import { Form, Input, Button, Flex, Checkbox, notification } from "antd";
 import { Mail } from "lucide-react";
 import img from "../../assets/OBJECTS.png";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { redirect, useRoutes } from "react-router-dom";
 
 const Login = () => {
+  const auth = getAuth();
 
   const handelFinish = async (values) => {
     console.log(values);
+    signInWithEmailAndPassword(auth, values?.email, values?.password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log("🚀 ~ .then ~ user:", user);
+        notification.success({
+          message: "Authentication",
+          description: `Welcome ${values?.email}`,
+        });
+        redirect('/')
+      })
 
-  }
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        notification.error({
+          message: errorCode,
+          description: errorMessage,
+        });
+      });
+  };
 
   return (
-    <div className=" flex items-center justify-evenly mt-10">
+    <div className="flex items-center justify-evenly mt-10">
       <div className="">
         <img src={img} alt="" />
       </div>
