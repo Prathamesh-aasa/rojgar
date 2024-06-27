@@ -10,6 +10,7 @@ import {
   Divider,
   Radio,
   notification,
+  Card,
 } from "antd";
 import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
@@ -19,7 +20,9 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { CrossIcon, Minus, MinusCircle, XIcon } from "lucide-react";
@@ -31,6 +34,8 @@ const { Option } = Select;
 const Index = () => {
   const [suggestiveList, setSuggestiveList] = useState([]);
   const [form] = Form.useForm();
+  const [skillingForm] = Form.useForm();
+  const [addNewCourseForm] = Form.useForm();
   const [createSubscriptionForm] = Form.useForm();
   const [welfareForm] = Form.useForm();
   const [documentService] = Form.useForm();
@@ -67,7 +72,42 @@ const Index = () => {
   const [tab, setTab] = useState("Trades");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSkillingModal, setIsSkillingModal] = useState(false);
+  const [skilling, setSkilling] = useState([]);
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [isSkillingModalVisible, setIsSkillingModalVisible] = useState(false);
+  const [volunteer, setVolunteer] = useState([]);
 
+  const getVolunteer = async () => {
+    try {
+      const coursesCollection = collection(db, "Courses");
+      const q = query(coursesCollection, where("is_volunteer", "==", true));
+
+      const snapshot = await getDocs(q);
+      const coursesList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setVolunteer(coursesList);
+      console.log("🚀 ~ getVolunteer ~ coursesList:", coursesList);
+    } catch (error) {
+      console.error("Error fetching volunteer courses:", error);
+    }
+  };
+  const handleSessionUpdate = async (courseId, sessionNumber, newData) => {
+    try {
+      const courseRef = doc(db, "Courses", courseId);
+      await updateDoc(courseRef, {
+        [`session.name_${sessionNumber}`]: newData.name,
+        [`session.date_${sessionNumber}`]: newData.date,
+        [`session.time_slot_${sessionNumber}`]: newData.timeSlot,
+      });
+      console.log(
+        `Session ${sessionNumber} updated successfully for course ${courseId}`
+      );
+    } catch (error) {
+      console.error("Error updating session:", error);
+    }
+  };
   const getSubscriptionPlans = async () => {
     const welfareCollection = collection(db, "Subscription Plans");
     const listSnapshot = await getDocs(welfareCollection);
@@ -241,6 +281,42 @@ const Index = () => {
       ...doc.data(),
     }));
     setDocuments(listData);
+  };
+  const getSkilling = async () => {
+    const skillingCollection = collection(db, "Skills");
+    const listSnapshot = await getDocs(skillingCollection);
+    const skills = listSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const coursesCollection = collection(db, "Courses");
+    const snap = await getDocs(coursesCollection);
+    const courses = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Create a mapping of skills by their IDs
+    const skillsMap = skills.reduce((acc, skill) => {
+      acc[skill.id] = { ...skill, courses: [] };
+      return acc;
+    }, {});
+
+    // Assign each course to the corresponding skill
+    courses.forEach((course) => {
+      const { skillId } = course;
+      if (skillsMap[skillId]) {
+        skillsMap[skillId].courses.push(course);
+      }
+    });
+
+    // Convert the skills map back to an array
+    const listData = Object.values(skillsMap);
+    console.log("🚀 ~ getSkilling ~ listData:", listData);
+
+    // Assuming you have a state setter for skilling
+    setSkilling(listData);
   };
   const getSuggestiveList = async () => {
     const suggestiveListCollection = collection(db, "All Suggestive Lists");
@@ -505,12 +581,83 @@ const Index = () => {
       console.log("🚀 ~ onFinish ~ error:", error);
     }
   };
+  const handleSkillChange = (value) => {
+    const skill = skilling.find((skill) => skill.id === value);
+    setSelectedSkill(skill);
+    const coursesData = skill.courses.map((course, index) => ({
+      [`courseName${index}`]: course.name,
+      [`video_link${index}`]: course.video_link,
+      [`course_id${index}`]: course.id,
+      [`courseType${index}`]: course.is_free ? "free" : "paid",
+    }));
+    skillingForm.setFieldsValue({
+      // programName: skill.name,
+      ...Object.assign({}, ...coursesData),
+    });
+  };
+  const handleFormSubmit = async (values) => {
+    try {
+      // Iterate through the form values to update each course
+      for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
+        const courseId = values[`course_id${i}`];
+        const courseName = values[`courseName${i}`];
+        const courseVideoLink = values[`video_link${i}`];
+        const courseType = values[`courseType${i}`] === "free";
+
+        // Update existing course
+        const courseRef = doc(db, "Courses", courseId);
+        await updateDoc(courseRef, {
+          name: courseName,
+          video_link: courseVideoLink,
+          is_free: courseType,
+        });
+      }
+      notification.success({
+        message: "Success",
+        description: "Courses updated successfully!",
+      });
+      getSkilling();
+      console.log("Courses updated successfully.");
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to update courses. Please try again later.",
+      });
+      console.log("🚀 ~ updateCourses ~ error:", error);
+    }
+  };
+  const handleAddCourse = async (values) => {
+    try {
+      await addDoc(collection(db, "Courses"), {
+        skillId: selectedSkill?.id,
+        name: values.courseName,
+        video_link: values.courseVideoLink,
+        is_free: values.courseType === "free",
+      });
+      addNewCourseForm.resetFields();
+      setIsSkillingModalVisible(false);
+      setSelectedSkill(null);
+      getSkilling();
+      notification.success({
+        message: "Success",
+        description: "Course added successfully!",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to add course. Please try again later.",
+      });
+      console.log("🚀 ~ handleAddCourse ~ error:", error);
+    }
+  };
 
   useEffect(() => {
     getSuggestiveList();
     getWelfare();
     getDocuments();
     getSubscriptionPlans();
+    getSkilling();
+    getVolunteer();
   }, []);
 
   const tabItems = [
@@ -723,6 +870,49 @@ const Index = () => {
       ),
     },
   ];
+  const SessionForm = ({ courseId, session, onUpdate }) => {
+    const [session1, setSession1] = useState(session.name_1 || "");
+    const [session2, setSession2] = useState(session.name_2 || "");
+
+    const handleUpdate = async () => {
+      try {
+        await updateDoc(doc(db, "Courses", courseId), {
+          session: {
+            name_1: session1,
+            name_2: session2,
+          },
+        });
+        console.log(`Sessions updated successfully for course ${courseId}`);
+      } catch (error) {
+        console.error("Error updating sessions:", error);
+      }
+    };
+
+    return (
+      <div>
+        <div className="flex gap-5">
+          <Card title="Session 1">
+            <Input
+              value={session1}
+              onChange={(e) => setSession1(e.target.value)}
+              placeholder="Session 1 Name"
+            />
+          </Card>
+          <Card title="Session 2">
+            <Input
+              value={session2}
+              onChange={(e) => setSession2(e.target.value)}
+              placeholder="Session 2 Name"
+              style={{ marginLeft: "10px" }}
+            />
+          </Card>
+        </div>
+        <Button type="primary" onClick={handleUpdate} className="mt-4">
+          Update Sessions
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div className="p-5">
@@ -1083,64 +1273,137 @@ const Index = () => {
         </TabPane>
         <TabPane tab="Skilling" key="2">
           <div className="flex justify-end">
+            {selectedSkill && (
+              <Button
+                type="primary"
+                className="mr-3"
+                onClick={() => setIsSkillingModalVisible(true)}
+              >
+                Add New Course
+              </Button>
+            )}
             <Button type="primary" onClick={() => setIsSkillingModal(true)}>
               Add New Skilling
             </Button>
           </div>
-          <div className=" max-w-screen-xl mt-7 mx-auto"></div>
-        </TabPane>
-        <TabPane tab="Volunteer" key="3">
-          <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-            <div className="flex justify-between">
-              <div className="w-1/2 pr-4">
-                <Form layout="vertical">
-                  {workshops.map((workshop, index) => (
-                    <div key={index} className="mb-4">
-                      <input
-                        type="text"
-                        id={`workshop${index + 1}`}
-                        name={`workshop${index + 1}`}
-                        placeholder={`Enter Workshop ${index + 1}`}
-                        className="p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        value={workshop}
-                        onChange={(e) =>
-                          handleWorkshopChange(index, e.target.value)
-                        }
-                      />
-                    </div>
+          <div className=" max-w-screen-xl mt-7 mx-auto">
+            <Form
+              form={skillingForm}
+              layout="vertical"
+              onFinish={handleFormSubmit}
+            >
+              <Form.Item
+                label="Select Skill"
+                name="skill"
+                rules={[{ required: true, message: "Please select a skill" }]}
+              >
+                <Select
+                  placeholder="Select a skill"
+                  onChange={handleSkillChange}
+                  value={selectedSkill?.id}
+                >
+                  {skilling.map((skill) => (
+                    <Option key={skill.id} value={skill.id}>
+                      {skill.name}
+                    </Option>
                   ))}
-                  <div className="flex justify-between">
-                    <button
-                      type="button"
-                      className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none"
-                      onClick={addWorkshopInput}
-                    >
-                      Add Workshop
-                    </button>
+                </Select>
+              </Form.Item>
+              {/* 
+              <Form.Item
+                label="Program Name"
+                name="programName"
+                rules={[
+                  {
+                    required: true,
+                    whitespace: true,
+                    message: "Program Name is required",
+                  },
+                ]}
+              >
+                <Input placeholder="Enter Program Name" />
+              </Form.Item> */}
+
+              {selectedSkill &&
+                selectedSkill.courses.map((course, index) => (
+                  <div key={course.id} className="course-item">
+                    <Divider>Course {index + 1}</Divider>
+                    <div className="grid grid-cols-3 gap-5">
+                      <Form.Item
+                        label="Course Name"
+                        name={`courseName${index}`}
+                        rules={[
+                          {
+                            required: true,
+                            whitespace: true,
+                            message: "Course Name is required",
+                          },
+                        ]}
+                      >
+                        <Input placeholder="Enter course Name" />
+                      </Form.Item>
+                      <Form.Item
+                        label="Course Video Link"
+                        name={`video_link${index}`}
+                        rules={[
+                          {
+                            required: true,
+                            whitespace: true,
+                            message: "Course Video Link is required",
+                          },
+                        ]}
+                      >
+                        <Input placeholder="Enter Video Link" />
+                      </Form.Item>
+                      <Form.Item name={`course_id${index}`} hidden>
+                        <Input placeholder="Enter Video Link" />
+                      </Form.Item>
+                      <Form.Item
+                        label="Course Type"
+                        name={`courseType${index}`}
+                        rules={[
+                          {
+                            required: true,
+                            whitespace: true,
+                            message: "Course Type is required",
+                          },
+                        ]}
+                      >
+                        <Select placeholder="Select">
+                          <Option value="free">Free</Option>
+                          <Option value="paid">Paid</Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
                   </div>
-                </Form>
-              </div>
-              <div className="w-1/2 pl-4">
-                <div className="flex justify-end mb-4">
-                  <Button type="default">Edit</Button>
+                ))}
+
+              {selectedSkill && (
+                <div className="flex justify-end gap-8 mt-4">
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
                 </div>
-                <Form layout="vertical">
-                  <Form.Item label="Training Program 1">
-                    <Input defaultValue="Basic Computer Skills Training" />
-                  </Form.Item>
-                  <Form.Item label="Training Program 2">
-                    <Input defaultValue="Communication Skills Development" />
-                  </Form.Item>
-                  <div className="flex justify-between">
-                    <Button>Cancel</Button>
-                    <Button type="primary">Save</Button>
-                  </div>
-                </Form>
-              </div>
-            </div>
+              )}
+            </Form>
           </div>
         </TabPane>
-
+        <TabPane tab="Volunteer" key="3">
+          <div>
+            <Tabs type="card" tabPosition={"left"}>
+              {volunteer?.map((course) => (
+                <TabPane tab={course.name} key={course.id}>
+                  <SessionForm
+                    courseId={course.id}
+                    sessionNumber={1}
+                    session={course.session}
+                    onUpdate={handleSessionUpdate}
+                  />
+                </TabPane>
+              ))}
+            </Tabs>
+          </div>
+        </TabPane>
         <TabPane tab="Document" key="4">
           <div className="max-w-4xl mx-auto mt-10">
             <div className="flex justify-between">
@@ -1516,6 +1779,53 @@ const Index = () => {
             <Button>Cancel</Button>
             <Button type="primary" htmlType="submit">
               Save
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+      <Modal
+        title="Add Course"
+        open={isSkillingModalVisible}
+        onCancel={() => setIsSkillingModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={addNewCourseForm}
+          layout="vertical"
+          onFinish={handleAddCourse}
+        >
+          <Form.Item
+            label="Course Name"
+            name="courseName"
+            rules={[{ required: true, message: "Course Name is required" }]}
+          >
+            <Input placeholder="Enter course name" />
+          </Form.Item>
+          <Form.Item
+            label="Course Video Link"
+            name="courseVideoLink"
+            rules={[
+              { required: true, message: "Course Video Link is required" },
+            ]}
+          >
+            <Input placeholder="Enter video link" />
+          </Form.Item>
+          <Form.Item
+            label="Course Type"
+            name="courseType"
+            rules={[{ required: true, message: "Course Type is required" }]}
+          >
+            <Select placeholder="Select course type">
+              <Option value="free">Free</Option>
+              <Option value="paid">Paid</Option>
+            </Select>
+          </Form.Item>
+          <div className="flex justify-end gap-8 mt-4">
+            <Button onClick={() => setIsSkillingModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit">
+              Add Course
             </Button>
           </div>
         </Form>

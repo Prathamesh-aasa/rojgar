@@ -11,6 +11,6 @@ export { default as Companies } from "./Companies/index";
 export { default as Services } from "./Services/index";
 export { default as Details } from "./Companies/details"
 export { default as Setting } from "./Setting/index"
-export { default as Notification } from "./Notification/index"
+export { default as Notification } from "./Notification"
 export { default as Dashboard } from "./Dashboard"
 
