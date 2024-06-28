@@ -28,13 +28,12 @@ const Navigation = () => {
   const items = [
     {
       key: "1",
-      label: (<a href="/setting">Setting</a>),
+      label: <a href="/setting">Setting</a>,
     },
     {
       key: "2",
       label: (
         <button
-      
           onClick={() =>
             logOut()
               .then(() => {
@@ -48,7 +47,6 @@ const Navigation = () => {
         </button>
       ),
     },
-    
   ];
 
   const RequireAuth = () => {
@@ -158,6 +156,10 @@ const Navigation = () => {
               <Route path="/setting" element={<Pages.Setting />} />
               <Route path="/notifications" element={<Pages.Notification />} />
               <Route path="/dashboard" element={<Pages.Dashboard />} />
+              <Route
+                path="/applications/company/:id"
+                element={<Pages.CompaniesApplications />}
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
             <Route path="*" element={<NotFound />} />
