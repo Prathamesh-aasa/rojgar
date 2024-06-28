@@ -1,18 +1,80 @@
-import React, { useState } from "react";
-import { Table, Button, Menu, Tabs, Select, Input, Modal } from "antd";
-import { DownOutlined } from "@ant-design/icons";
-import TabPane from "antd/es/tabs/TabPane";
+import React, { useEffect, useState } from "react";
 import {
-  FilterOutlined,
-  DownloadOutlined,
-  SendOutlined,
-  FileOutlined,
-} from "@ant-design/icons";
+  Table,
+  Button,
+  Select,
+  Input,
+  Modal,
+  notification,
+} from "antd";
+import { DownOutlined } from "@ant-design/icons";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../../firebase";
 import { Link } from "react-router-dom";
+import moment from "moment";
 
-const index = () => {
+const { Option } = Select;
+
+const CompaniesPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [selectedItems, setSelectedItems] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+
+  const getCompanies = async () => {
+    const companyCollection = collection(db, "RegisterAsCompany");
+    const companiesSnapshot = await getDocs(companyCollection);
+    const companies = companiesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const jobsCollection = collection(db, "Jobs");
+
+    const companiesWithJobCount = await Promise.all(
+      companies.map(async (company) => {
+        const jobsQuery = query(
+          jobsCollection,
+          where("company_id", "==", company.id)
+        );
+        const jobsSnapshot = await getDocs(jobsQuery);
+        const jobCount = jobsSnapshot.size;
+        return {
+          ...company,
+          jobCount,
+        };
+      })
+    );
+
+    setCompanies(companiesWithJobCount);
+  };
+
+  useEffect(() => {
+    getCompanies();
+  }, []);
+
+  const handelUpdate = async (status) => {
+    try {
+      const companyDoc = doc(db, "RegisterAsCompany", selectedItems?.id);
+      await updateDoc(companyDoc, {
+        status: status,
+      });
+      notification.success({
+        message: "Status Updated",
+        description: `Company ${selectedItems?.id} has been ${status} successfully.`,
+      });
+      handleCancel();
+      getCompanies();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to Update Please try again later.",
+      });
+    }
+  };
 
   const showModal = (status) => {
     setSelectedStatus(status);
@@ -26,52 +88,87 @@ const index = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleStatusFilter = (value) => {
+    setFilterStatus(value);
+  };
+
+  const filteredCompanies = companies.filter((company) => {
+    const matchesSearch = company.company_name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === "" || company.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "company_name",
+      key: "company_name",
     },
     {
       title: "Company ID",
-      dataIndex: "CompanyId",
-      key: "CompanyId",
+      dataIndex: "id",
+      key: "id",
     },
     {
       title: "Job poster Email Id",
-      dataIndex: "JobposterEmail",
-      key: "JobposterEmail",
+      dataIndex: "job_poster_email",
+      key: "job_poster_email",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Job poster Ph No.",
-      dataIndex: "JobposterPhNo",
-      key: "JobposterPhNo",
+      dataIndex: "job_poster_phone_number",
+      key: "job_poster_phone_number",
     },
     {
       title: "Date of Registration",
-      dataIndex: "dateRegistration",
-      key: "dateRegistration",
+      dataIndex: "date_of_registration",
+      key: "date_of_registration",
+      render: (text) => {
+        return moment(text).format("DD-MM-YYYY");
+      },
     },
     {
       title: "Address",
-      dataIndex: "Address",
-      key: "Address",
+      dataIndex: "registered_address",
+      key: "registered_address",
     },
     {
       title: "No of Job post",
-      dataIndex: "NoofJobpost",
-      key: "NoofJobpos",
+      dataIndex: "jobCount",
+      key: "jobCount",
     },
     {
-      title: "Applied Post",
-      key: "appliedPost",
-      render: () => (
-        <Button
-          onClick={() => showModal("Status")}
-          className=" w-full border-none"
-        >
-          Technician <DownOutlined />
-        </Button>
+      title: "",
+      key: "",
+      render: (text, record) => (
+        <div className="flex items-center gap-3">
+          <Link to={`/companies/details/${record?.id}`} className="underline text-blue-700">
+            View
+          </Link>
+          <Button
+            onClick={() => {
+              setSelectedItems(record);
+              showModal();
+            }}
+            type="text"
+            className="w-full border-none"
+          >
+            <DownOutlined className="-rotate-90" />
+          </Button>
+        </div>
       ),
     },
   ];
@@ -170,15 +267,23 @@ const index = () => {
       <div className="flex justify-between mb-4">
         <div></div>
         <div className="flex items-center gap-5">
-          <Input placeholder="Search" className="w-full" />
-          <Select placeholder="Select payment method" style={{ width: 200 }}>
+          <Input
+            placeholder="Search"
+            className="w-full"
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+          <Select
+            placeholder="Status"
+            style={{ width: 300 }}
+            value={filterStatus}
+            onChange={handleStatusFilter}
+          >
             <Option value="">All</Option>
-            <Option value="Online Payment">Online Payment</Option>
-            <Option value="Manual Payment">Manual Payment</Option>
+            <Option value="Pending">Pending</Option>
+            <Option value="Completed">Completed</Option>
+            <Option value="Rejected">Rejected</Option>
           </Select>
-          <div className="flex gap-2">
-            <Button icon={<FilterOutlined />}>Filters</Button>
-          </div>
         </div>
       </div>
       <Table columns={columns} dataSource={data} pagination={false} />
@@ -188,7 +293,6 @@ const index = () => {
         footer={null}
         onOk={handleOk}
         onCancel={handleCancel}
-        style={{ top: 0 }}
         width="100%"
         className="h-fit"
       >
@@ -200,19 +304,19 @@ const index = () => {
             <div className="grid grid-cols-3">
               <div className="flex flex-col mb-2 mr-2 gap-1">
                 <p>Company ID</p>
-                <span>ABCD1234</span>
+                <span>{selectedItems?.id}</span>
               </div>
               <div className="flex flex-col mb-2 mr-2 gap-1">
                 <p>Company Name</p>
-                <span>USER NAME</span>
+                <span>{selectedItems?.company_name}</span>
               </div>
               <div className="flex flex-col mb-2 mr-2 gap-1">
                 <p>GSTIN No.</p>
-                <span>32345545668</span>
+                <span>{selectedItems?.gstin}</span>
               </div>
               <div className="flex flex-col mb-5 gap-1">
                 <p>Email Id</p>
-                <span>ABCD@gmail.com</span>
+                <span>{selectedItems?.company_email}</span>
               </div>
             </div>
             <h1 className="text-[#013D9D] font-medium text-xl mb-5">
@@ -221,23 +325,23 @@ const index = () => {
             <div className="grid grid-cols-3">
               <div className="flex flex-col gap-2 ml-2 p-1 mb-2">
                 <p>PIN </p>
-                <span>500049</span>
+                <span>{selectedItems?.pin}</span>
               </div>
               <div className="flex flex-col gap-2 ml-2 p-1">
                 <p>State</p>
-                <span>TELENGANA</span>
+                <span>{selectedItems?.state}</span>
               </div>
               <div className="flex flex-col gap-2 ml-2 p-1">
                 <p>District</p>
-                <span>9876543210</span>
+                <span>{selectedItems?.district || "NA"}</span>
               </div>
               <div className="flex flex-col gap-2 ml-2 p-1">
                 <p>City/village</p>
-                <span>Hyderabad</span>
+                <span>{selectedItems?.city || "NA"}</span>
               </div>
               <div className="flex flex-col gap-2 mb-4 ml-2 p-1">
                 <p>Address</p>
-                <span>10/30 h</span>
+                <span>{selectedItems?.registered_address}</span>
               </div>
             </div>
           </div>
@@ -248,15 +352,15 @@ const index = () => {
             <div className="grid grid-cols-3">
               <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
                 <p>Full Name</p>
-                <span>JOB POSTER NAME</span>
+                <span>{selectedItems?.company_name}</span>
               </div>
               <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
                 <p>Email Id</p>
-                <span>candidate@gmail.com</span>
+                <span>{selectedItems?.company_email}</span>
               </div>
               <div className="flex flex-col gap-2 mr-2 ml-2 p-1">
                 <p>Phone Number</p>
-                <span>9876543210</span>
+                <span>{selectedItems?.job_poster_phone_number}</span>
               </div>
             </div>
           </div>

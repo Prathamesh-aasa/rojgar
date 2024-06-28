@@ -39,9 +39,11 @@ const Applications = () => {
   const [skill, setSkills] = useState([]);
   const [volunteerData, setVolunteerData] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [selectedVolunteer, setSelectedVolunteer] = useState([]);
+  const [selectedVolunteertwo, setSelectedVolunteerTwo] = useState([]);
   const [welfares, setWelfares] = useState([]);
   const [isVolunteerModal, setIsVolunteerModal] = useState(false);
-  const [selectedVolunteer, setSelectedVolunteer] = useState([]);
+  const [isVolunteerModaltwo, setIsVolunteerModalTwo] = useState(false);
   const [filterMethod, setFilterMethod] = useState("");
   const [filterMethodcompany, setFilterMethodcompany] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -189,7 +191,10 @@ const Applications = () => {
         {
           title: "Action",
           render: (text, record) => (
-            <Button onClick={() => showModal(record)} type="link">
+            <Button  onClick={() => { 
+              setSelectedVolunteerTwo(record);
+              setIsVolunteerModalTwo(true);
+            }} type="link">
               <DownOutlined />
             </Button>
           ),
@@ -507,6 +512,10 @@ const Applications = () => {
     setSelectedcompany("");
   };
 
+
+
+  
+
   return (
     <div className="p-6">
       <div>
@@ -566,7 +575,9 @@ const Applications = () => {
                   onCancel={handleCanceltwo}
                   footer={null}
                 >
-                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Jobseekers</h1>
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">
+                    Filter Jobseekers
+                  </h1>
                   <div className="flex mb-6">
                     <label className="flex items-center">Fillter by</label>
                     <Select
@@ -654,13 +665,14 @@ const Applications = () => {
                   Filters
                 </Button>
                 <Modal
-               
                   visible={isModalOpen}
                   onOk={handleOktwo}
                   onCancel={handleCanceltwo}
                   footer={null}
-                > 
-                <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Skilling</h1>
+                >
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">
+                    Filter Skilling
+                  </h1>
                   <div className="flex mb-6">
                     <label className="flex items-center">Fillter by</label>
                     <Select
@@ -755,13 +767,14 @@ const Applications = () => {
                   Filters
                 </Button>
                 <Modal
-                
                   visible={isModalOpen}
                   onOk={handleOktwo}
                   onCancel={handleCanceltwo}
                   footer={null}
                 >
-                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Volunteer</h1>
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">
+                    Filter Volunteer
+                  </h1>
                   <div className="flex mb-6">
                     <label className="flex items-center">Fillter by</label>
                     <Select
@@ -860,7 +873,9 @@ const Applications = () => {
                   onCancel={handleCanceltwo}
                   footer={null}
                 >
-                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Document</h1>
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">
+                    Filter Document
+                  </h1>
                   <div className="flex mb-6">
                     <label className="flex items-center">Fillter by</label>
                     <Select
@@ -975,95 +990,96 @@ const Applications = () => {
                   Filters
                 </Button>
                 <Modal
-               
                   visible={isModalOpen}
                   onOk={handleOktwo}
                   onCancel={handleCanceltwo}
                   footer={null}
                   width="40%"
                 >
-                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">Filter Scheme</h1>
+                  <h1 className="text-2xl text-[#013D9D] font-semibold mb-5">
+                    Filter Scheme
+                  </h1>
                   <div className="flex mb-6">
                     <label className="flex items-center">Schemes</label>
                     <Select
                       placeholder="Select filter method"
                       style={{ width: "70%" }}
-
                       className=" mx-auto "
                     >
                       <Option value="name">Individual</Option>
                       <Option value="Companys">Company</Option>
                       <Option value="Months">Month</Option>
                     </Select>
-                  </div>        
+                  </div>
                   <div className="flex mb-6">
-                    <label className="flex items-center">Have Health Insurance</label>
+                    <label className="flex items-center">
+                      Have Health Insurance
+                    </label>
                     <Select
                       placeholder="Select filter method"
                       style={{ width: "70%" }}
-
                       className=" mx-auto "
                     >
                       <Option value="Individuals">Individual</Option>
                       <Option value="Companys">Company</Option>
                       <Option value="Months">Month</Option>
                     </Select>
-                  </div>        
+                  </div>
                   <div className="flex mb-6">
                     <label className="flex items-center">Have Toilet</label>
                     <Select
                       placeholder="Select filter method"
                       style={{ width: "70%" }}
-
                       className=" mx-auto "
                     >
                       <Option value="Individuals">Individual</Option>
                       <Option value="Companys">Company</Option>
                       <Option value="Months">Month</Option>
                     </Select>
-                  </div>        
+                  </div>
                   <div className="flex mb-6">
-                    <label className="flex items-center">Have Agricuture Land</label>
+                    <label className="flex items-center">
+                      Have Agricuture Land
+                    </label>
                     <Select
                       placeholder="Select filter method"
                       style={{ width: "70%" }}
-
                       className=" mx-auto "
                     >
                       <Option value="Individual">Individual</Option>
                       <Option value="Company">Company</Option>
                       <Option value="Month">Month</Option>
                     </Select>
-                  </div>        
+                  </div>
                   <div className="flex mb-6">
-                    <label className="flex items-center">Need Farm Products</label>
+                    <label className="flex items-center">
+                      Need Farm Products
+                    </label>
                     <Select
                       placeholder="Select filter method"
                       style={{ width: "70%" }}
-
                       className=" mx-auto "
                     >
                       <Option value="Individuals">Individual</Option>
                       <Option value="Companys">Company</Option>
                       <Option value="Months">Month</Option>
                     </Select>
-                  </div>        
+                  </div>
                   <div className="flex mb-6">
                     <label className="flex items-center">Month</label>
                     <Select
                       placeholder="Select filter method"
                       style={{ width: "70%" }}
-
                       className=" mx-auto "
                     >
                       <Option value="Individuals">Individual</Option>
                       <Option value="Companys">Company</Option>
                       <Option value="Months">Month</Option>
                     </Select>
-                  </div>  
+                  </div>
                   <div className="flex justify-end">
                     <Button className="bg-[#013D9D] text-white">Apply</Button>
-                    </div>      
+                  </div>
                 </Modal>
               </div>
             </div>
@@ -1076,7 +1092,6 @@ const Applications = () => {
         </TabPane>
       </Tabs>
       <Modal
-        title="Details"
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -1210,37 +1225,22 @@ const Applications = () => {
                   <span>{selectedItem?.address}</span>
                 </div>
               </div>
+            </div>
+            <div>
               <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Educational & Professional Details
+                Educational Details
               </h1>
               <div className="grid grid-cols-3">
                 <div className="flex flex-col gap-2">
                   <p>Highest Qualification</p>
-                  <span>{selectedItem?.highest_qualification}</span>
+                  <span>ITI</span>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mb-5">
                   <p>Trade</p>
-                  <span>{selectedItem?.trade}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Experience</p>
-                  <span>{selectedItem?.years_of_experience}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Company Name</p>
-                  <span>{selectedItem?.company_name}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Area of Experience</p>
-                  <span>{selectedItem?.area_of_experience}</span>
-                </div>
-                <div className="flex flex-col gap-2 mb-4">
-                  <p>Years of Experience</p>
-                  <span>{selectedItem?.years_of_experience}</span>
+                  <span>FILTER</span>
                 </div>
               </div>
-            </div>
-            <div>
+
               <h1 className="text-[#013D9D] font-medium text-xl mb-5">
                 Documents & Service Details
               </h1>
@@ -1259,36 +1259,186 @@ const Applications = () => {
                 </div>
               </div>
               <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Other Details
+                Additional Details
+              </h1>
+
+              <div className="grid grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <p>No information available</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="flex justify-end">
+          <Button className="bg-[#013D9D] text-white">Completed</Button>
+        </div>
+      </Modal>
+      
+      <Modal
+       open={isVolunteerModaltwo}
+       onCancel={() => setIsVolunteerModalTwo(false)}
+        style={{ top: 20 }}
+        width="100%"
+        className="h-fit"
+        footer={
+          selectedItem?.status == "Pending" && (
+            <>
+              {tab == "1" && (
+                <>
+                  <Button danger onClick={() => handelUpdate("Rejected")}>
+                    Reject
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => handelUpdate("Approved")}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+              {tab == "2" && (
+                <>
+                  <Button
+                    type="primary"
+                    onClick={() => handelCompleteSkilling()}
+                  >
+                    Complete
+                  </Button>
+                </>
+              )}
+              {tab == "4" && (
+                <>
+                  <Button
+                    danger
+                    onClick={() => handelUpdateDocuments("Rejected")}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => handelUpdateDocuments("Approved")}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+              {tab == "5" && (
+                <>
+                  <Button
+                    danger
+                    onClick={() => handelUpdateWelfare("Rejected")}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => handelUpdateWelfare("Approved")}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+            </>
+          )
+        }
+      >
+        {selectedItem && (
+          <div className="flex justify-evenly">
+            <div>
+              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                Personals Details
               </h1>
               <div className="grid grid-cols-3">
                 <div className="flex flex-col gap-2">
-                  <p>Job you want to apply</p>
-                  <span>{selectedItem?.job_you_want_to_apply}</span>
+                  <p>Registration ID</p>
+                  <span>{selectedItem?.id}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p>Location of work</p>
-                  <span>{selectedItem?.preferred_city_of_work}</span>
+                  <p>First Name</p>
+                  <span>{selectedItem?.full_name?.split(" ")[0]}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p>Any criminal record</p>
-                  <span>
-                    {selectedItem?.do_you_have_any_criminal_record
-                      ? "Yes"
-                      : "No"}
-                  </span>
+                  <p>Last Name</p>
+                  <span>{selectedItem?.full_name?.split(" ")[1]}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p>Registration Fee paid</p>
-                  <span>{selectedItem?.fee_paid}</span>
+                  <p>Phone Number</p>
+                  <span>{selectedItem?.phone_number}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Email</p>
+                  <span>{selectedItem?.email}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Date of Registration</p>
+                  <span>{selectedItem?.date_of_registration}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Applied Company</p>
+                  <span>{selectedItem?.company_name}</span>
                 </div>
                 <div className="flex flex-col gap-2 mb-4">
-                  <p>Driving license</p>
-                  <span>
-                    {selectedItem?.do_you_have_any_driving_license
-                      ? "Yes"
-                      : "No"}
-                  </span>
+                  <p>Applied Post</p>
+                  <span>{selectedItem?.job_you_want_to_apply}</span>
+                </div>
+              </div>
+              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                Address Details
+              </h1>
+              <div className="grid grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <p>PIN</p>
+                  <span>{selectedItem?.pin}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>State</p>
+                  <span>{selectedItem?.state}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>District</p>
+                  <span>{selectedItem?.district}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>City/village</p>
+                  <span>{selectedItem?.city}</span>
+                </div>
+                <div className="flex flex-col gap-2 mb-4">
+                  <p>Address</p>
+                  <span>{selectedItem?.address}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                Educational Details
+              </h1>
+              <div className="grid grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <p>Highest Qualification</p>
+                  <span>ITI</span>
+                </div>
+                <div className="flex flex-col gap-2 mb-5">
+                  <p>Trade</p>
+                  <span>FILTER</span>
+                </div>
+              </div>
+
+              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                Documents & Service Details
+              </h1>
+              <div className="grid grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <p>Aadhaar No.</p>
+                  <span>{selectedItem?.adhaar_card_number}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Pan No.</p>
+                  <span>{selectedItem?.pan_card_number}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p>Service Selected</p>
+                  <span>{selectedItem?.profile_type}</span>
                 </div>
               </div>
               <h1 className="text-[#013D9D] font-medium text-xl mb-5">
@@ -1297,50 +1447,15 @@ const Applications = () => {
 
               <div className="grid grid-cols-3">
                 <div className="flex flex-col gap-2">
-                  <p>No. of family member</p>
-                  <span>{selectedItem?.number_of_family_members}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>No. of female children</p>
-                  <span>{selectedItem?.number_of_female_children}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>No. of male children</p>
-                  <span>{selectedItem?.number_of_male_children}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Main occupation of the family</p>
-                  <span>{selectedItem?.main_occupation_of_family}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Need any agricultural products?</p>
-                  <span>
-                    {selectedItem?.do_you_need_any_farming_products
-                      ? "Yes"
-                      : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>have agricultural land?</p>
-                  <span>
-                    {selectedItem?.do_you_have_agriculture_land ? "Yes" : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Mention agricultural products</p>
-                  <span>{selectedItem?.farming_product}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Have a toilet at home?</p>
-                  <span>
-                    {selectedItem?.do_you_have_toilet_at_home ? "Yes" : "No"}
-                  </span>
+                  <p>No information available</p>
                 </div>
               </div>
-              <a href={selectedItem?.resume_link}>resume</a>
             </div>
           </div>
         )}
+        <div className="flex justify-end">
+          <Button className="bg-[#013D9D] text-white">Completed</Button>
+        </div>
       </Modal>
 
       <Modal

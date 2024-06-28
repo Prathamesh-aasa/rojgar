@@ -10,7 +10,7 @@ import {
   UserOutlined as UserIcon,
 } from "@ant-design/icons";
 import logo from './assets/Rozgar Dhaba logo1-1 1.png'
-
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 function App() {
   return (
     <div className="App">

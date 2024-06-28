@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   Tabs,
@@ -9,33 +9,34 @@ import {
   Modal,
   Divider,
   Radio,
+  notification,
 } from "antd";
 import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../../../firebase";
+import { CrossIcon, Minus, MinusCircle, XIcon } from "lucide-react";
+import moment from "moment";
 
 let index1 = 0;
 const { Option } = Select;
 
 const Index = () => {
-  const [items, setItems] = useState([
-    "Digital shala",
-    "Life Skill Shala",
-    "Soft Skill Shala",
-    "Rozgar Shala",
-  ]);
-  const [name, setName] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const inputRef = useRef(null);
-
-  const options = [];
-  for (let i = 10; i < 36; i++) {
-    options.push({
-      value: i.toString(36) + i,
-      label: i.toString(36) + i,
-    });
-  }
+  const [suggestiveList, setSuggestiveList] = useState([]);
   const [form] = Form.useForm();
-  const [courses, setCourses] = useState([{ key: 0 }]);
+  const [createSubscriptionForm] = Form.useForm();
+  const [welfareForm] = Form.useForm();
+  const [documentService] = Form.useForm();
+  const [suggestiveForm] = Form.useForm();
+  const [companyForm] = Form.useForm();
+  const [courses, setCourses] = useState([]);
 
   const addCourse = () => {
     setCourses([...courses, { key: courses.length }]);
@@ -55,47 +56,673 @@ const Index = () => {
     setWorkshops(newWorkshops);
   };
 
-  const [selectedPlan, setSelectedPlan] = useState("Basic Plan");
+  //////////////////////////////////////////////////////////////////////////////////
 
-  const plans = {
-    "Basic Plan": {
-      benefits: [
-        "25 Different Posts",
-        "25 Different Posts",
-        "25 Different Posts",
-      ],
-      tenure: "Yearly",
-      price: "999",
-    },
-    "Business Plan": {
-      benefits: [
-        "50 Different Posts",
-        "50 Different Posts",
-        "50 Different Posts",
-      ],
-      tenure: "Yearly",
-      price: "1999",
-    },
-    "Premium Plan": {
-      benefits: ["Unlimited Posts", "Unlimited Posts", "Unlimited Posts"],
-      tenure: "Yearly",
-      price: "2999",
-    },
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [welfareList, setWelfaresList] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [subscriptionTabs, setSubscriptionTabs] = useState([]);
+  const [tab, setTab] = useState("Trades");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSkillingModal, setIsSkillingModal] = useState(false);
+
+  const getSubscriptionPlans = async () => {
+    const welfareCollection = collection(db, "Subscription Plans");
+    const listSnapshot = await getDocs(welfareCollection);
+    const listData = listSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setSubscriptionPlans(listData);
+    const sTabs = listData?.map((data) => {
+      return {
+        key: data?.id,
+        label: data?.name,
+        children: (
+          <div>
+            <Form
+              layout="vertical"
+              onFinish={handelSubscriptionPlan}
+              initialValues={{
+                benefits: data?.benefits,
+                plan_name: data?.name,
+                plan_price: data?.price,
+                plan_tenure: data?.per,
+                id: data?.id,
+              }}
+            >
+              <div className="flex gap-3 items-start">
+                <div className="shadow p-5 rounded-lg">
+                  <Form.List
+                    name="benefits"
+                    rules={[
+                      {
+                        validator: async (_, benefits) => {
+                          if (!benefits || benefits.length < 1) {
+                            return Promise.reject(
+                              new Error("At least 1 benefits")
+                            );
+                          }
+                        },
+                      },
+                    ]}
+                  >
+                    {(fields, { add, remove }, { errors }) => (
+                      <div className="flex flex-col w-80">
+                        {fields.map((field, index) => (
+                          <Form.Item
+                            className="w-full"
+                            label={index === 0 ? "Benefits" : ""}
+                            required={false}
+                            key={field.key}
+                          >
+                            <div className="flex flow-row gap-2 items-center justify-center">
+                              <Form.Item
+                                className="w-full"
+                                {...field}
+                                validateTrigger={["onChange", "onBlur"]}
+                                rules={[
+                                  {
+                                    required: true,
+                                    whitespace: true,
+                                    message:
+                                      "Please input Benefits name or delete this field.",
+                                  },
+                                ]}
+                                noStyle
+                              >
+                                <Input placeholder="Benefit name" />
+                              </Form.Item>
+                              {fields.length > 0 ? (
+                                <MinusCircle
+                                  className="dynamic-delete-button text-red-500"
+                                  onClick={() => remove(field.name)}
+                                />
+                              ) : null}
+                            </div>
+                          </Form.Item>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            type="dashed"
+                            onClick={() => add()}
+                            icon={<PlusOutlined />}
+                          >
+                            Add field
+                          </Button>
+
+                          <Form.ErrorList errors={errors} />
+                        </Form.Item>
+                      </div>
+                    )}
+                  </Form.List>
+                </div>
+                <div className="shadow p-5 rounded-lg">
+                  <Form.Item
+                    label="Plan Name"
+                    className="w-80"
+                    name="plan_name"
+                    rules={[
+                      {
+                        required: true,
+                        whitespace: true,
+                        message: "Please input plan name",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden className="w-80" name="id">
+                    <Input />
+                  </Form.Item>
+                </div>
+                <div className="shadow p-5 rounded-lg w-52">
+                  <Form.Item
+                    label="Plan Tenure"
+                    name="plan_tenure"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select plan tenure",
+                      },
+                    ]}
+                  >
+                    <Select>
+                      <Option value="Monthly">Monthly</Option>
+                      <Option value="Yearly">Yearly</Option>
+                    </Select>
+                  </Form.Item>
+                </div>
+                <div className="shadow p-5 rounded-lg">
+                  <Form.Item
+                    label="Price (₹)"
+                    name="plan_price"
+                    rules={[
+                      {
+                        required: true,
+
+                        message: "Please input plan price",
+                      },
+                    ]}
+                  >
+                    <Input type="number" />
+                  </Form.Item>
+                </div>
+              </div>
+              <Form.Item className="my-5 flex justify-center">
+                <Button htmlType="submit" type="primary">
+                  Save
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+        ),
+      };
+    });
+
+    setSubscriptionTabs(sTabs);
+  };
+  const getWelfare = async () => {
+    const welfareCollection = collection(db, "All Welfare Schemes");
+    const listSnapshot = await getDocs(welfareCollection);
+    const listData = listSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setWelfaresList(listData);
+  };
+  const getDocuments = async () => {
+    const documentCollection = collection(db, "All Documents");
+    const listSnapshot = await getDocs(documentCollection);
+    const listData = listSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setDocuments(listData);
+  };
+  const getSuggestiveList = async () => {
+    const suggestiveListCollection = collection(db, "All Suggestive Lists");
+    const listSnapshot = await getDocs(suggestiveListCollection);
+    const listData = listSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const groupedData = listData?.reduce((acc, item) => {
+      const { type } = item;
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(item);
+      return acc;
+    }, {});
+    setSuggestiveList(groupedData);
+    setLoading(false);
+  };
+  const createSuggestiveList = async (name) => {
+    try {
+      await addDoc(collection(db, "All Suggestive Lists"), {
+        name,
+        type: tab,
+      });
+      notification.success({
+        message: "Item Added",
+        description: `Suggestive ${name} has been added successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to Create Please try again later.",
+      });
+    } finally {
+      getSuggestiveList();
+      suggestiveForm.resetFields();
+    }
+  };
+  const deleteSuggestiveList = async (id, name) => {
+    try {
+      await deleteDoc(doc(db, "All Suggestive Lists", id));
+      notification.success({
+        message: "Item Deleted",
+        description: `Suggestive ${name} has been deleted successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to delete item. Please try again later.",
+      });
+    } finally {
+      getSuggestiveList();
+    }
+  };
+  const createScheme = async (name) => {
+    try {
+      await addDoc(collection(db, "All Welfare Schemes"), {
+        name,
+      });
+      notification.success({
+        message: "Item Added",
+        description: `Suggestive ${name} has been added successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to Create Please try again later.",
+      });
+    } finally {
+      getWelfare();
+      welfareForm.resetFields();
+    }
+  };
+  const deleteWelfareSchemes = async (id, name) => {
+    try {
+      await deleteDoc(doc(db, "All Welfare Schemes", id));
+      notification.success({
+        message: "Item Deleted",
+        description: `Welfare Schemes ${name} has been deleted successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to delete item. Please try again later.",
+      });
+    } finally {
+      getWelfare();
+    }
+  };
+  const createDocument = async (name) => {
+    try {
+      await addDoc(collection(db, "All Documents"), {
+        name,
+      });
+      notification.success({
+        message: "Item Added",
+        description: `Documents ${name} has been added successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to Create Please try again later.",
+      });
+    } finally {
+      documentService.resetFields();
+      getDocuments();
+    }
+  };
+  const deleteDocument = async (id, name) => {
+    try {
+      await deleteDoc(doc(db, "All Documents", id));
+      notification.success({
+        message: "Item Deleted",
+        description: `Documents ${name} has been deleted successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to delete item. Please try again later.",
+      });
+    } finally {
+      getDocuments();
+    }
+  };
+  const handelCreateJobPost = async (value) => {
+    try {
+      const compony = await addDoc(collection(db, "RegisterAsCompany"), {
+        city: "",
+        company_email: value.email,
+        company_name: value?.companyName,
+        date_of_registration: moment().format("DD-MM-YYYY HH:mm:ss"),
+        gstin: value?.companyGstin,
+        job_poster_email: value.email,
+        job_poster_name: "",
+        job_poster_phone_number: value.phone,
+        pin: value?.companyPin,
+        profile_type: "Company",
+        registered_address: value?.companyAddress,
+        state: value?.companyState,
+        status: "Completed",
+        verified: false,
+        subscription: "",
+      });
+
+      await addDoc(collection(db, "Jobs"), {
+        benefits: value?.otherBenefits,
+        company_id: compony?.id,
+        experience_required: value?.experienceRequired,
+        job_openings: value?.numberOfOpenings,
+        job_place: value?.jobPlace,
+        job_position: value?.jobPosition,
+        min_experience_in_months: 0,
+        payout_from: value?.payout_from,
+        payout_to: value?.payout_to,
+        posted_on: moment().format("DD-MM-YYYY HH:mm:ss"),
+        qualification: value?.educationQualification,
+        skills_required: value?.skillRequired,
+      });
+      notification.success({
+        message: "Item Added",
+        description: `Job has been added successfully.`,
+      });
+      companyForm.resetFields();
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to Create Please try again later.",
+      });
+    } finally {
+    }
+  };
+  const handelSubscriptionPlan = async (values) => {
+    try {
+      const planRef = doc(db, "Subscription Plans", values?.id);
+      await updateDoc(planRef, {
+        benefits: values?.benefits,
+        name: values?.plan_name,
+        per: values?.plan_tenure,
+        price: values?.plan_price,
+      });
+      notification.success({
+        message: "Subscription Updated",
+        description: `Subscription Updated successfully.`,
+      });
+    } catch (error) {
+      console.log("🚀 ~ handelSubscriptionPlan ~ error:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to update Please try again later.",
+      });
+    } finally {
+      getSubscriptionPlans();
+    }
+  };
+  const handleCreateSubscriptionPlan = async (values) => {
+    try {
+      console.log("Received values:", values);
+
+      const subscriptionPlan = {
+        name: values.plan_name,
+        price: values.plan_price,
+        per: values.plan_tenure,
+        benefits: values.benefits,
+      };
+
+      await addDoc(collection(db, "Subscription Plans"), subscriptionPlan);
+
+      notification.success({
+        message: "Success",
+        description: "Subscription plan added successfully!",
+      });
+
+      setIsModalVisible(false);
+      createSubscriptionForm.resetFields();
+      getSubscriptionPlans();
+    } catch (errorInfo) {
+      notification.error({
+        message: "Error",
+        description: "Failed to add subscription plan. Please try again later.",
+      });
+      console.log("Validation Failed:", errorInfo);
+    }
+  };
+  const onFinish = async (values) => {
+    try {
+      const { programName } = values;
+
+      // 1. Add the program
+      const program = await addDoc(collection(db, "Skills"), {
+        name: programName,
+        isFree: true,
+      });
+
+      // 2. Add each course
+      const courses = [];
+      for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
+        const courseName = values[`courseName${i}`];
+        const courseVideoLink = values[`courseVideoLink${i}`];
+        const courseType = values[`courseType${i}`] === "free" ? true : false;
+
+        // Add course to courses array or database directly
+        courses.push({
+          skillId: program.id,
+          name: courseName,
+          video_link: courseVideoLink,
+          is_free: courseType,
+        });
+
+        await addDoc(collection(db, "Courses"), {
+          skillId: program.id,
+          name: courseName,
+          video_link: courseVideoLink,
+          is_free: true,
+        });
+      }
+
+      form.resetFields();
+      console.log("Courses added:", courses);
+    } catch (error) {
+      console.log("🚀 ~ onFinish ~ error:", error);
+    }
   };
 
-  const [selectedTrade, setSelectedTrade] = useState("");
-  const [showButton, setShowButton] = useState(false);
+  useEffect(() => {
+    getSuggestiveList();
+    getWelfare();
+    getDocuments();
+    getSubscriptionPlans();
+  }, []);
 
-  const handleSelectChange = (event) => {
-    const value = event.target.value;
-    setSelectedTrade(value);
-    setShowButton(value !== "");
-  };
-
-  const [tabPosition, setTabPosition] = useState("left");
-  const changeTabPosition = (e) => {
-    setTabPosition(e.target.value);
-  };
+  const tabItems = [
+    {
+      label: `Trades`,
+      key: "Trades",
+      children: (
+        <div className="m-3">
+          <div className="my-5 flex justify-end">
+            {isEditing ? (
+              <Button type="primary" onClick={() => setIsEditing(false)}>
+                Add
+              </Button>
+            ) : (
+              <Button type="primary" onClick={() => setIsEditing(true)}>
+                Edit
+              </Button>
+            )}
+          </div>
+          <div className="">
+            {!isEditing && (
+              <Form
+                form={suggestiveForm}
+                onFinish={(values) =>
+                  createSuggestiveList(values?.benefit, "Trades")
+                }
+              >
+                <Form.Item
+                  name="benefit"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Benefit Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Benefit Name" />
+                </Form.Item>
+                <Form.Item>
+                  <Button htmlType="submit">Save</Button>
+                </Form.Item>
+              </Form>
+            )}
+          </div>
+          <div className="flex items-center gap-3 m-3 flex-wrap">
+            {suggestiveList?.Trades?.map((trade) => {
+              return (
+                <div
+                  className="flex items-center justify-center bg-primary px-3 py-2 rounded-full"
+                  key={trade?.id}
+                >
+                  <p className="text-sm font-semibold text-white">
+                    {trade?.name}
+                  </p>
+                  {isEditing && (
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() =>
+                        deleteSuggestiveList(trade?.id, trade?.name)
+                      }
+                    >
+                      <XIcon className="text-white" />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: `Skills`,
+      key: "Skills",
+      children: (
+        <div className="m-3">
+          <div className="my-5 flex justify-end">
+            {isEditing ? (
+              <Button type="primary" onClick={() => setIsEditing(false)}>
+                Add
+              </Button>
+            ) : (
+              <Button type="primary" onClick={() => setIsEditing(true)}>
+                Edit
+              </Button>
+            )}
+          </div>
+          <div className="">
+            {!isEditing && (
+              <Form
+                form={suggestiveForm}
+                onFinish={(values) =>
+                  createSuggestiveList(values?.benefit, "Skills")
+                }
+              >
+                <Form.Item
+                  name="benefit"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Benefit Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Benefit Name" />
+                </Form.Item>
+                <Form.Item>
+                  <Button htmlType="submit">Save</Button>
+                </Form.Item>
+              </Form>
+            )}
+          </div>
+          <div className="flex items-center gap-3 m-3 flex-wrap">
+            {suggestiveList?.Skills?.map((trade) => {
+              return (
+                <div
+                  className="flex items-center justify-center bg-primary px-3 py-2 rounded-full"
+                  key={trade?.id}
+                >
+                  <p className="text-sm font-semibold text-white">
+                    {trade?.name}
+                  </p>
+                  {isEditing && (
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() =>
+                        deleteSuggestiveList(trade?.id, trade?.name)
+                      }
+                    >
+                      <XIcon className="text-white" />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: `Other Benefits`,
+      key: "Other Benefits",
+      // children: `Content of Tab ${id}`,
+      children: (
+        <div className="m-3">
+          <div className="my-5 flex justify-end">
+            {isEditing ? (
+              <Button type="primary" onClick={() => setIsEditing(false)}>
+                Add
+              </Button>
+            ) : (
+              <Button type="primary" onClick={() => setIsEditing(true)}>
+                Edit
+              </Button>
+            )}
+          </div>
+          <div className="">
+            {!isEditing && (
+              <Form
+                form={suggestiveForm}
+                onFinish={(values) =>
+                  createSuggestiveList(values?.benefit, "Other Benefits")
+                }
+              >
+                <Form.Item
+                  name="benefit"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Benefit Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Benefit Name" />
+                </Form.Item>
+                <Form.Item>
+                  <Button htmlType="submit">Save</Button>
+                </Form.Item>
+              </Form>
+            )}
+          </div>
+          <div className="flex items-center gap-3 m-3 flex-wrap">
+            {suggestiveList["Other Benefits"]?.map((trade) => {
+              return (
+                <div
+                  className="flex items-center justify-center bg-primary px-3 py-2 rounded-full"
+                  key={trade?.id}
+                >
+                  <p className="text-sm font-semibold text-white">
+                    {trade?.name}
+                  </p>
+                  {isEditing && (
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() =>
+                        deleteSuggestiveList(trade?.id, trade?.name)
+                      }
+                    >
+                      <XIcon className="text-white" />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="p-5">
@@ -107,22 +734,37 @@ const Index = () => {
         <span className="text-2xl font-semibold text-[#013D9D]">Services</span>
       </div>
       <Tabs centered>
-        <TabPane tab="Job Post" key="1" className="p-4">
+        <TabPane tab="Job Post" key="1" className="p-4 mx-auto">
           <div>
-            <Form name="companyDetailsForm" layout="vertical" autoComplete="on">
+            <Form
+              name="companyDetailsForm"
+              layout="vertical"
+              form={companyForm}
+              onFinish={handelCreateJobPost}
+            >
               <h1 className="text-lg font-medium text-[#013D9D] mb-8 ml-32">
                 Company Details
               </h1>
               <div className="grid grid-cols-3 gap-2 w-[80%] mx-auto">
                 <Form.Item
-                  label="Company Name *"
+                  label="Company Name"
                   name="companyName"
                   className="w-full mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Company Name is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Company Name is required",
+                    },
+                  ]}
                 >
                   <Input placeholder="Enter Company Name" />
                 </Form.Item>
                 <Form.Item
-                  label="Company GSTIN No *"
+                  label="Company GSTIN No"
                   name="companyGstin"
                   className="w-full mb-2"
                 >
@@ -130,186 +772,309 @@ const Index = () => {
                 </Form.Item>
                 <Form.Item
                   name="companyPan"
-                  label="Company Pan Card No *"
+                  label="Company Pan Card No"
                   className="mb-2"
                 >
                   <Input placeholder="Enter PAN number" />
                 </Form.Item>
-                <Form.Item name="companyPin" label="PIN*" className="mb-2">
-                  <Input placeholder="Eg. 741234" />
+                <Form.Item
+                  name="companyPin"
+                  label="PIN"
+                  className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "PIN is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "PIN is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Eg. 741234" type="number" />
                 </Form.Item>
-                <Form.Item name="companyState" label="State*" className="mb-2">
+                <Form.Item
+                  name="companyState"
+                  label="State"
+                  className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "State is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "State is required",
+                    },
+                  ]}
+                >
                   <Input placeholder="Eg. Hyderabad" />
                 </Form.Item>
                 <Form.Item
                   name="companyAddress"
-                  label="Registered Address *"
-                  className="mb-8"
+                  label="Registered Address"
+                  className=""
+                  rules={[
+                    {
+                      required: true,
+                      message: "Registered Address is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Registered Address is required",
+                    },
+                  ]}
                 >
                   <Input placeholder="Eg. 24 Bombay House" />
                 </Form.Item>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  className=""
+                  rules={[
+                    {
+                      required: true,
+                      message: "Email is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Email is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Eg. 24 Bombay House" />
+                </Form.Item>
+                <Form.Item
+                  name="phone"
+                  label="Phone"
+                  className=""
+                  rules={[
+                    {
+                      required: true,
+                      message: "Phone is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Phone is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="+917837432342" />
+                </Form.Item>
               </div>
-            </Form>
 
-            <Form name="jobDetailsForm" layout="vertical" autoComplete="on">
               <h1 className="text-lg font-medium text-[#013D9D] mb-4 ml-32">
                 Job Details
               </h1>
               <div className="grid grid-cols-3 gap-2 w-[80%] mx-auto">
                 <Form.Item
-                  label="Job Position*"
+                  label="Job Position"
                   name="jobPosition"
                   className="w-full mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Job Position is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Job Position is required",
+                    },
+                  ]}
                 >
                   <Input placeholder="Eg. Technician" />
                 </Form.Item>
                 <Form.Item
-                  label="Education Qualification *"
+                  label="Education Qualification"
                   name="educationQualification"
                   className="w-full mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Education Qualification is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Education Qualification is required",
+                    },
+                  ]}
                 >
                   <Select
                     placeholder="Choose from dropdown"
                     style={{
                       flex: 1,
                     }}
-                    options={[
-                      {
-                        value: "jack",
-                        label: "Jack",
-                      },
-                      {
-                        value: "lucy",
-                        label: "Lucy",
-                      },
-                      {
-                        value: "Yiminghe",
-                        label: "yiminghe",
-                      },
-                    ]}
-                  />
+                  >
+                    <Option value="5th pass">5th pass</Option>
+                    <Option value="8th pass">8th pass</Option>
+                    <Option value="10th pass">10th pass</Option>
+                    <Option value="12th pass">12th pass</Option>
+                    <Option value="12th Science">12th Science</Option>
+                    <Option value="ITI">ITI</Option>
+                    <Option value="Diploma">Diploma</Option>
+                    <Option value="Polytechnic">Polytechnic</Option>
+                    <Option value="BE / Btech">BE / Btech</Option>
+                    <Option value="BA">BA</Option>
+                    <Option value="BSC">BSC</Option>
+                    <Option value="MBA">MBA</Option>
+                    <Option value="MA">MA</Option>
+                    <Option value="PHD">PHD</Option>
+                    <Option value="Other">Other</Option>
+                  </Select>
                 </Form.Item>
-                <Form.Item name="jobPlace" label="Job Place *" className="mb-2">
+                <Form.Item
+                  name="jobPlace"
+                  label="Job Place"
+                  className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Job Place is required",
+                    },
+                  ]}
+                >
                   <Select
-                    placeholder="Choose from dropdown"
+                    placeholder="Place"
                     mode="tags"
                     style={{
                       flex: 1,
                     }}
-                    options={[
-                      {
-                        value: "jack",
-                        label: "Jack",
-                      },
-                      {
-                        value: "lucy",
-                        label: "Lucy",
-                      },
-                      {
-                        value: "Yiminghe",
-                        label: "yiminghe",
-                      },
-                    ]}
                   />
                 </Form.Item>
                 <Form.Item
                   name="experienceRequired"
-                  label="Experience Required **"
+                  label="Experience Required"
                   className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Experience Required is required",
+                    },
+                  ]}
                 >
                   <Select
-                    placeholder="Choose from dropdown"
+                    placeholder="Experience"
                     style={{
                       flex: 1,
                     }}
                     options={[
                       {
-                        value: "jack",
-                        label: "Jack",
+                        value: "Any",
+                        label: "Any",
                       },
                       {
-                        value: "lucy",
-                        label: "Lucy",
+                        value: "Fresher",
+                        label: "Fresher",
                       },
                       {
-                        value: "Yiminghe",
-                        label: "yiminghe",
+                        value: "Experience",
+                        label: "Experience",
                       },
                     ]}
                   />
                 </Form.Item>
                 <Form.Item
                   name="skillRequired"
-                  label="Skill Required*"
+                  label="Skill Required"
                   className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Skill Required is required",
+                    },
+                  ]}
                 >
                   <Select
-                    placeholder="Choose from dropdown"
-                    mode="tags"
+                    placeholder="skillRequired"
+                    mode="multiple"
                     style={{
                       flex: 1,
                     }}
-                    options={[
-                      {
-                        value: "jack",
-                        label: "Jack",
-                      },
-                      {
-                        value: "lucy",
-                        label: "Lucy",
-                      },
-                      {
-                        value: "Yiminghe",
-                        label: "yiminghe",
-                      },
-                    ]}
-                  />
+                  >
+                    {suggestiveList?.Skills?.map((op) => {
+                      return (
+                        <Option value={op?.name} key={op?.id}>
+                          {op?.name}
+                        </Option>
+                      );
+                    })}
+                  </Select>
                 </Form.Item>
                 <Form.Item
                   name="numberOfOpenings"
-                  label="Number of Openings *"
+                  label="Number of Openings"
                   className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Number of Openings is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Number of Openings is required",
+                    },
+                  ]}
                 >
                   <Input placeholder="Eg.100" />
                 </Form.Item>
-                <Form.Item name="payout" label="Payout *" className="mb-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Input placeholder="Eg.741234" />
-                    <p>To</p>
-                    <Input placeholder="Eg.741234" />
-                  </div>
-                </Form.Item>
+                <div className="flex items-center justify-center gap-2">
+                  <Form.Item
+                    name="payout_from"
+                    label="Payout From"
+                    className="mb-2"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Payout is required",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Eg.741234" type="number" />
+                  </Form.Item>{" "}
+                  <p>To</p>
+                  <Form.Item
+                    label="Payout To"
+                    name="payout_to"
+                    className="mb-2"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Payout is required",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Eg.741234" type="number" />
+                  </Form.Item>
+                </div>
                 <Form.Item
                   name="otherBenefits"
-                  label="Other Benefits *"
+                  label="Other Benefits"
                   className="mb-2"
                 >
                   <Select
-                    placeholder="Choose from dropdown"
+                    placeholder="Other Benefits"
                     mode="tags"
                     style={{
                       flex: 1,
                     }}
-                    options={[
-                      {
-                        value: "jack",
-                        label: "Jack",
-                      },
-                      {
-                        value: "lucy",
-                        label: "Lucy",
-                      },
-                      {
-                        value: "Yiminghe",
-                        label: "yiminghe",
-                      },
-                    ]}
-                  />
+                  >
+                    {suggestiveList["Other Benefits"]?.map((op) => {
+                      return (
+                        <Option value={op?.name} key={op?.id}>
+                          {op?.name}
+                        </Option>
+                      );
+                    })}
+                  </Select>
                 </Form.Item>
               </div>
               <div className="flex justify-end gap-8">
                 <Button className="px-8 py-2">Cancel</Button>
-                <Button className="px-8 py-2 bg-[#013D9D] text-white">
+                <Button
+                  className="px-8 py-2 bg-[#013D9D] text-white"
+                  htmlType="submit"
+                >
                   Post
                 </Button>
               </div>
@@ -317,56 +1082,12 @@ const Index = () => {
           </div>
         </TabPane>
         <TabPane tab="Skilling" key="2">
-          <div className="ml-72 mt-7">
-            <Form form={form} layout="vertical">
-              <Form.Item label="Program Name" name="programName">
-                <Input placeholder="Enter Program Name" />
-              </Form.Item>
-              {courses.map((course, index) => (
-                <div key={course.key} className="course-item">
-                  <Divider>Course {index + 1}</Divider>
-                  <div className="grid grid-cols-3 gap-5">
-                    <Form.Item
-                      label="Course Name"
-                      name={`courseName${course.key}`}
-                    >
-                      <Input placeholder="Enter course Name" />
-                    </Form.Item>
-                    <Form.Item
-                      label="Course Video Link"
-                      name={`courseVideoLink${course.key}`}
-                    >
-                      <Input placeholder="Enter Video Link" />
-                    </Form.Item>
-                    <Form.Item
-                      label="Course Fee"
-                      name={`courseFee${course.key}`}
-                    >
-                      <Select placeholder="Select">
-                        <Option value="free">Free</Option>
-                        <Option value="paid">Paid</Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
-                  {courses.length > 1 && (
-                    <Button
-                      type="link"
-                      onClick={() => removeCourse(course.key)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button type="dashed" onClick={addCourse} icon={<PlusOutlined />}>
-                Add Course
-              </Button>
-              <div className="flex justify-end gap-8 mt-4">
-                <Button>Cancel</Button>
-                <Button type="primary">Save</Button>
-              </div>
-            </Form>
+          <div className="flex justify-end">
+            <Button type="primary" onClick={() => setIsSkillingModal(true)}>
+              Add New Skilling
+            </Button>
           </div>
+          <div className=" max-w-screen-xl mt-7 mx-auto"></div>
         </TabPane>
         <TabPane tab="Volunteer" key="3">
           <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
@@ -426,25 +1147,65 @@ const Index = () => {
               <h1 className="text-[#013D9D] font-semibold text-base">
                 Document Services
               </h1>
-              <Button className="bg-[#013D9D] text-white">
-                <EditOutlined />
-                Edit
-              </Button>
+              {isEditing ? (
+                <Button
+                  type="primary"
+                  className="bg-[#013D9D] text-white"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Add
+                </Button>
+              ) : (
+                <Button
+                  className="bg-[#013D9D] text-white"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <EditOutlined />
+                  Edit
+                </Button>
+              )}
             </div>
-            <div className="flex items-center justify-center mt-20">
-              <div className="flex flex-wrap gap-5 bg-[#EEF2F9] p-5 rounded-lg">
-                <Button>Pan Card</Button>
-                <Button>E-Shram Card</Button>
-                <Button>Aadhaar Card Correction</Button>
-                <Button>Caste Certificate</Button>
-                <div className="flex gap-5">
-                  <Button>Income Certificate</Button>
-                  <Button>Domicile Certificate</Button>
-                  <Button>Khasra</Button>
-                  <Button>Birth Certificate</Button>
-                  <Button>Train Support</Button>
-                </div>
-              </div>
+            {!isEditing && (
+              <Form
+                className="mt-4"
+                form={documentService}
+                onFinish={(values) => createDocument(values?.document)}
+              >
+                <Form.Item
+                  name="document"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Document Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Document Name" />
+                </Form.Item>
+                <Form.Item>
+                  <Button htmlType="submit">Save</Button>
+                </Form.Item>
+              </Form>
+            )}
+            <div className="flex gap-3 mt-5 flex-wrap">
+              {documents?.map((document) => {
+                return (
+                  <p className="bg-primary px-3 py-2 rounded-full text-white font-semibold items-center justify-between flex flex-nowrap">
+                    {document?.name}
+                    {isEditing && (
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() =>
+                          deleteDocument(document?.id, document?.name)
+                        }
+                      >
+                        <XIcon className="text-white" />
+                      </Button>
+                    )}
+                  </p>
+                );
+              })}
             </div>
           </div>
         </TabPane>
@@ -454,108 +1215,311 @@ const Index = () => {
               <h1 className="text-[#013D9D] font-semibold text-base">
                 Welfare Schemes
               </h1>
-              <Button className="bg-[#013D9D] text-white">
-                <EditOutlined />
-                Edit
-              </Button>
+              {isEditing ? (
+                <Button
+                  type="primary"
+                  className="bg-[#013D9D] text-white"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Add
+                </Button>
+              ) : (
+                <Button
+                  className="bg-[#013D9D] text-white"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <EditOutlined />
+                  Edit
+                </Button>
+              )}
             </div>
-            <div className="flex items-center justify-center mt-20">
-              <div className="flex flex-wrap gap-5 bg-[#EEF2F9] p-5 rounded-lg">
-                <Button>Pan Card</Button>
-                <Button>E-Shram Card</Button>
-                <Button>Aadhaar Card Correction</Button>
-                <Button>Caste Certificate</Button>
-                <div className="flex gap-5">
-                  <Button>Income Certificate</Button>
-                  <Button>Domicile Certificate</Button>
-                  <Button>Khasra</Button>
-                  <Button>Birth Certificate</Button>
-                  <Button>Train Support</Button>
-                </div>
-              </div>
+
+            {!isEditing && (
+              <Form
+                className="mt-4"
+                form={welfareForm}
+                onFinish={(values) => createScheme(values?.scheme)}
+              >
+                <Form.Item
+                  name="scheme"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Benefit Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Benefit Name" />
+                </Form.Item>
+                <Form.Item>
+                  <Button htmlType="submit">Save</Button>
+                </Form.Item>
+              </Form>
+            )}
+
+            <div className="flex gap-3 mt-5 flex-wrap">
+              {welfareList?.map((welfare) => {
+                return (
+                  <p className="bg-primary px-3 py-2 rounded-full text-white font-semibold items-center justify-between flex flex-nowrap">
+                    {welfare?.name}
+                    {isEditing && (
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() =>
+                          deleteWelfareSchemes(welfare?.id, welfare?.name)
+                        }
+                      >
+                        <XIcon className="text-white" />
+                      </Button>
+                    )}
+                  </p>
+                );
+              })}
             </div>
           </div>
         </TabPane>
         <TabPane tab="Subscription Plan" key="6">
-          <div className="flex gap-5 p-4 mx-auto w-[85%]">
-            <div className="flex flex-col w-96 border p-4 gap-5 rounded-lg">
-              <Button
-                onClick={() => setSelectedPlan("Basic Plan")}
-                className={`p-2 ${
-                  selectedPlan === "Basic Plan" ? "bg-blue-500 text-white" : ""
-                }`}
-              >
-                Basic Plan
-              </Button>
-              <Button
-                onClick={() => setSelectedPlan("Business Plan")}
-                className={`p-2 ${
-                  selectedPlan === "Business Plan"
-                    ? "bg-blue-500 text-white"
-                    : ""
-                }`}
-              >
-                Business Plan
-              </Button>
-              <Button
-                onClick={() => setSelectedPlan("Premium Plan")}
-                className={`p-2 ${
-                  selectedPlan === "Premium Plan"
-                    ? "bg-blue-500 text-white"
-                    : ""
-                }`}
-              >
-                Premium Plan
-              </Button>
-              <Button className="mt-auto p-2 bg-blue-100 text-blue-500 rounded-lg">
-                Add New Plan
-              </Button>
-            </div>
-            <div className="flex-grow flex gap-5 p-4">
-              <div className="flex justify-between mb-4 border rounded-lg h-[120px] w-[250px]">
-                <ul className="list-decimal   p-4 ">
-                  <h2 className="text-xl font-bold">Benefits</h2>
-                  {plans[selectedPlan].benefits.map((benefit, index) => (
-                    <li key={index}>{benefit}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex mt-4 gap-5">
-                <div className="flex-grow border h-[100px] w-[250px] p-4 rounded-lg">
-                  <h3 className="font-semibold">Plan Tenure</h3>
-                  <p>{plans[selectedPlan].tenure}</p>
-                </div>
-                <div className="flex-grow  border h-[100px] w-[150px] p-4 rounded-lg">
-                  <h3 className="font-semibold">Price (₹)</h3>
-                  <p>{plans[selectedPlan].price}</p>
-                </div>
-              </div>
-              <div></div>
-            </div>
-            <div>
-              <Button className="bg-[#013D9D] text-white px-4 py-4">
-                {" "}
-                <EditOutlined />
-                Edit
-              </Button>
-            </div>
+          <div className="flex justify-end mb-4">
+            <Button type="primary" onClick={() => setIsModalVisible(true)}>
+              Create New Benefit
+            </Button>
           </div>
-        </TabPane>
-        <TabPane tab="Suggestive Lists" key="7" className="w-[80%] flex items-center justify-center mx-auto">
-          <Tabs className="w-[80%] border flex"
+          <Tabs
+            className="w-full"
             tabPosition={"left"}
-            items={new Array(3).fill(null).map((_, i) => {
-              const id = String(i + 1);
-              return {
-                label: `Tab ${id}`,
-                key: id,
-                children: `Content of Tab ${id}`,
-              };
-            })}
+            items={subscriptionTabs}
+          />
+        </TabPane>
+        <TabPane
+          tab="Suggestive Lists"
+          key="7"
+          className="w-[80%] flex items-center justify-center mx-auto"
+        >
+          <Tabs
+            className="w-full"
+            activeKey={tab}
+            tabPosition={"left"}
+            items={tabItems}
+            onChange={(t) => setTab(t)}
           />
         </TabPane>
       </Tabs>
+      <Modal
+        title="Create New Benefit"
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <Form
+          form={createSubscriptionForm}
+          layout="vertical"
+          className="flex  gap-10"
+          onFinish={handleCreateSubscriptionPlan}
+        >
+          <div>
+            <Form.List
+              name="benefits"
+              rules={[
+                {
+                  validator: async (_, benefits) => {
+                    if (!benefits || benefits.length < 1) {
+                      return Promise.reject(
+                        new Error("At least 1 benefit is required.")
+                      );
+                    }
+                  },
+                },
+              ]}
+            >
+              {(fields, { add, remove }, { errors }) => (
+                <div className="flex flex-col w-80">
+                  {fields.map((field, index) => (
+                    <Form.Item
+                      className="w-full"
+                      label={index === 0 ? "Benefits" : ""}
+                      required={false}
+                      key={field.key}
+                    >
+                      <div className="flex flow-row gap-2 items-center justify-center">
+                        <Form.Item
+                          className="w-full"
+                          {...field}
+                          validateTrigger={["onChange", "onBlur"]}
+                          rules={[
+                            {
+                              required: true,
+                              whitespace: true,
+                              message:
+                                "Please input benefit name or delete this field.",
+                            },
+                          ]}
+                          noStyle
+                        >
+                          <Input placeholder="Benefit name" />
+                        </Form.Item>
+                        {fields.length > 1 ? (
+                          <MinusCircle
+                            className="dynamic-delete-button text-red-500"
+                            onClick={() => remove(field.name)}
+                          />
+                        ) : null}
+                      </div>
+                    </Form.Item>
+                  ))}
+
+                  <Form.Item>
+                    <Button
+                      type="dashed"
+                      onClick={() => add()}
+                      icon={<PlusOutlined />}
+                    >
+                      Add field
+                    </Button>
+                    <Form.ErrorList errors={errors} />
+                  </Form.Item>
+                </div>
+              )}
+            </Form.List>
+          </div>
+          <div className="w-full">
+            <Form.Item
+              label="Plan Tenure"
+              name="plan_tenure"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select plan tenure",
+                },
+              ]}
+            >
+              <Select>
+                <Option value="Monthly">Monthly</Option>
+                <Option value="Yearly">Yearly</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Plan Name"
+              name="plan_name"
+              rules={[
+                {
+                  required: true,
+                  whitespace: true,
+                  message: "Please input plan name",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Price (₹)"
+              name="plan_price"
+              rules={[
+                {
+                  required: true,
+
+                  message: "Please input plan price",
+                },
+              ]}
+            >
+              <Input type="number" />
+            </Form.Item>
+            <Form.Item className="flex justify-end">
+              <Button type="primary" htmlType="submit">
+                Submit
+              </Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+      <Modal
+        title="Create New Skilling"
+        open={isSkillingModal}
+        onCancel={() => setIsSkillingModal(false)}
+        footer={null}
+        width={800}
+      >
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          <Form.Item
+            label="Program Name"
+            name="programName"
+            rules={[
+              {
+                required: true,
+                whitespace: true,
+                message: "Program Name is required",
+              },
+            ]}
+          >
+            <Input placeholder="Enter Program Name" />
+          </Form.Item>
+          {courses.map((course, index) => (
+            <div key={course.key} className="course-item">
+              <Divider>Course {index + 1}</Divider>
+              <div className="grid grid-cols-3 gap-5">
+                <Form.Item
+                  label="Course Name"
+                  name={`courseName${course.key}`}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "Course Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Enter course Name" />
+                </Form.Item>
+                <Form.Item
+                  label="Course Video Link"
+                  name={`courseVideoLink${course.key}`}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "Course Video Link is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Enter Video Link" />
+                </Form.Item>
+                <Form.Item
+                  label="Course Type"
+                  name={`courseType${course.key}`}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "Course Fee is required",
+                    },
+                  ]}
+                >
+                  <Select placeholder="Select">
+                    <Option value="free">Free</Option>
+                    <Option value="paid">Paid</Option>
+                  </Select>
+                </Form.Item>
+              </div>
+              {courses.length > 1 && (
+                <Button type="link" onClick={() => removeCourse(course.key)}>
+                  Remove
+                </Button>
+              )}
+            </div>
+          ))}
+          <Button type="dashed" onClick={addCourse} icon={<PlusOutlined />}>
+            Add Course
+          </Button>
+          <div className="flex justify-end gap-8 mt-4">
+            <Button>Cancel</Button>
+            <Button type="primary" htmlType="submit">
+              Save
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 };
