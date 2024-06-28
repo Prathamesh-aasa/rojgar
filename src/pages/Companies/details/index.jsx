@@ -124,9 +124,12 @@ function CompanyInfo() {
               <div className="shadow-lg p-4 rounded-lg" key={job?.id}>
                 <div className="flex items-center justify-between mb-5 ">
                   <h1 className=" text-[#013D9D] text-[22px] font-medium">
-                    Posted Job (TECHNICIAN)
+                    {job?.job_position}
                   </h1>
-                  <Link className="underline text-[#013D9D]" to={`/applications/company/${job?.id}`}>
+                  <Link
+                    className="underline text-[#013D9D]"
+                    to={`/applications/company/${job?.id}`}
+                  >
                     See all Application
                   </Link>
                 </div>
