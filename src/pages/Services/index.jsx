@@ -376,10 +376,11 @@ const Index = () => {
       getSuggestiveList();
     }
   };
-  const createScheme = async (name) => {
+  const createScheme = async (name, amount) => {
     try {
       await addDoc(collection(db, "All Welfare Schemes"), {
         name,
+        amount,
       });
       notification.success({
         message: "Item Added",
@@ -411,10 +412,11 @@ const Index = () => {
       getWelfare();
     }
   };
-  const createDocument = async (name) => {
+  const createDocument = async (name, amount) => {
     try {
       await addDoc(collection(db, "All Documents"), {
         name,
+        amount,
       });
       notification.success({
         message: "Item Added",
@@ -1517,7 +1519,9 @@ const Index = () => {
               <Form
                 className="mt-4"
                 form={documentService}
-                onFinish={(values) => createDocument(values?.document)}
+                onFinish={(values) =>
+                  createDocument(values?.document, values?.amount)
+                }
               >
                 <Form.Item
                   name="document"
@@ -1529,6 +1533,17 @@ const Index = () => {
                   ]}
                 >
                   <Input placeholder="Document Name" />
+                </Form.Item>
+                <Form.Item
+                  name="amount"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Amount is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Amount" type="number" />
                 </Form.Item>
                 <Form.Item>
                   <Button htmlType="submit">Save</Button>
@@ -1586,7 +1601,9 @@ const Index = () => {
               <Form
                 className="mt-4"
                 form={welfareForm}
-                onFinish={(values) => createScheme(values?.scheme)}
+                onFinish={(values) =>
+                  createScheme(values?.scheme, values?.amount)
+                }
               >
                 <Form.Item
                   name="scheme"
@@ -1598,6 +1615,17 @@ const Index = () => {
                   ]}
                 >
                   <Input placeholder="Benefit Name" />
+                </Form.Item>
+                <Form.Item
+                  name="amount"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Amount is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Amount" type="number" />
                 </Form.Item>
                 <Form.Item>
                   <Button htmlType="submit">Save</Button>
