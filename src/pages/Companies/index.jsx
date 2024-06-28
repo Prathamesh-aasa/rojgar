@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  Select,
-  Input,
-  Modal,
-  notification,
-} from "antd";
-import { DownOutlined } from "@ant-design/icons";
+import { Table, Button, Select, Input, Modal, notification } from "antd";
+import { DownOutlined ,DownloadOutlined,FileOutlined ,SendOutlined  } from "@ant-design/icons";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Link } from "react-router-dom";
@@ -155,7 +148,10 @@ const CompaniesPage = () => {
       key: "",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Link to={`/companies/details/${record?.id}`} className="underline text-blue-700">
+          <Link
+            to={`/companies/details/${record?.id}`}
+            className="underline text-blue-700"
+          >
             View
           </Link>
           <Button
@@ -172,28 +168,6 @@ const CompaniesPage = () => {
       ),
     },
   ];
-  const data = [
-    {
-      key: index,
-      name: "Company Name",
-      CompanyId: "ABCD1234",
-      JobposterEmail: "candidate@gmail.com",
-      JobposterPhNo: "+91 9876543210",
-      dateRegistration: "31 March 2023",
-      Address: "Pune",
-      NoofJobpost: "Technician",
-    },
-    {
-      key: index,
-      name: "Company Name",
-      CompanyId: "ABCD1234",
-      JobposterEmail: "candidate@gmail.com",
-      JobposterPhNo: "+91 9876543210",
-      dateRegistration: "31 March 2023",
-      Address: "Pune",
-      NoofJobpost: "Technician",
-    },
-  ];
 
   const [isModalVisible2, setIsModalVisible2] = useState(false);
 
@@ -208,6 +182,7 @@ const CompaniesPage = () => {
   const handleCancel2 = () => {
     setIsModalVisible2(false);
   };
+
   return (
     <div className="p-6">
       <div>
@@ -218,50 +193,56 @@ const CompaniesPage = () => {
       </div>
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-semibold text-[#013D9D]">Companies</h1>
-        <div className="flex gap-4">
-          <Button type="primary">
-            <DownloadOutlined /> Download
-          </Button>
-          <Modal
-            visible={isModalVisible2}
-            onOk={handleOk2}
-            onCancel={handleCancel2}
-            width="50%"
-            footer={null}
-          >
-            <div>
-              <p className="text-[#013D9D] text-2xl font-semibold text-center mb-5">
-                You are sending 100 applications to Tata motors
-              </p>
-              <div className="text-center mb-5">
-                <p>
-                  All details except Additional details of each candidate are
-                  sent to
-                </p>
-                <p>
-                  Tata Motors in excel file, once you send you can not undo
-                  file.
-                </p>
-              </div>
-              <div className="border flex items-center justify-center w-52 h-14  rounded-lg  mx-auto bg-[#EEF2F9]">
-                <Link className="border-none flex  gap-3 bg-[#EEF2F9]">
-                  <FileOutlined />
-                  <div className="flex flex-col text-sm">
-                    Apllication (Tecnician).xls
-                    <span>Upload 12-02-24</span>
+        <div className="flex justify-between mb-4">
+            <div className="flex gap-4">
+              <Button type="primary">
+                <DownloadOutlined /> Download
+              </Button>
+              <Modal
+                visible={isModalVisible2}
+                onOk={handleOk2}
+                onCancel={handleCancel2}
+                width="50%"
+                footer={null}
+              >
+                <div>
+                  <p className="text-[#013D9D] text-2xl font-semibold text-center mb-5">
+                    You are sending 100 applications to Tata motors
+                  </p>
+                  <div className="text-center mb-5">
+                    <p>
+                      All details except Additional details of each candidate
+                      are sent to
+                    </p>
+                    <p>
+                      Tata Motors in excel file, once you send you can not undo
+                      file.
+                    </p>
                   </div>
-                </Link>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button>Cancel</Button>
-                <Button className="bg-[#013D9D] text-white">Send</Button>
-              </div>
+                  <div className="border flex items-center justify-center w-52 h-14  rounded-lg  mx-auto bg-[#EEF2F9]">
+                    <Link className="border-none flex  gap-3 bg-[#EEF2F9]">
+                      <FileOutlined />
+                      <div className="flex flex-col text-sm">
+                        Apllication (Tecnician).xls
+                        <span>Upload 12-02-24</span>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button>Cancel</Button>
+                    <Button className="bg-[#013D9D] text-white">Send</Button>
+                  </div>
+                </div>
+              </Modal>
+              <Button
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={showModal2}
+              >
+                Send Notification
+              </Button>
             </div>
-          </Modal>
-          <Button type="primary" icon={<SendOutlined />} onClick={showModal2}>
-            Send Notification
-          </Button>
-        </div>
+          </div>
       </div>
 
       <div className="flex justify-between mb-4">
@@ -284,9 +265,15 @@ const CompaniesPage = () => {
             <Option value="Completed">Completed</Option>
             <Option value="Rejected">Rejected</Option>
           </Select>
+        
         </div>
       </div>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table
+        columns={columns}
+        dataSource={filteredCompanies}
+        pagination={false}
+        rowKey={"id"}
+      />
       <Modal
         title="Details"
         open={isModalVisible}
@@ -299,7 +286,7 @@ const CompaniesPage = () => {
         <div className="flex justify-evenly">
           <div>
             <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-              Company’s Details
+              Company Details
             </h1>
             <div className="grid grid-cols-3">
               <div className="flex flex-col mb-2 mr-2 gap-1">
@@ -365,14 +352,25 @@ const CompaniesPage = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-4">
-          <Button className="text-[#CD2424] bg-[#FFE4E4]">Reject</Button>
-          <Button className="text-[#FFFFFF] bg-[#013D9D]">Approve</Button>
-        </div>
-        {/* Add form elements here to handle status update if needed */}
+        {selectedItems.status === "Pending" && (
+          <div className="flex justify-end gap-4">
+            <Button
+              className="text-[#CD2424] bg-[#FFE4E4]"
+              onClick={() => handelUpdate("Rejected")}
+            >
+              Reject
+            </Button>
+            <Button
+              className="text-[#FFFFFF] bg-[#013D9D]"
+              onClick={() => handelUpdate("Completed")}
+            >
+              Approve
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   );
 };
 
-export default index;
+export default CompaniesPage;
