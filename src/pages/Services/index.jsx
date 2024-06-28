@@ -556,12 +556,15 @@ const Index = () => {
         name: programName,
         isFree: true,
       });
+      console.log("🚀 ~ program ~ program:", program,program.id)
 
       // 2. Add each course
       const courses = [];
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseName = values[`courseName${i}`];
         const courseVideoLink = values[`courseVideoLink${i}`];
+        const amount = values[`amount${i}`];
+        const location = values[`location${i}`];
         const courseType = values[`courseType${i}`] === "free" ? true : false;
 
         // Add course to courses array or database directly
@@ -570,18 +573,26 @@ const Index = () => {
           name: courseName,
           video_link: courseVideoLink,
           is_free: courseType,
+          amount: amount,
+          location: location,
         });
 
         await addDoc(collection(db, "Courses"), {
           skillId: program.id,
           name: courseName,
           video_link: courseVideoLink,
+          amount: amount,
           is_free: true,
+          location: location,
         });
       }
 
       form.resetFields();
       console.log("Courses added:", courses);
+      notification.success({
+        message: "Success",
+        description: "Skills and courses added successfully!",
+      });
     } catch (error) {
       console.log("🚀 ~ onFinish ~ error:", error);
     }
@@ -593,6 +604,8 @@ const Index = () => {
       [`courseName${index}`]: course.name,
       [`video_link${index}`]: course.video_link,
       [`course_id${index}`]: course.id,
+      [`amount${index}`]: course?.amount,
+      [`location${index}`]: course?.location,
       [`courseType${index}`]: course.is_free ? "free" : "paid",
     }));
     skillingForm.setFieldsValue({
@@ -606,6 +619,8 @@ const Index = () => {
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseId = values[`course_id${i}`];
         const courseName = values[`courseName${i}`];
+        const amount = values[`amount${i}`];
+        const location = values[`location${i}`];
         const courseVideoLink = values[`video_link${i}`];
         const courseType = values[`courseType${i}`] === "free";
 
@@ -615,6 +630,8 @@ const Index = () => {
           name: courseName,
           video_link: courseVideoLink,
           is_free: courseType,
+          amount: amount,
+          location: location,
         });
       }
       notification.success({
@@ -637,6 +654,8 @@ const Index = () => {
         skillId: selectedSkill?.id,
         name: values.courseName,
         video_link: values.courseVideoLink,
+        amount: values.amount,
+        location: values.location,
         is_free: values.courseType === "free",
       });
       addNewCourseForm.resetFields();
@@ -1380,7 +1399,7 @@ const Index = () => {
                         name={`video_link${index}`}
                         rules={[
                           {
-                            required: true,
+                            // required: true,
                             whitespace: true,
                             message: "Course Video Link is required",
                           },
@@ -1406,6 +1425,12 @@ const Index = () => {
                           <Option value="free">Free</Option>
                           <Option value="paid">Paid</Option>
                         </Select>
+                      </Form.Item>
+                      <Form.Item label="Amount" name={`amount${index}`}>
+                        <Input placeholder="Amount" type="number" />
+                      </Form.Item>
+                      <Form.Item label="Location" name={`location${index}`}>
+                        <Input placeholder="Location" />
                       </Form.Item>
                     </div>
                   </div>
@@ -1853,7 +1878,7 @@ const Index = () => {
                   name={`courseVideoLink${course.key}`}
                   rules={[
                     {
-                      required: true,
+                      // required: true,
                       whitespace: true,
                       message: "Course Video Link is required",
                     },
@@ -1876,6 +1901,12 @@ const Index = () => {
                     <Option value="free">Free</Option>
                     <Option value="paid">Paid</Option>
                   </Select>
+                </Form.Item>
+                <Form.Item label="Amount" name={`amount${index}`}>
+                  <Input placeholder="Amount" type="number" />
+                </Form.Item>
+                <Form.Item label="Location" name={`location${index}`}>
+                  <Input placeholder="Location" />
                 </Form.Item>
               </div>
               {courses.length > 1 && (
@@ -1918,7 +1949,7 @@ const Index = () => {
             label="Course Video Link"
             name="courseVideoLink"
             rules={[
-              { required: true, message: "Course Video Link is required" },
+              { whitespace: true, message: "Course Video Link is required" },
             ]}
           >
             <Input placeholder="Enter video link" />
@@ -1932,6 +1963,16 @@ const Index = () => {
               <Option value="free">Free</Option>
               <Option value="paid">Paid</Option>
             </Select>
+          </Form.Item>
+          <Form.Item label="Amount" name={`amount`}>
+            <Input placeholder="Amount" type="number" />
+          </Form.Item>
+          <Form.Item
+            label="Location"
+            name="location"
+            rules={[{ whitespace: true, message: "location is required" }]}
+          >
+            <Input placeholder="Enter video link" />
           </Form.Item>
           <div className="flex justify-end gap-8 mt-4">
             <Button onClick={() => setIsSkillingModalVisible(false)}>

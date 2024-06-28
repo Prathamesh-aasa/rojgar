@@ -495,6 +495,87 @@ const Applications = () => {
       });
     }
   };
+  const [applications, setApplications] = useState([]);
+  const [allCompanies, setAllCompanies] = useState([]);
+  const [filteredApplications, setFilteredApplications] = useState([]);
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const q = query(
+          collection(db, "Job Applied")
+          // where("job_id", "==", id)
+        );
+        const querySnapshot = await getDocs(q);
+        const apps = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("🚀 ~ apps ~ apps:", apps);
+        setApplications(apps);
+        setFilteredApplications(apps)
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      }
+    };
+    const getCompanies = async () => {
+      const companyCollection = collection(db, "RegisterAsCompany");
+      const companiesSnapshot = await getDocs(companyCollection);
+      const companies = companiesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setAllCompanies(companies);
+    };
+
+    fetchApplications();
+    getCompanies();
+  }, []);
+  const columns = [
+    {
+      title: "Company Name",
+      dataIndex: "company_name",
+      key: "company_name",
+    },
+    {
+      title: "Position",
+      dataIndex: "post",
+      key: "post",
+    },
+    {
+      title: "Number of Posts",
+      dataIndex: "openings",
+      key: "openings",
+    },
+    {
+      title: "Qualification",
+      dataIndex: "qualification",
+      key: "qualification",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Resume Link",
+      dataIndex: "resume_link",
+      key: "resume_link",
+      render: (text) => (
+        <a href={text} target="_blank" rel="noopener noreferrer">
+          View Resume
+        </a>
+      ),
+    },
+  ];
+  const handleCompanyFilterChange = (value) => {
+    // setSelectedCompany(value);
+    const filtered = value
+      ? applications.filter((app) => app.company_id === value)
+      : applications;
+    setFilteredApplications(filtered);
+  };
+
   return (
     <div className="p-6">
       <div>
@@ -685,6 +766,28 @@ const Applications = () => {
             dataSource={filterData(welfares)}
             pagination={false}
           />
+        </TabPane>
+        <TabPane tab="Job Application" key="">
+          <div>
+            <Select
+              placeholder="Filter by Company"
+              onChange={handleCompanyFilterChange}
+              style={{ marginBottom: 16, width: 200 }}
+            >
+              <Option value={null}>All Companies</Option>
+              {allCompanies.map((company) => (
+                <Option key={company.id} value={company.id}>
+                  {company.company_name}
+                </Option>
+              ))}
+            </Select>
+            <Table
+              dataSource={filteredApplications}
+              columns={columns}
+              rowKey="id"
+              pagination={false}
+            />
+          </div>
         </TabPane>
       </Tabs>
       <Modal
