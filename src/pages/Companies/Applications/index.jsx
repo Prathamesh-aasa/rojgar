@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import { Table } from "antd";
+import { Table, Button } from "antd";
+import * as XLSX from "xlsx";
+import { DownloadIcon } from "lucide-react";
 
 const CompanyApplications = () => {
   const { id } = useParams();
@@ -29,6 +31,13 @@ const CompanyApplications = () => {
 
     fetchApplications();
   }, [id]);
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(applications);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+    XLSX.writeFile(workbook, "Applications.xlsx");
+  };
 
   // Define columns for the table
   const columns = [
@@ -72,9 +81,19 @@ const CompanyApplications = () => {
   return (
     <div className="p-8">
       <h1 className="font-bold text-2xl text-[#4A59AE] my-5">
-        Applications For {applications[0]?.post}{" "}
+        Applications For {applications[0]?.post}
       </h1>
-      <Table dataSource={applications} columns={columns} rowKey="id" />
+      <div className="flex justify-end">
+        <Button
+          type="primary"
+          onClick={downloadExcel}
+          style={{ marginBottom: 16 }}
+          icon={<DownloadIcon  height={17} />}
+        >
+          Download Applications 
+        </Button>
+      </div>
+      <Table dataSource={applications} columns={columns} rowKey="id" pagination={false}/>
     </div>
   );
 };

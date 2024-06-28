@@ -357,6 +357,7 @@ const Applications = () => {
   };
 
   const showModal = (item) => {
+    console.log("🚀 ~ showModal ~ item:", item);
     setSelectedItem(item);
     setIsModalVisible(true);
   };
@@ -474,7 +475,26 @@ const Applications = () => {
       });
     }
   };
-
+  const handelCompleteVolunteer = async (status) => {
+    try {
+      const jobSeekerDoc = doc(db, "Volunteer", selectedVolunteer?.id);
+      await updateDoc(jobSeekerDoc, {
+        status: status,
+      });
+      notification.success({
+        message: "Status Updated",
+        description: `Volunteer ${selectedVolunteer?.id} has been ${status} successfully.`,
+      });
+      setIsVolunteerModal(false);
+      getVolunteer();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to Update Please try again later.",
+      });
+    }
+  };
   return (
     <div className="p-6">
       <div>
@@ -939,15 +959,192 @@ const Applications = () => {
         title="Personal Details"
         open={isVolunteerModal}
         onCancel={() => setIsVolunteerModal(false)}
+        width="100%"
+        footer={null}
       >
         {selectedVolunteer && (
-          <div>
+          <div className="flex  gap-8">
             <div>
-              <h1>Personal Details</h1>
+              {selectedVolunteer?.profile_photo ? (
+                <img
+                  src={selectedVolunteer?.profile_photo}
+                  alt="No Image Uploaded By User"
+                  className="rounded-full w-20"
+                />
+              ) : (
+                <h1>No Image Uploaded By User</h1>
+              )}
+            </div>
+            <div className="w-full">
+              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                Personal Details
+              </h1>
+              <div className="grid grid-cols-5 mb-8">
+                <div className="flex flex-col">
+                  <p>Registration ID</p>
+                  <span>{selectedVolunteer?.id}</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Full Name</p>
+                  <span>{selectedVolunteer?.full_name}</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Phone No.</p>
+                  <span>{selectedVolunteer?.phone_number}</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Email ID</p>
+                  <span>{selectedVolunteer?.email_id}</span>
+                </div>
+                <div className="flex flex-col mb-5">
+                  <p>Linkedin Link</p>
+                  <a href={selectedVolunteer?.linkdin_link}>
+                    {selectedVolunteer?.linkdin_link}
+                  </a>
+                </div>
+                <div className="flex flex-col">
+                  <p>Other Social Media Link</p>
+                  {/* <span>https://www.facebook.com</span> */}
+                  <a href={selectedVolunteer?.other_social_media_link}>
+                    {selectedVolunteer?.other_social_media_link}
+                  </a>
+                </div>
+              </div>
+              <h1 className="mb-8 text-xl text-[rgb(1,61,157)] font-medium">
+                Address Details
+              </h1>
+              <div className="grid grid-cols-5 mb-8">
+                <div className="flex flex-col">
+                  <p>PIN</p>
+                  <span>{selectedVolunteer?.pin}</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>State</p>
+                  <span>{selectedVolunteer?.state}</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>District</p>
+                  <span>{selectedVolunteer?.district || "NA"}</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>City/Village</p>
+                  <span>{selectedVolunteer?.city || "NA"}</span>
+                </div>
+              </div>
+
+              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                Services Details
+              </h1>
+              <div className="grid grid-cols-5 mb-8">
+                {/* <div className="flex flex-col">
+                  <p>Service Selected</p>
+                  <span>{selectedVolunteer?.}</span>
+                </div> */}
+                <div className="flex flex-col">
+                  <p>Date</p>
+                  <span>
+                    {moment(selectedVolunteer?.date_of_registration).format(
+                      "DD-MM-YYYY"
+                    )}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Time</p>
+                  <span>
+                    {moment(selectedVolunteer?.date_of_registration).format(
+                      "HH:MM:SS"
+                    )}{" "}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Status</p>
+                  <span>{selectedVolunteer?.status}</span>
+                </div>
+                {/*    <div className="flex flex-col">
+                  <p>course(s)</p>
+                  <span>BASIC EXCEL,BASIC PPT</span>
+                </div> */}
+              </div>
+              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                Additional Details
+              </h1>
+              <div className="grid grid-cols-5">
+                <div className="flex flex-col">
+                  <p>No. of family member</p>
+                  <span>
+                    {selectedVolunteer?.number_of_family_members || 0}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>No. of female children</p>
+                  <span>
+                    {selectedVolunteer?.number_of_female_children || 0}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>No. of male children</p>
+                  <span>{selectedVolunteer?.number_of_male_children || 0}</span>
+                </div>
+                <div className="flex flex-col mb-5">
+                  <p>Main occupation of the family</p>
+                  <span>
+                    {selectedVolunteer?.main_occupation_of_family || "NA"}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>have agricultural land?</p>
+                  <span>
+                    {selectedVolunteer?.do_you_have_agriculture_land
+                      ? "Yes"
+                      : "No"}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Need any agricultural products?</p>
+                  <span>YES</span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Mention agricultural products</p>
+                  <span>
+                    {selectedVolunteer?.do_you_need_any_farming_products
+                      ? "Yes"
+                      : "No"}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <p>Have a toilet at home?</p>
+                  <span>
+                    {selectedVolunteer?.do_you_have_toilet_at_home
+                      ? "Yes"
+                      : "No"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                {selectedVolunteer?.status !== "Completed" && (
+                  <Button
+                    className="bg-[#013D9D] text-white"
+                    onClick={() => handelCompleteVolunteer("Completed")}
+                  >
+                    Complete
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}
       </Modal>
+
+      {/* <Modal
+        open={isVolunteerModal}
+        onCancel={() => setIsVolunteerModal(false)}
+        width="100%"
+        footer={null}
+      >
+        {selectedVolunteer && (
+
+        )}
+      </Modal> */}
 
       <Modal
         title="Send Notification"
