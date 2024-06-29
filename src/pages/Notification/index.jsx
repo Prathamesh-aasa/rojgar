@@ -18,6 +18,7 @@ import {
   doc,
   getDocs,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 import { UserOutlined } from "@ant-design/icons";
 import moment from "moment";
@@ -82,19 +83,27 @@ const Notifications = () => {
 
       const note = {
         text: values.message,
-        sent_at:moment().format('YYYY-MM-DDTHH:mm:ss[Z]'),
+        sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
       };
 
       const promises = users.map(async (user) => {
         const userRef = doc(db, "Users", user.id);
         const notificationsRef = collection(userRef, "Notifications");
-        await addDoc(notificationsRef, {
-          user_id:user.id,
+      
+        const docRef = await addDoc(notificationsRef, {
+          user_id: user.id,
           ...note,
           image_link: null,
         });
+      
+        // Update the document with its ID
+        await updateDoc(docRef, {
+          id: docRef.id,
+        });
       });
-
+      
+      await Promise.all(promises);
+      
       await Promise.all(promises);
       notificationForm.resetFields();
       setIsModalVisible(false);
@@ -121,19 +130,25 @@ const Notifications = () => {
       const note = {
         service_type: service_type,
         text: message,
-        sent_at: moment().format('YYYY-MM-DDTHH:mm:ss[Z]'),
+        sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
       };
 
       // Send notification to each selected user
-      const promises = user?.map(async (userId) => {
+      const promises = users?.map(async (userId) => {
         const userRef = doc(db, "Users", userId);
         const notificationsRef = collection(userRef, "Notifications");
-        await addDoc(notificationsRef, {
-          user_id:userId,
+        const docRef = await addDoc(notificationsRef, {
+          user_id: userId,
           ...note,
           image_link: null, // Assuming you want to set image_link to null
         });
+        // Update the document with its ID
+        await updateDoc(docRef, {
+          id: docRef.id,
+        });
       });
+
+      await Promise.all(promises);
 
       await Promise.all(promises);
       setIsModalVisible(false);

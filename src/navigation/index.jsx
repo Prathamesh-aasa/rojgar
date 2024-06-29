@@ -19,6 +19,7 @@ import {
   UserOutlined as UserIcon,
 } from "@ant-design/icons";
 import logo from "../assets/Rozgar Dhaba logo1-1 1.png";
+import { Bell, User } from "lucide-react";
 const Navigation = () => {
   const { loginUser, loading, user, logOut } = useContext(AuthContext);
   const NotFound = () => {
@@ -64,7 +65,7 @@ const Navigation = () => {
         </div>
       )}
       {user ? (
-        <nav className="bg-[#4A59AE] text-white p-2 flex justify-between items-center">
+        <nav className="bg-[#4A59AE] text-white p-3 flex justify-between items-center">
           <div className="flex items-center gap-5">
             <img src={logo} alt="" className="w-[40px]" />
             <span className="text-xl font-bold">Rozgar Dhaba</span>
@@ -73,32 +74,34 @@ const Navigation = () => {
           <div className="space-x-4">
             <a
               href="/dashboard"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
+              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md  font-medium text-lg"
             >
               Dashboard
             </a>
             <a
               href="/application"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
+              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md  font-medium text-lg"
             >
               Application
             </a>
             <a
               href="/companies"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
+              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md font-medium text-lg"
             >
               Company
             </a>
             <a
               href="/services"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md text-sm font-medium"
+              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md font-medium text-lg"
             >
               Services
             </a>
           </div>
-          <div className="flex items-center justify-center gap-3">
-            <a className="relative" href="/notifications">
-              <BellOutlined className="h-10 w-10 text-white" />
+          <div className="flex items-center justify-center gap-5">
+            <a className="" href="/notifications">
+              <Space>
+                <Bell className=" text-white" />
+              </Space>
             </a>
 
             <Dropdown
@@ -108,7 +111,7 @@ const Navigation = () => {
             >
               <div>
                 <Space>
-                  <UserIcon className="h-6 w-6 text-white" />
+                  <User className="text-white" />
                 </Space>
               </div>
             </Dropdown>
