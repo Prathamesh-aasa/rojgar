@@ -18,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { db } from "../../../firebase";
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
@@ -51,6 +52,24 @@ const Applications = () => {
   const [selectedVolunteer, setSelectedVolunteer] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
+
+  const sendNotification = async (userID, message) => {
+    const userRef = doc(db, "Users", userID);
+    console.log("🚀 ~ sendNotification ~ userID:", userID);
+    const notificationsRef = collection(userRef, "Notifications");
+
+    const docRef = await addDoc(notificationsRef, {
+      user_id: userID,
+      text: message,
+      sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+      image_link: null,
+    });
+    console.log(docRef.id);
+    // Update the document with its ID
+    await updateDoc(docRef, {
+      id: docRef.id,
+    });
+  };
 
   const fetchPaymentData = async (transactionId) => {
     // Fetch data from the Payments collection based on transaction_id
@@ -451,6 +470,11 @@ const Applications = () => {
         message: "Status Updated",
         description: `Job Seeker ${selectedItem?.id} has been ${status} successfully.`,
       });
+
+      sendNotification(
+        selectedItem?.user_id,
+        `Your request for job seeker has been ${status}`
+      );
       handleCancel();
       getJobSeekers();
     } catch (error) {
@@ -471,6 +495,11 @@ const Applications = () => {
         message: "Status Updated",
         description: `Skilling ${selectedItem?.id} has been Completed successfully.`,
       });
+      sendNotification(
+        selectedItem?.user_id,
+        `Your request for skilling has been ${status}`
+      );
+
       handleCancel();
       getSkilling();
     } catch (error) {
@@ -492,6 +521,11 @@ const Applications = () => {
         message: "Status Updated",
         description: `Document ${selectedItem?.id} has been ${status} successfully.`,
       });
+      sendNotification(
+        selectedItem?.user_id,
+        `Your request for document has been ${status}`
+      );
+
       handleCancel();
       getDocuments();
     } catch (error) {
@@ -512,6 +546,11 @@ const Applications = () => {
         message: "Status Updated",
         description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
       });
+      sendNotification(
+        selectedItem?.user_id,
+        `Your request for welfare has been ${status}`
+      );
+
       handleCancel();
       getDocuments();
     } catch (error) {
@@ -532,6 +571,11 @@ const Applications = () => {
         message: "Status Updated",
         description: `Volunteer ${selectedVolunteer?.id} has been ${status} successfully.`,
       });
+      sendNotification(
+        selectedItem?.user_id,
+        `Your request for volunteer has been ${status}`
+      );
+
       setIsVolunteerModal(false);
       getVolunteer();
     } catch (error) {
@@ -622,12 +666,14 @@ const Applications = () => {
       : applications;
     setFilteredApplications(filtered);
   };
-  const handleApprove = async (id) => {
+  const handleApprove = async (id, userId) => {
     try {
       const paymentDocRef = doc(db, "Payments", id);
       await updateDoc(paymentDocRef, {
         status: "Approved",
       });
+
+      sendNotification(userId, `Your payments request  has been approved`);
 
       notification.success({
         message: "Payment Approved",
@@ -655,6 +701,7 @@ const Applications = () => {
         message: "Payment Rejected",
         description: `Payment ID ${id} has been rejected successfully.`,
       });
+      sendNotification(userId, `Your payments request  has been rejected`);
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -844,13 +891,23 @@ const Applications = () => {
                           {paymentData?.status == "Pending" && (
                             <div className="flex justify-end mt-5">
                               <button
-                                onClick={() => handleReject(paymentData?.id)}
+                                onClick={() =>
+                                  handleReject(
+                                    paymentData?.id,
+                                    paymentData?.user_id
+                                  )
+                                }
                                 className="bg-red-500 text-white py-2 px-4 rounded mr-2"
                               >
                                 Reject
                               </button>
                               <button
-                                onClick={() => handleApprove(paymentData?.id)}
+                                onClick={() =>
+                                  handleApprove(
+                                    paymentData?.id,
+                                    paymentData?.user_id
+                                  )
+                                }
                                 className="bg-blue-500 text-white py-2 px-4 rounded"
                               >
                                 Approve
