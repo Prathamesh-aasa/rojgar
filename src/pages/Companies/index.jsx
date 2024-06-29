@@ -8,7 +8,7 @@ import {
   notification,
 } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Link } from "react-router-dom";
 import moment from "moment";
