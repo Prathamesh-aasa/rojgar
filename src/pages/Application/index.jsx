@@ -17,9 +17,17 @@ import {
   SendOutlined,
 } from "@ant-design/icons";
 import { db } from "../../../firebase";
-import { collection, doc, getDocs, query, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import moment from "moment";
-
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 const { Option } = Select;
 
 const Applications = () => {
@@ -41,7 +49,37 @@ const Applications = () => {
   const [welfares, setWelfares] = useState([]);
   const [isVolunteerModal, setIsVolunteerModal] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
 
+  const fetchPaymentData = async (transactionId) => {
+    // Fetch data from the Payments collection based on transaction_id
+    const paymentCollection = collection(db, "Payments");
+    const paymentQuery = query(
+      paymentCollection,
+      where("transaction_id", "==", transactionId)
+    );
+    const querySnapshot = await getDocs(paymentQuery);
+
+    if (!querySnapshot.empty) {
+      // Assuming you only need the first document
+      const paymentDoc = querySnapshot.docs[0];
+      setPaymentData(paymentDoc.data());
+    } else {
+      notification.error({
+        message: "Payment data not found",
+        description: "Please try again later.",
+      });
+      console.log("No such document!");
+    }
+  };
+
+  const handleButtonClick = async (record) => {
+    if (record?.payment_id) {
+      await fetchPaymentData(record.payment_id);
+      setModalVisible(true);
+    }
+  };
   const getColumns = (tab) => {
     const commonColumns = [
       {
@@ -121,9 +159,16 @@ const Applications = () => {
         {
           title: "Action",
           render: (text, record) => (
-            <Button onClick={() => showModal(record)} type="link">
-              <DownOutlined />
-            </Button>
+            <div>
+              <Button onClick={() => showModal(record)} type="link">
+                <DownOutlined />
+              </Button>
+              {record?.payment_id && (
+                <Button onClick={() => handleButtonClick(record)} type="link">
+                  View Payment
+                </Button>
+              )}
+            </div>
           ),
         },
       ];
@@ -209,9 +254,11 @@ const Applications = () => {
         {
           title: "Action",
           render: (text, record) => (
-            <Button onClick={() => showModal(record)} type="link">
-              <DownOutlined />
-            </Button>
+            <div>
+              <Button onClick={() => showModal(record)} type="link">
+                <DownOutlined />
+              </Button>
+            </div>
           ),
         },
       ];
@@ -512,7 +559,7 @@ const Applications = () => {
         }));
         console.log("🚀 ~ apps ~ apps:", apps);
         setApplications(apps);
-        setFilteredApplications(apps)
+        setFilteredApplications(apps);
       } catch (error) {
         console.error("Error fetching applications:", error);
       }
@@ -575,7 +622,56 @@ const Applications = () => {
       : applications;
     setFilteredApplications(filtered);
   };
+  const handleApprove = async (id) => {
+    try {
+      const paymentDocRef = doc(db, "Payments", id);
+      await updateDoc(paymentDocRef, {
+        status: "Approved",
+      });
 
+      notification.success({
+        message: "Payment Approved",
+        description: `Payment ID ${id} has been approved successfully.`,
+      });
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to approve payment. Please try again later.",
+      });
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      const paymentDocRef = doc(db, "Payments", id);
+      await updateDoc(paymentDocRef, {
+        status: "Rejected",
+      });
+
+      setModalVisible(false);
+      notification.success({
+        message: "Payment Rejected",
+        description: `Payment ID ${id} has been rejected successfully.`,
+      });
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to reject payment. Please try again later.",
+      });
+    }
+  };
+
+  const handleImageDownload = () => {
+    const link = document.createElement("a");
+    link.href = paymentDetails?.screenshot_link;
+    link.download = "payment_screenshot.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <div className="p-6">
       <div>
@@ -652,6 +748,111 @@ const Applications = () => {
                 <Option value="Pending">Pending</Option>
                 <Option value="Completed">Completed</Option>
               </Select>
+
+              <Modal
+                title="Payment Details"
+                open={modalVisible}
+                onCancel={() => setModalVisible(false)}
+                footer={null}
+                width={1200}
+                // className="w-full"
+              >
+                {paymentData ? (
+                  <div>
+                    <div className="flex items-center justify-center p-5">
+                      <div className="w-full">
+                        <div className="border-t border-gray-300 pt-5">
+                          <div className="flex justify-evenly gap-5">
+                            <div className="col-span-1 flex flex-col items-center">
+                              <img
+                                src={paymentData?.screenshot_link}
+                                alt="Payment Screenshots"
+                                className="w-[250px] h-[450px]"
+                              />
+                              <a
+                                href={paymentData?.screenshot_link}
+                                download="payment_screenshot.png"
+                                className="mt-3 bg-blue-500 text-white py-2 px-16 rounded"
+                                onClick={handleImageDownload}
+                              >
+                                Download Image
+                              </a>
+                            </div>
+                            <div>
+                              <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
+                                Personal Details
+                              </h1>
+                              <div className="grid grid-cols-5  mb-16">
+                                <div className="flex flex-col gap-3 ">
+                                  <p className="font-semibold">
+                                    Registration ID
+                                  </p>
+                                  <span>{paymentData?.user_id}</span>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                  <p className="font-semibold">Phone No.</p>
+                                  <span>{paymentData?.phone_number}</span>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                  <p className="font-semibold">Full Name.</p>
+                                  <span>{paymentData?.full_name}</span>
+                                </div>
+
+                                <div className="flex flex-col gap-3">
+                                  <p className="font-semibold">Email Id</p>
+                                  <span>{paymentData?.email_id}</span>
+                                </div>
+                              </div>
+                              <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
+                                Payment Details
+                              </h1>
+
+                              <div className="grid grid-cols-5 gap-14">
+                                <div className="flex flex-col gap-3">
+                                  <p className="font-semibold">
+                                    Payment Amount
+                                  </p>
+                                  <span>{paymentData?.amount}</span>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                  <p className="font-semibold">
+                                    Registration Fee paid
+                                  </p>
+                                  <span>{paymentData?.amount}</span>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                  <p className="font-semibold">
+                                    Transaction Id
+                                  </p>
+                                  <span>{paymentData?.transaction_id}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {paymentData?.status == "Pending" && (
+                            <div className="flex justify-end mt-5">
+                              <button
+                                onClick={() => handleReject(paymentData?.id)}
+                                className="bg-red-500 text-white py-2 px-4 rounded mr-2"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                onClick={() => handleApprove(paymentData?.id)}
+                                className="bg-blue-500 text-white py-2 px-4 rounded"
+                              >
+                                Approve
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </Modal>
               {/* <div className="flex gap-2">
                 <Button icon={<FilterOutlined />} onClick={showFilterModal}>
                   Filters
