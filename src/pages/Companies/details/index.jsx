@@ -54,10 +54,6 @@ function CompanyInfo() {
           </h1>
           <div className="grid grid-cols-3 gap-3">
             <div className="flex flex-col">
-              <p className="font-semibold text-sm">Company Id</p>
-              <span className="text-sm">{id}</span>
-            </div>
-            <div className="flex flex-col">
               <p className="font-semibold text-sm">Email Id</p>
               <span className="text-sm">{companyData?.company_email}</span>
             </div>
@@ -67,9 +63,14 @@ function CompanyInfo() {
                 {companyData?.job_poster_phone_number}
               </span>
             </div>
+
             <div className="flex flex-col mb-4">
               <p className="font-semibold text-sm">GSTIN No.</p>
               <span className="text-sm">{companyData?.gstin}</span>
+            </div>
+            <div className="flex flex-col">
+              <p className="font-semibold text-sm">Company Id</p>
+              <span className="text-sm">{id}</span>
             </div>
           </div>
           <h1 className="mb-5 text-[#013D9D] text-[22px] font-medium">

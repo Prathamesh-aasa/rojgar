@@ -556,7 +556,7 @@ const Index = () => {
         name: programName,
         isFree: true,
       });
-      console.log("🚀 ~ program ~ program:", program,program.id)
+      console.log("🚀 ~ program ~ program:", program, program.id);
 
       // 2. Add each course
       const courses = [];
@@ -976,7 +976,11 @@ const Index = () => {
         <span className="text-2xl font-semibold text-[#013D9D]">Services</span>
       </div>
       <Tabs centered>
-        <TabPane tab="Job Post" key="1" className="p-4 mx-auto">
+        <TabPane
+          tab={<span className="font-semibold">Job Post</span>}
+          key="1"
+          className="p-4 mx-auto"
+        >
           <div>
             <Form
               name="companyDetailsForm"
@@ -1323,7 +1327,11 @@ const Index = () => {
             </Form>
           </div>
         </TabPane>
-        <TabPane tab="Skilling" key="2">
+        <TabPane
+          //  tab="Skilling"
+          tab={<span className="font-semibold">Skilling</span>}
+          key="2"
+        >
           <div className="flex justify-end">
             {selectedSkill && (
               <Button
@@ -1446,7 +1454,11 @@ const Index = () => {
             </Form>
           </div>
         </TabPane>
-        <TabPane tab="Volunteer" key="3">
+        <TabPane
+          tab={<span className="font-semibold">Volunteer</span>}
+          //  tab=""
+          key="3"
+        >
           <Modal
             open={isAddNewVolunteerModalVisible}
             onClose={() => setIsAddNewVolunteerModal(false)}
@@ -1516,7 +1528,11 @@ const Index = () => {
             </Tabs>
           </div>
         </TabPane>
-        <TabPane tab="Document" key="4">
+        <TabPane
+          tab={<span className="font-semibold">Document</span>}
+          // tab="Document"
+          key="4"
+        >
           <div className="max-w-4xl mx-auto mt-10">
             <div className="flex justify-between">
               <h1 className="text-[#013D9D] font-semibold text-base">
@@ -1597,7 +1613,10 @@ const Index = () => {
             </div>
           </div>
         </TabPane>
-        <TabPane tab="Welfare Scheme" key="5">
+        <TabPane
+          tab={<span className="font-semibold">Welfare Scheme</span>}
+          key="5"
+        >
           <div className="max-w-4xl mx-auto mt-10">
             <div className="flex justify-between">
               <h1 className="text-[#013D9D] font-semibold text-base">
@@ -1680,7 +1699,11 @@ const Index = () => {
             </div>
           </div>
         </TabPane>
-        <TabPane tab="Subscription Plan" key="6">
+        <TabPane
+        //  tab="Subscription Plan" 
+          tab={<span className="font-semibold">Subscription Plan</span>}
+        
+        key="6">
           <div className="flex justify-end mb-4">
             <Button type="primary" onClick={() => setIsModalVisible(true)}>
               Create New Benefit
@@ -1693,7 +1716,9 @@ const Index = () => {
           />
         </TabPane>
         <TabPane
-          tab="Suggestive Lists"
+          // tab="Suggestive Lists"
+          tab={<span className="font-semibold">Suggestive Lists</span>}
+
           key="7"
           className="w-[80%] flex items-center justify-center mx-auto"
         >

@@ -692,6 +692,8 @@ const Applications = () => {
         </div>
       </div>
       <Tabs
+        // className="font-semibold"
+
         activeKey={tab}
         onChange={(w) => {
           setSearchTerm("");
@@ -699,7 +701,11 @@ const Applications = () => {
           setTab(w);
         }}
       >
-        <TabPane tab="Job Seeker" key="1">
+        <TabPane
+          tab={<span className="font-semibold">Job Seeker</span>}
+          // tab="Job Seeker"
+          key="1"
+        >
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
@@ -722,13 +728,19 @@ const Applications = () => {
               </Select>
             </div>
           </div>
-          <Table
-            columns={getColumns("1")}
-            dataSource={filterData(jobSeekerData)}
-            pagination={false}
-          />
+          <div>
+            <Table
+              columns={getColumns("1")}
+              dataSource={filterData(jobSeekerData)}
+              pagination={false}
+            />
+          </div>
         </TabPane>
-        <TabPane tab="Skilling" key="2">
+        <TabPane
+          //  tab="Skilling"
+          tab={<span className="font-semibold">Skilling</span>}
+          key="2"
+        >
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
@@ -867,7 +879,11 @@ const Applications = () => {
             pagination={false}
           />
         </TabPane>
-        <TabPane tab="Volunteer" key="3">
+        <TabPane
+          // tab="Volunteer"
+          tab={<span className="font-semibold">Volunteer</span>}
+          key="3"
+        >
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
@@ -900,7 +916,11 @@ const Applications = () => {
             pagination={false}
           />
         </TabPane>
-        <TabPane tab="Documents" key="4">
+        <TabPane
+          tab={<span className="font-semibold">Documents</span>}
+          // tab="Documents"
+          key="4"
+        >
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
@@ -934,7 +954,11 @@ const Applications = () => {
             pagination={false}
           />
         </TabPane>
-        <TabPane tab="Welfare Scheme" key="5">
+        <TabPane
+          // tab="Welfare Scheme"
+          tab={<span className="font-semibold">Welfare Scheme</span>}
+          key="5"
+        >
           <div className="flex justify-between mb-4">
             <div></div>
             <div className="flex items-center gap-5">
@@ -968,7 +992,11 @@ const Applications = () => {
             pagination={false}
           />
         </TabPane>
-        <TabPane tab="Job Application" key="">
+        <TabPane
+          // tab="Job Application"
+          tab={<span className="font-semibold">Job Application</span>}
+          key="6"
+        >
           <div>
             <Select
               placeholder="Filter by Company"
