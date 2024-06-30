@@ -8,7 +8,7 @@ import {
   notification,
 } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Link } from "react-router-dom";
 import moment from "moment";
@@ -22,6 +22,25 @@ const CompaniesPage = () => {
   const [selectedItems, setSelectedItems] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+
+
+  const sendNotification = async (id, message) => {
+    const userRef = doc(db, "RegisterAsCompany", id);
+    console.log("🚀 ~ sendNotification ~ userID:", id);
+    const notificationsRef = collection(userRef, "Notifications");
+
+    const docRef = await addDoc(notificationsRef, {
+      company_id: id,
+      text: message,
+      sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+      image_link: null,
+    });
+    console.log(docRef.id);
+    // Update the document with its ID
+    await updateDoc(docRef, {
+      id: docRef.id,
+    });
+  };
 
   const getCompanies = async () => {
     const companyCollection = collection(db, "RegisterAsCompany");
@@ -61,6 +80,8 @@ const CompaniesPage = () => {
       await updateDoc(companyDoc, {
         status: status,
       });
+
+      sendNotification(selectedItems?.id,`Your company request has been ${status}`)
       notification.success({
         message: "Status Updated",
         description: `Company ${selectedItems?.id} has been ${status} successfully.`,

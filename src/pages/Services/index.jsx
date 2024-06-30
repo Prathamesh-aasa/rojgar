@@ -572,7 +572,7 @@ const Index = () => {
           skillId: program.id,
           name: courseName,
           video_link: courseVideoLink,
-          is_free: courseType,
+          isFree: courseType,
           amount: amount,
           location: location,
         });
@@ -582,7 +582,7 @@ const Index = () => {
           name: courseName,
           video_link: courseVideoLink,
           amount: amount,
-          is_free: true,
+          isFree: true,
           location: location,
         });
       }
@@ -606,7 +606,7 @@ const Index = () => {
       [`course_id${index}`]: course.id,
       [`amount${index}`]: course?.amount,
       [`location${index}`]: course?.location,
-      [`courseType${index}`]: course.is_free ? "free" : "paid",
+      [`courseType${index}`]: course.isFree ? "free" : "paid",
     }));
     skillingForm.setFieldsValue({
       // programName: skill.name,
@@ -629,7 +629,7 @@ const Index = () => {
         await updateDoc(courseRef, {
           name: courseName,
           video_link: courseVideoLink,
-          is_free: courseType,
+          isFree: courseType,
           amount: amount,
           location: location,
         });
@@ -656,7 +656,7 @@ const Index = () => {
         video_link: values.courseVideoLink,
         amount: values.amount,
         location: values.location,
-        is_free: values.courseType === "free",
+        isFree: values.courseType === "free",
       });
       addNewCourseForm.resetFields();
       setIsSkillingModalVisible(false);
@@ -679,7 +679,7 @@ const Index = () => {
       const volunteer = {
         name: value?.volunteerName,
         is_volunteer: true,
-        is_free: true,
+        isFree: true,
         session: {
           name_1: value?.sessionName1,
           name_2: value?.sessionName2,
