@@ -783,8 +783,8 @@ const Index = () => {
       ),
     },
     {
-      label: `Skills`,
-      key: "Skills",
+      label: `Skill`,
+      key: "Skill",
       children: (
         <div className="m-3">
           <div className="my-5 flex justify-end">
@@ -824,7 +824,7 @@ const Index = () => {
             )}
           </div>
           <div className="flex items-center gap-3 m-3 flex-wrap">
-            {suggestiveList?.Skills?.map((trade) => {
+            {suggestiveList?.Skill?.map((trade) => {
               return (
                 <div
                   className="flex items-center justify-center bg-primary px-3 py-2 rounded-full"
@@ -852,8 +852,8 @@ const Index = () => {
       ),
     },
     {
-      label: `Other Benefits`,
-      key: "Other Benefits",
+      label: `Benefit`,
+      key: "Benefit",
       // children: `Content of Tab ${id}`,
       children: (
         <div className="m-3">
@@ -894,7 +894,7 @@ const Index = () => {
             )}
           </div>
           <div className="flex items-center gap-3 m-3 flex-wrap">
-            {suggestiveList["Other Benefits"]?.map((trade) => {
+            {suggestiveList["Benefit"]?.map((trade) => {
               return (
                 <div
                   className="flex items-center justify-center bg-primary px-3 py-2 rounded-full"
@@ -1238,7 +1238,7 @@ const Index = () => {
                       flex: 1,
                     }}
                   >
-                    {suggestiveList?.Skills?.map((op) => {
+                    {suggestiveList?.Skill?.map((op) => {
                       return (
                         <Option value={op?.name} key={op?.id}>
                           {op?.name}
