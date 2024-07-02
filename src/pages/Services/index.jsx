@@ -378,10 +378,15 @@ const Index = () => {
   };
   const createScheme = async (name, fee) => {
     try {
-      await addDoc(collection(db, "All Welfare Schemes"), {
+      const welfareRef = await addDoc(collection(db, "All Welfare Schemes"), {
         name,
-        fee,
+        fee: fee || 0,
       });
+
+      const welfareId = welfareRef.id;
+
+      await updateDoc(welfareRef, { id: welfareId });
+
       notification.success({
         message: "Item Added",
         description: `Suggestive ${name} has been added successfully.`,
@@ -416,7 +421,7 @@ const Index = () => {
     try {
       await addDoc(collection(db, "All Documents"), {
         name,
-        fee,
+        fee: fee || 0,
       });
       notification.success({
         message: "Item Added",
@@ -563,8 +568,8 @@ const Index = () => {
       const courses = [];
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseName = values[`courseName${i}`];
-        const courseVideoLink = values[`courseVideoLink${i}`]||"";
-        const fee = values[`fee${i}`] | "";
+        const courseVideoLink = values[`courseVideoLink${i}`] || "";
+        const fee = values[`fee${i}`] || 0;
         const location = values[`location${i}`] || "";
         const courseType = values[`courseType${i}`] === "free" ? true : false;
 
@@ -624,7 +629,7 @@ const Index = () => {
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseId = values[`course_id${i}`];
         const courseName = values[`courseName${i}`];
-        const fee = values[`fee${i}`];
+        const fee = values[`fee${i}`] || 0;
         const location = values[`location${i}`];
         const courseVideoLink = values[`videoLink${i}`];
         const courseType = values[`courseType${i}`] == "free" ? true : false;
@@ -633,10 +638,10 @@ const Index = () => {
         const courseRef = doc(db, "Courses", courseId);
         await updateDoc(courseRef, {
           name: courseName,
-          videoLink: courseVideoLink,
+          videoLink: courseVideoLink || "",
           isFree: courseType,
-          fee: fee,
-          location: location,
+          fee: fee || "",
+          location: location || "",
         });
       }
       notification.success({
@@ -655,14 +660,18 @@ const Index = () => {
   };
   const handleAddCourse = async (values) => {
     try {
-      await addDoc(collection(db, "Courses"), {
+      const courseRef = await addDoc(collection(db, "Courses"), {
         skillId: selectedSkill?.id,
         name: values.courseName,
-        videoLink: values.courseVideoLink,
-        fee: values.fee,
-        location: values.location,
-        isFree: values.courseType == "free"  ? true : false,
+        videoLink: values.courseVideoLink || "",
+        fee: values.fee || 0,
+        location: values.location || "",
+        isFree: values.courseType == "free" ? true : false,
       });
+
+      const courseId = courseRef.id;
+
+      await updateDoc(courseRef, { id: courseId });
       addNewCourseForm.resetFields();
       setIsSkillingModalVisible(false);
       setSelectedSkill(null);
@@ -746,7 +755,7 @@ const Index = () => {
                   name="benefit"
                   rules={[
                     {
-                      whitespace:true,
+                      whitespace: true,
                       required: true,
                       message: "Benefit Name is required",
                     },
@@ -1574,7 +1583,7 @@ const Index = () => {
                   name="document"
                   rules={[
                     {
-                      whitespace:true,
+                      whitespace: true,
                       required: true,
                       message: "Document Name is required",
                     },
@@ -1653,15 +1662,13 @@ const Index = () => {
               <Form
                 className="mt-4"
                 form={welfareForm}
-                onFinish={(values) =>
-                  createScheme(values?.scheme, values?.fee)
-                }
+                onFinish={(values) => createScheme(values?.scheme, values?.fee)}
               >
                 <Form.Item
                   name="scheme"
                   rules={[
                     {
-                      whitespace:true,
+                      whitespace: true,
                       required: true,
                       message: "Benefit Name is required",
                     },
