@@ -746,6 +746,7 @@ const Index = () => {
                   name="benefit"
                   rules={[
                     {
+                      whitespace:true,
                       required: true,
                       message: "Benefit Name is required",
                     },
@@ -1573,6 +1574,7 @@ const Index = () => {
                   name="document"
                   rules={[
                     {
+                      whitespace:true,
                       required: true,
                       message: "Document Name is required",
                     },
@@ -1659,6 +1661,7 @@ const Index = () => {
                   name="scheme"
                   rules={[
                     {
+                      whitespace:true,
                       required: true,
                       message: "Benefit Name is required",
                     },
