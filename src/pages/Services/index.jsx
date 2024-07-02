@@ -1582,12 +1582,13 @@ const Index = () => {
                 </Form.Item>
                 <Form.Item
                   name="fee"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Amount is required",
-                    },
-                  ]}
+                  hidden
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Amount is required",
+                  //   },
+                  // ]}
                 >
                   <Input placeholder="Amount" type="number" />
                 </Form.Item>

@@ -29,7 +29,7 @@ const Navigation = () => {
   const items = [
     {
       key: "1",
-      label: <a href="/setting">Setting</a>,
+      label: <a href="/user">Profile</a>,
     },
     {
       key: "2",
@@ -96,6 +96,12 @@ const Navigation = () => {
             >
               Services
             </a>
+            <a
+              href="/settings"
+              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md font-medium text-lg"
+            >
+              Settings
+            </a>
           </div>
           <div className="flex items-center justify-center gap-5">
             <a className="" href="/notifications">
@@ -156,7 +162,8 @@ const Navigation = () => {
                 element={<Pages.Details />}
               />
               <Route path="/services" element={<Pages.Services />} />
-              <Route path="/setting" element={<Pages.Setting />} />
+              <Route path="/user" element={<Pages.Setting />} />
+              <Route path="/settings" element={<Pages.EmailSetting />} />
               <Route path="/notifications" element={<Pages.Notification />} />
               <Route path="/dashboard" element={<Pages.Dashboard />} />
               <Route

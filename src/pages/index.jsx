@@ -14,4 +14,5 @@ export { default as Setting } from "./Setting/index"
 export { default as Notification } from "./Notification"
 export { default as Dashboard } from "./Dashboard"
 export { default as CompaniesApplications } from "./Companies/Applications"
+export { default as EmailSetting } from "./emails"
 
