@@ -556,43 +556,40 @@ const Index = () => {
         name: programName,
         isFree: true,
       });
-      console.log("🚀 ~ program ~ program:", program, program.id);
+
+      await updateDoc(program, { id: program.id });
 
       // 2. Add each course
       const courses = [];
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseName = values[`courseName${i}`];
-        const courseVideoLink = values[`courseVideoLink${i}`];
-        const amount = values[`amount${i}`]|"";
-        const location = values[`location${i}`]||"";
+        const courseVideoLink = values[`courseVideoLink${i}`]||"";
+        const amount = values[`amount${i}`] | "";
+        const location = values[`location${i}`] || "";
         const courseType = values[`courseType${i}`] === "free" ? true : false;
 
         // Add course to courses array or database directly
         courses.push({
           skillId: program.id,
           name: courseName,
-          video_link: courseVideoLink,
+          videoLink: courseVideoLink,
           isFree: courseType,
-          amount: amount,
-          location: location,
-        });
-        console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',{
-          skillId: program.id,
-          name: courseName,
-          video_link: courseVideoLink,
-          isFree: courseType,
-          amount: amount,
+          fee: amount,
           location: location,
         });
 
-        await addDoc(collection(db, "Courses"), {
+        const courseRef = await addDoc(collection(db, "Courses"), {
           skillId: program.id,
           name: courseName,
-          video_link: courseVideoLink,
-          amount: amount,
+          videoLink: courseVideoLink,
+          fee: amount,
           isFree: true,
           location: location,
         });
+
+        const courseId = courseRef.id;
+
+        await updateDoc(courseRef, { id: courseId });
       }
 
       form.resetFields();
@@ -1708,10 +1705,10 @@ const Index = () => {
           </div>
         </TabPane>
         <TabPane
-        //  tab="Subscription Plan" 
+          //  tab="Subscription Plan"
           tab={<span className="font-semibold">Subscription Plan</span>}
-        
-        key="6">
+          key="6"
+        >
           <div className="flex justify-end mb-4">
             <Button type="primary" onClick={() => setIsModalVisible(true)}>
               Create New Benefit
@@ -1726,7 +1723,6 @@ const Index = () => {
         <TabPane
           // tab="Suggestive Lists"
           tab={<span className="font-semibold">Suggestive Lists</span>}
-
           key="7"
           className="w-[80%] flex items-center justify-center mx-auto"
         >
