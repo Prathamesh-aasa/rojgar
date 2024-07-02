@@ -28,7 +28,7 @@ import {
   where,
 } from "firebase/firestore";
 import moment from "moment";
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { FileTextIcon } from "lucide-react";
 const { Option } = Select;
 
 const Applications = () => {
@@ -512,8 +512,7 @@ const Applications = () => {
         if (data.status == "Pending" || data.status == "Rejected")
           return notification.error({
             message: "Payment data approved",
-            description:
-              "Payment for this job seeker have not been approved.",
+            description: "Payment for this job seeker have not been approved.",
           });
       } else {
         return notification.error({
@@ -1023,7 +1022,7 @@ const Applications = () => {
         </TabPane>
       </Tabs>
       <Modal
-        title="Details"
+        // title="Details"
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -1034,17 +1033,18 @@ const Applications = () => {
           selectedItem?.status == "Pending" && (
             <>
               {tab == "1" && (
-                <>
-                  <Button danger onClick={() => handelUpdate("Rejected")}>
+                <div className="flex gap-5 justify-end">
+                  <button  onClick={() => handelUpdate("Rejected")} className="bg-red-500/40 border-red-500 border px-6 py-2 text-red-900 font-semibold rounded-lg">
                     Reject
-                  </Button>
-                  <Button
-                    type="primary"
+                  </button>
+                  <button
+                  size="large"
+                   className="bg-green-500/40 border-green-500 border px-6 py-2 text-green-900 font-semibold rounded-lg"
                     onClick={() => handelUpdate("Approved")}
                   >
                     Approve
-                  </Button>
-                </>
+                  </button>
+                </div>
               )}
               {tab == "2" && (
                 <>
@@ -1092,199 +1092,231 @@ const Applications = () => {
           )
         }
       >
+        <h1 className="text-xl font-semibold p-5 text-blue-900 bg-blue-400/25 my-3 rounded-md mt-5">
+          Details
+        </h1>
         {selectedItem && (
-          <div className="flex justify-evenly">
-            <div>
-              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Personals Details
-              </h1>
-              <div className="grid grid-cols-3">
-                <div className="flex flex-col gap-2">
-                  <p>Registration ID</p>
-                  <span>{selectedItem?.id}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>First Name</p>
-                  <span>{selectedItem?.full_name?.split(" ")[0]}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Last Name</p>
-                  <span>{selectedItem?.full_name?.split(" ")[1]}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Phone Number</p>
-                  <span>{selectedItem?.phone_number}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Email</p>
-                  <span>{selectedItem?.email}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Date of Registration</p>
-                  <span>{selectedItem?.date_of_registration}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Applied Company</p>
-                  <span>{selectedItem?.company_name}</span>
-                </div>
-                <div className="flex flex-col gap-2 mb-4">
-                  <p>Applied Post</p>
-                  <span>{selectedItem?.job_you_want_to_apply}</span>
-                </div>
-              </div>
-              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Address Details
-              </h1>
-              <div className="grid grid-cols-3">
-                <div className="flex flex-col gap-2">
-                  <p>PIN</p>
-                  <span>{selectedItem?.pin}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>State</p>
-                  <span>{selectedItem?.state}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>District</p>
-                  <span>{selectedItem?.district}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>City/village</p>
-                  <span>{selectedItem?.city}</span>
-                </div>
-                <div className="flex flex-col gap-2 mb-4">
-                  <p>Address</p>
-                  <span>{selectedItem?.address}</span>
+          <div className="flex justify-around gap-3">
+            <div className="flex-1 flex flex-col space--x-4 space-y-4">
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Personals Details
+                </h1>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <p>Registration ID</p>
+                    <span>{selectedItem?.id}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Name</p>
+                    <span>{selectedItem?.full_name}</span>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <p>Phone Number</p>
+                    <span>{selectedItem?.phone_number}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Email</p>
+                    <span>{selectedItem?.email}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Date of Registration</p>
+                    <span>
+                      {moment(selectedItem?.date_of_registration).format(
+                        "DD-MM-YYYY"
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Applied Company</p>
+                    <span>{selectedItem?.company_name}</span>
+                  </div>
+                  <div className="flex flex-col gap-2 mb-4">
+                    <p>Applied Post</p>
+                    <span>{selectedItem?.job_you_want_to_apply}</span>
+                  </div>
                 </div>
               </div>
-              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Educational & Professional Details
-              </h1>
-              <div className="grid grid-cols-3">
-                <div className="flex flex-col gap-2">
-                  <p>Highest Qualification</p>
-                  <span>{selectedItem?.highest_qualification}</span>
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Address Details
+                </h1>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-2">
+                    <p>PIN</p>
+                    <span>{selectedItem?.pin}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>State</p>
+                    <span>{selectedItem?.state}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>District</p>
+                    <span>{selectedItem?.district}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>City/village</p>
+                    <span>{selectedItem?.city}</span>
+                  </div>
+                  <div className="flex flex-col gap-2 mb-4">
+                    <p>Address</p>
+                    <span>{selectedItem?.address}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <p>Trade</p>
-                  <span>{selectedItem?.trade}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Experience</p>
-                  <span>{selectedItem?.years_of_experience}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Company Name</p>
-                  <span>{selectedItem?.company_name}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Area of Experience</p>
-                  <span>{selectedItem?.area_of_experience}</span>
-                </div>
-                <div className="flex flex-col gap-2 mb-4">
-                  <p>Years of Experience</p>
-                  <span>{selectedItem?.years_of_experience}</span>
+              </div>
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Educational & Professional Details
+                </h1>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-2">
+                    <p>Highest Qualification</p>
+                    <span>{selectedItem?.highest_qualification}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Trade</p>
+                    <span>{selectedItem?.trade}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Experience</p>
+                    <span>{selectedItem?.years_of_experience}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Company Name</p>
+                    <span>{selectedItem?.company_name}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Area of Experience</p>
+                    <span>{selectedItem?.area_of_experience}</span>
+                  </div>
+                  <div className="flex flex-col gap-2 mb-4">
+                    <p>Years of Experience</p>
+                    <span>{selectedItem?.years_of_experience}</span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div>
-              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Documents & Service Details
-              </h1>
-              <div className="grid grid-cols-3">
-                <div className="flex flex-col gap-2">
-                  <p>Aadhaar No.</p>
-                  <span>{selectedItem?.adhaar_card_number}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Pan No.</p>
-                  <span>{selectedItem?.pan_card_number}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Service Selected</p>
-                  <span>{selectedItem?.profile_type}</span>
-                </div>
-              </div>
-              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Other Details
-              </h1>
-              <div className="grid grid-cols-3">
-                <div className="flex flex-col gap-2">
-                  <p>Job you want to apply</p>
-                  <span>{selectedItem?.job_you_want_to_apply}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Location of work</p>
-                  <span>{selectedItem?.preferred_city_of_work}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Any criminal record</p>
-                  <span>
-                    {selectedItem?.do_you_have_any_criminal_record
-                      ? "Yes"
-                      : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Registration Fee paid</p>
-                  <span>{selectedItem?.fee_paid}</span>
-                </div>
-                <div className="flex flex-col gap-2 mb-4">
-                  <p>Driving license</p>
-                  <span>
-                    {selectedItem?.do_you_have_any_driving_license
-                      ? "Yes"
-                      : "No"}
-                  </span>
+            <div className="flex-1 flex flex-col space--x-4 space-y-4 h-full">
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Documents & Service Details
+                </h1>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-2">
+                    <p>Aadhaar No.</p>
+                    <span>{selectedItem?.adhaar_card_number}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Pan No.</p>
+                    <span>{selectedItem?.pan_card_number}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Service Selected</p>
+                    <span>{selectedItem?.profile_type}</span>
+                  </div>
                 </div>
               </div>
-              <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                Additional Details
-              </h1>
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Other Details
+                </h1>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-2">
+                    <p>Job you want to apply</p>
+                    <span>{selectedItem?.job_you_want_to_apply}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Location of work</p>
+                    <span>{selectedItem?.preferred_city_of_work}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Any criminal record</p>
+                    <span>
+                      {selectedItem?.do_you_have_any_criminal_record
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Registration Fee paid</p>
+                    <span>{selectedItem?.fee_paid}</span>
+                  </div>
+                  <div className="flex flex-col gap-2 mb-4">
+                    <p>Driving license</p>
+                    <span>
+                      {selectedItem?.do_you_have_any_driving_license
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Additional Details
+                </h1>
 
-              <div className="grid grid-cols-3">
-                <div className="flex flex-col gap-2">
-                  <p>No. of family member</p>
-                  <span>{selectedItem?.number_of_family_members}</span>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-2">
+                    <p>No. of family member</p>
+                    <span>{selectedItem?.number_of_family_members}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>No. of female children</p>
+                    <span>{selectedItem?.number_of_female_children}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>No. of male children</p>
+                    <span>{selectedItem?.number_of_male_children}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Main occupation of the family</p>
+                    <span>{selectedItem?.main_occupation_of_family}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Need any agricultural products?</p>
+                    <span>
+                      {selectedItem?.do_you_need_any_farming_products
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>have agricultural land?</p>
+                    <span>
+                      {selectedItem?.do_you_have_agriculture_land
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Mention agricultural products</p>
+                    <span>{selectedItem?.farming_product}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Have a toilet at home?</p>
+                    <span>
+                      {selectedItem?.do_you_have_toilet_at_home ? "Yes" : "No"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <p>No. of female children</p>
-                  <span>{selectedItem?.number_of_female_children}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>No. of male children</p>
-                  <span>{selectedItem?.number_of_male_children}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Main occupation of the family</p>
-                  <span>{selectedItem?.main_occupation_of_family}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Need any agricultural products?</p>
-                  <span>
-                    {selectedItem?.do_you_need_any_farming_products
-                      ? "Yes"
-                      : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>have agricultural land?</p>
-                  <span>
-                    {selectedItem?.do_you_have_agriculture_land ? "Yes" : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Mention agricultural products</p>
-                  <span>{selectedItem?.farming_product}</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p>Have a toilet at home?</p>
-                  <span>
-                    {selectedItem?.do_you_have_toilet_at_home ? "Yes" : "No"}
-                  </span>
+                <div className="flex">
+                  {selectedItem?.resume_link && (
+                    <>
+                      <a
+                        href={selectedItem?.resume_link}
+                        className="p-3 bg-blue-700/40 rounded flex gap-4"
+                      >
+                        <div>
+                          <FileTextIcon className="h-5 w-5" />
+                        </div>
+                        <p className="text-blue-900">Resume</p>
+                      </a>
+                    </>
+                  )}
                 </div>
               </div>
-              <a href={selectedItem?.resume_link}>resume</a>
             </div>
           </div>
         )}

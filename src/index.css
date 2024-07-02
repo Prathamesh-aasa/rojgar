@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.grid .flex > p {
+  font-weight: 600;
+}

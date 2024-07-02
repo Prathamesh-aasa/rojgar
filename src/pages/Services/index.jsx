@@ -376,11 +376,11 @@ const Index = () => {
       getSuggestiveList();
     }
   };
-  const createScheme = async (name, amount) => {
+  const createScheme = async (name, fee) => {
     try {
       await addDoc(collection(db, "All Welfare Schemes"), {
         name,
-        amount,
+        fee,
       });
       notification.success({
         message: "Item Added",
@@ -412,11 +412,11 @@ const Index = () => {
       getWelfare();
     }
   };
-  const createDocument = async (name, amount) => {
+  const createDocument = async (name, fee) => {
     try {
       await addDoc(collection(db, "All Documents"), {
         name,
-        amount,
+        fee,
       });
       notification.success({
         message: "Item Added",
@@ -564,7 +564,7 @@ const Index = () => {
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseName = values[`courseName${i}`];
         const courseVideoLink = values[`courseVideoLink${i}`]||"";
-        const amount = values[`amount${i}`] | "";
+        const fee = values[`fee${i}`] | "";
         const location = values[`location${i}`] || "";
         const courseType = values[`courseType${i}`] === "free" ? true : false;
 
@@ -574,7 +574,7 @@ const Index = () => {
           name: courseName,
           videoLink: courseVideoLink,
           isFree: courseType,
-          fee: amount,
+          fee: fee,
           location: location,
         });
 
@@ -582,7 +582,7 @@ const Index = () => {
           skillId: program.id,
           name: courseName,
           videoLink: courseVideoLink,
-          fee: amount,
+          fee: fee,
           isFree: true,
           location: location,
         });
@@ -607,9 +607,9 @@ const Index = () => {
     setSelectedSkill(skill);
     const coursesData = skill.courses.map((course, index) => ({
       [`courseName${index}`]: course.name,
-      [`video_link${index}`]: course.video_link,
+      [`videoLink${index}`]: course.videoLink,
       [`course_id${index}`]: course.id,
-      [`amount${index}`]: course?.amount,
+      [`fee${index}`]: course?.fee,
       [`location${index}`]: course?.location,
       [`courseType${index}`]: course.isFree ? "free" : "paid",
     }));
@@ -624,18 +624,18 @@ const Index = () => {
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseId = values[`course_id${i}`];
         const courseName = values[`courseName${i}`];
-        const amount = values[`amount${i}`];
+        const fee = values[`fee${i}`];
         const location = values[`location${i}`];
-        const courseVideoLink = values[`video_link${i}`];
-        const courseType = values[`courseType${i}`] === "free";
+        const courseVideoLink = values[`videoLink${i}`];
+        const courseType = values[`courseType${i}`] == "free" ? true : false;
 
         // Update existing course
         const courseRef = doc(db, "Courses", courseId);
         await updateDoc(courseRef, {
           name: courseName,
-          video_link: courseVideoLink,
+          videoLink: courseVideoLink,
           isFree: courseType,
-          amount: amount,
+          fee: fee,
           location: location,
         });
       }
@@ -658,10 +658,10 @@ const Index = () => {
       await addDoc(collection(db, "Courses"), {
         skillId: selectedSkill?.id,
         name: values.courseName,
-        video_link: values.courseVideoLink,
-        amount: values.amount,
+        videoLink: values.courseVideoLink,
+        fee: values.fee,
         location: values.location,
-        isFree: values.courseType === "free",
+        isFree: values.courseType == "free"  ? true : false,
       });
       addNewCourseForm.resetFields();
       setIsSkillingModalVisible(false);
@@ -690,7 +690,7 @@ const Index = () => {
           name_2: value?.sessionName2,
         },
         skillId: "",
-        video_link: "",
+        videoLink: "",
       };
       await addDoc(collection(db, "Courses"), volunteer);
       getVolunteer();
@@ -1409,7 +1409,7 @@ const Index = () => {
                       </Form.Item>
                       <Form.Item
                         label="Course Video Link"
-                        name={`video_link${index}`}
+                        name={`videoLink${index}`}
                         rules={[
                           {
                             // required: true,
@@ -1439,7 +1439,7 @@ const Index = () => {
                           <Option value="paid">Paid</Option>
                         </Select>
                       </Form.Item>
-                      <Form.Item label="Amount" name={`amount${index}`}>
+                      <Form.Item label="Amount" name={`fee${index}`}>
                         <Input placeholder="Amount" type="number" />
                       </Form.Item>
                       <Form.Item label="Location" name={`location${index}`}>
@@ -1566,7 +1566,7 @@ const Index = () => {
                 className="mt-4"
                 form={documentService}
                 onFinish={(values) =>
-                  createDocument(values?.document, values?.amount)
+                  createDocument(values?.document, values?.fee)
                 }
               >
                 <Form.Item
@@ -1581,7 +1581,7 @@ const Index = () => {
                   <Input placeholder="Document Name" />
                 </Form.Item>
                 <Form.Item
-                  name="amount"
+                  name="fee"
                   rules={[
                     {
                       required: true,
@@ -1651,7 +1651,7 @@ const Index = () => {
                 className="mt-4"
                 form={welfareForm}
                 onFinish={(values) =>
-                  createScheme(values?.scheme, values?.amount)
+                  createScheme(values?.scheme, values?.fee)
                 }
               >
                 <Form.Item
@@ -1666,7 +1666,7 @@ const Index = () => {
                   <Input placeholder="Benefit Name" />
                 </Form.Item>
                 <Form.Item
-                  name="amount"
+                  name="fee"
                   rules={[
                     {
                       required: true,
@@ -1931,7 +1931,7 @@ const Index = () => {
                     <Option value="paid">Paid</Option>
                   </Select>
                 </Form.Item>
-                <Form.Item label="Amount" name={`amount${index}`}>
+                <Form.Item label="Amount" name={`fee${index}`}>
                   <Input placeholder="Amount" type="number" />
                 </Form.Item>
                 <Form.Item label="Location" name={`location${index}`}>
@@ -1993,7 +1993,7 @@ const Index = () => {
               <Option value="paid">Paid</Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Amount" name={`amount`}>
+          <Form.Item label="Amount" name={`fee`}>
             <Input placeholder="Amount" type="number" />
           </Form.Item>
           <Form.Item
