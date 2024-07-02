@@ -474,7 +474,7 @@ const Index = () => {
       });
 
       await updateDoc(compony, { id: compony?.id });
-      
+
       await addDoc(collection(db, "Jobs"), {
         benefits: value?.otherBenefits,
         company_id: compony?.id,
@@ -573,6 +573,8 @@ const Index = () => {
         const courseVideoLink = values[`courseVideoLink${i}`] || "";
         const fee = values[`fee${i}`] || 0;
         const location = values[`location${i}`] || "";
+        const duration = values[`duration${i}`] || "";
+        const startDate = values[`startDate${i}`] || "";
         const courseType = values[`courseType${i}`] === "free" ? true : false;
 
         // Add course to courses array or database directly
@@ -583,6 +585,8 @@ const Index = () => {
           isFree: courseType,
           fee: fee,
           location: location,
+          duration: duration,
+          startDate: startDate,
         });
 
         const courseRef = await addDoc(collection(db, "Courses"), {
@@ -592,6 +596,8 @@ const Index = () => {
           fee: fee,
           isFree: true,
           location: location,
+          duration: duration,
+          startDate: startDate,
         });
 
         const courseId = courseRef.id;
@@ -617,6 +623,8 @@ const Index = () => {
       [`videoLink${index}`]: course.videoLink,
       [`course_id${index}`]: course.id,
       [`fee${index}`]: course?.fee,
+      [`duration${index}`]: course?.duration,
+      [`startDate${index}`]: course?.startDate,
       [`location${index}`]: course?.location,
       [`courseType${index}`]: course.isFree ? "free" : "paid",
     }));
@@ -633,6 +641,8 @@ const Index = () => {
         const courseName = values[`courseName${i}`];
         const fee = values[`fee${i}`] || 0;
         const location = values[`location${i}`];
+        const duration = values[`duration${i}`];
+        const startDate = values[`startDate${i}`];
         const courseVideoLink = values[`videoLink${i}`];
         const courseType = values[`courseType${i}`] == "free" ? true : false;
 
@@ -644,6 +654,8 @@ const Index = () => {
           isFree: courseType,
           fee: fee || "",
           location: location || "",
+          duration: duration || "",
+          startDate: startDate || "",
         });
       }
       notification.success({
@@ -668,6 +680,8 @@ const Index = () => {
         videoLink: values.courseVideoLink || "",
         fee: values.fee || 0,
         location: values.location || "",
+        duration: values.duration || "",
+        startDate: values.startDate || "",
         isFree: values.courseType == "free" ? true : false,
       });
 
@@ -1457,6 +1471,15 @@ const Index = () => {
                       <Form.Item label="Location" name={`location${index}`}>
                         <Input placeholder="Location" />
                       </Form.Item>
+                      <Form.Item
+                        label="Duration (Months)"
+                        name={`duration${index}`}
+                      >
+                        <Input placeholder="Duration" />
+                      </Form.Item>
+                      <Form.Item label="Start Date" name={`startDate${index}`}>
+                        <Input placeholder="start Date" type="date" />
+                      </Form.Item>
                     </div>
                   </div>
                 ))}
@@ -1950,6 +1973,11 @@ const Index = () => {
                 <Form.Item label="Location" name={`location${index}`}>
                   <Input placeholder="Location" />
                 </Form.Item>
+                <Form.Item label="Duration (Months)" name={`duration${index}`}>
+                  <Input placeholder="Duration" />
+                </Form.Item> <Form.Item label="Start Date" name={`startDate${index}`}>
+                        <Input placeholder="start Date" type="date" />
+                      </Form.Item>
               </div>
               {courses.length > 1 && (
                 <Button type="link" onClick={() => removeCourse(course.key)}>
@@ -1962,7 +1990,7 @@ const Index = () => {
             Add Course
           </Button>
           <div className="flex justify-end gap-8 mt-4">
-            <Button>Cancel</Button>
+            <Button onClick={() => setIsSkillingModal(false)}>Cancel</Button>
             <Button type="primary" htmlType="submit">
               Save
             </Button>
@@ -2014,8 +2042,15 @@ const Index = () => {
             name="location"
             rules={[{ whitespace: true, message: "location is required" }]}
           >
-            <Input placeholder="Enter video link" />
+            <Input placeholder="location" />
           </Form.Item>
+          <Form.Item label="Duration (Months)" name={`duration`}>
+            <Input placeholder="Duration" />
+          </Form.Item>
+          <Form.Item label="Start Date" name={`startDate`}>
+            <Input placeholder="start Date" type="date" />
+          </Form.Item>
+
           <div className="flex justify-end gap-8 mt-4">
             <Button onClick={() => setIsSkillingModalVisible(false)}>
               Cancel
