@@ -509,11 +509,11 @@ const Applications = () => {
       if (!querySnapshot.empty) {
         const paymentDoc = querySnapshot.docs[0];
         const data = paymentDoc.data();
-        if (data.status == "Pending")
+        if (data.status == "Pending" || data.status == "Rejected")
           return notification.error({
             message: "Payment data approved",
             description:
-              "Payment for this job seeker have not been approved yet.",
+              "Payment for this job seeker have not been approved.",
           });
       } else {
         return notification.error({

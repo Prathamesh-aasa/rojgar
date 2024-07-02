@@ -563,12 +563,20 @@ const Index = () => {
       for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
         const courseName = values[`courseName${i}`];
         const courseVideoLink = values[`courseVideoLink${i}`];
-        const amount = values[`amount${i}`];
-        const location = values[`location${i}`];
+        const amount = values[`amount${i}`]|"";
+        const location = values[`location${i}`]||"";
         const courseType = values[`courseType${i}`] === "free" ? true : false;
 
         // Add course to courses array or database directly
         courses.push({
+          skillId: program.id,
+          name: courseName,
+          video_link: courseVideoLink,
+          isFree: courseType,
+          amount: amount,
+          location: location,
+        });
+        console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',{
           skillId: program.id,
           name: courseName,
           video_link: courseVideoLink,
