@@ -84,7 +84,10 @@ const Applications = () => {
       // Assuming you only need the first document
       const paymentDoc = querySnapshot.docs[0];
       setPaymentData(paymentDoc.data());
+      setModalVisible(true);
+
     } else {
+      setModalVisible(false);
       notification.error({
         message: "Payment data not found",
         description: "Please try again later.",
@@ -119,11 +122,11 @@ const Applications = () => {
 
   const handleButtonClick = async (record, index = 0) => {
     if (record?.payment_id && index == 1) {
+      // setModalVisible(true);
       await fetchPaymentDatas(record.payment_id);
-      setModalVisible(true);
     } else if (record?.payment_id) {
+      // setModalVisible(true);
       await fetchPaymentData(record.payment_id);
-      setModalVisible(true);
     }
   };
   const getColumns = (tab) => {
@@ -748,7 +751,7 @@ const Applications = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id, userId) => {
     try {
       const paymentDocRef = doc(db, "Payments", id);
       await updateDoc(paymentDocRef, {
@@ -1034,12 +1037,15 @@ const Applications = () => {
             <>
               {tab == "1" && (
                 <div className="flex gap-5 justify-end">
-                  <button  onClick={() => handelUpdate("Rejected")} className="bg-red-500/40 border-red-500 border px-6 py-2 text-red-900 font-semibold rounded-lg">
+                  <button
+                    onClick={() => handelUpdate("Rejected")}
+                    className="bg-red-500/40 border-red-500 border px-6 py-2 text-red-900 font-semibold rounded-lg"
+                  >
                     Reject
                   </button>
                   <button
-                  size="large"
-                   className="bg-green-500/40 border-green-500 border px-6 py-2 text-green-900 font-semibold rounded-lg"
+                    size="large"
+                    className="bg-green-500/40 border-green-500 border px-6 py-2 text-green-900 font-semibold rounded-lg"
                     onClick={() => handelUpdate("Approved")}
                   >
                     Approve
@@ -1118,7 +1124,11 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Email</p>
-                    <span>{selectedItem?.email}</span>
+                    <span>
+                      {selectedItem?.email ||
+                        selectedItem?.email_id ||
+                        "Not Given"}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Date of Registration</p>
@@ -1130,11 +1140,11 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Applied Company</p>
-                    <span>{selectedItem?.company_name}</span>
+                    <span>{selectedItem?.company_name || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2 mb-4">
                     <p>Applied Post</p>
-                    <span>{selectedItem?.job_you_want_to_apply}</span>
+                    <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
                   </div>
                 </div>
               </div>
@@ -1145,7 +1155,11 @@ const Applications = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="flex flex-col gap-2">
                     <p>PIN</p>
-                    <span>{selectedItem?.pin}</span>
+                    <span>
+                      {selectedItem?.pin ||
+                        selectedItem?.pincode ||
+                        "Not Given"}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>State</p>
@@ -1180,19 +1194,21 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Experience</p>
-                    <span>{selectedItem?.years_of_experience}</span>
+                    <span>{selectedItem?.years_of_experience || "NA"}</span>
                   </div>
+
                   <div className="flex flex-col gap-2">
                     <p>Company Name</p>
-                    <span>{selectedItem?.company_name}</span>
+                    <span>{selectedItem?.company_name || "NA"}</span>
                   </div>
+
                   <div className="flex flex-col gap-2">
                     <p>Area of Experience</p>
-                    <span>{selectedItem?.area_of_experience}</span>
+                    <span>{selectedItem?.area_of_experience || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2 mb-4">
                     <p>Years of Experience</p>
-                    <span>{selectedItem?.years_of_experience}</span>
+                    <span>{selectedItem?.years_of_experience || "NA"}</span>
                   </div>
                 </div>
               </div>
@@ -1205,11 +1221,19 @@ const Applications = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="flex flex-col gap-2">
                     <p>Aadhaar No.</p>
-                    <span>{selectedItem?.adhaar_card_number}</span>
+                    <span>
+                      {selectedItem?.adhaar_card_number ||
+                        selectedItem?.adhaar_number ||
+                        "Not Given"}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Pan No.</p>
-                    <span>{selectedItem?.pan_card_number}</span>
+                    <span>
+                      {selectedItem?.pan_card_number ||
+                        selectedItem?.pan_number ||
+                        "Not Given"}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Service Selected</p>
@@ -1224,11 +1248,11 @@ const Applications = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="flex flex-col gap-2">
                     <p>Job you want to apply</p>
-                    <span>{selectedItem?.job_you_want_to_apply}</span>
+                    <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Location of work</p>
-                    <span>{selectedItem?.preferred_city_of_work}</span>
+                    <span>{selectedItem?.preferred_city_of_work || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Any criminal record</p>
@@ -1240,7 +1264,7 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Registration Fee paid</p>
-                    <span>{selectedItem?.fee_paid}</span>
+                    <span>{selectedItem?.fee_paid || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2 mb-4">
                     <p>Driving license</p>
@@ -1264,15 +1288,17 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>No. of female children</p>
-                    <span>{selectedItem?.number_of_female_children}</span>
+                    <span>{selectedItem?.number_of_female_children || 0}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>No. of male children</p>
-                    <span>{selectedItem?.number_of_male_children}</span>
+                    <span>{selectedItem?.number_of_male_children || 0}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Main occupation of the family</p>
-                    <span>{selectedItem?.main_occupation_of_family}</span>
+                    <span>
+                      {selectedItem?.main_occupation_of_family || "Not Given"}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Need any agricultural products?</p>
@@ -1292,7 +1318,7 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Mention agricultural products</p>
-                    <span>{selectedItem?.farming_product}</span>
+                    <span>{selectedItem?.farming_product || "Not Given"}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Have a toilet at home?</p>

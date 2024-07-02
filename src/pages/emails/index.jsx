@@ -67,7 +67,7 @@ const Emails = () => {
         className="grid grid-cols-3 gap-5"
       >
         <Form.Item
-          label="Job Post"
+          label="Job Seeker"
           name="jobPost"
           rules={[
             { required: true, message: "Please input the email for Job Post!" },
