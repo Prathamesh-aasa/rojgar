@@ -11,17 +11,33 @@ import { db } from "../../../firebase";
 
 const Emails = () => {
   const [form] = Form.useForm();
-  const [emails, setEmails] = useState({});
-  const [docId, setDocId] = useState(null);
+  const [emails, setEmails] = useState({
+    paymentsUpdate: "",
+    adminEmail: "",
+    volunteers: "",
+    documents: "",
+    jobsNotification: "",
+    skilling: "",
+  });
 
   useEffect(() => {
     // Fetch the existing document if it exists
     const fetchEmails = async () => {
-      const querySnapshot = await getDocs(collection(db, "Emails"));
-      querySnapshot.forEach((doc) => {
-        setEmails(doc.data());
-        setDocId(doc.id);
-      });
+      try {
+        const querySnapshot = await getDocs(collection(db, "Emails"));
+        if (!querySnapshot.empty) {
+          const docData = querySnapshot.docs[0].data();
+          console.log("🚀 ~ fetchEmails ~ docData:", docData)
+          setEmails(docData);
+          form.setFieldsValue(docData); // Pre-fill form fields with existing values
+        }
+      } catch (error) {
+        console.error("Error fetching emails:", error);
+        notification.error({
+          message: "Error",
+          description: "An error occurred while fetching emails.",
+        });
+      }
     };
 
     fetchEmails();
@@ -29,24 +45,30 @@ const Emails = () => {
 
   const onFinish = async (values) => {
     try {
-      if (docId) {
+      // Update existing document or add new document
+      const emailRef = collection(db, "Emails");
+      const querySnapshot = await getDocs(emailRef);
+
+      if (!querySnapshot.empty) {
         // Update existing document
-        const emailDocRef = doc(db, "Emails", docId);
-        await updateDoc(emailDocRef, values);
+        const docId = querySnapshot.docs[0].id;
+        const docRef = doc(db, "Emails", docId);
+        await updateDoc(docRef, values);
         notification.success({
           message: "Success",
           description: "Emails updated successfully!",
         });
       } else {
         // Add new document
-        const docRef = await addDoc(collection(db, "Emails"), values);
-        setDocId(docRef.id);
+        await addDoc(emailRef, values);
         notification.success({
           message: "Success",
           description: "Emails saved successfully!",
         });
       }
-      setEmails(values);
+
+      setEmails(values); // Update emails state
+
     } catch (error) {
       console.error("Error saving emails:", error);
       notification.error({
@@ -64,73 +86,76 @@ const Emails = () => {
         initialValues={emails}
         onFinish={onFinish}
         layout="vertical"
-        className="grid grid-cols-3 gap-5"
+        className="grid grid-cols-1 gap-5"
       >
         <Form.Item
-          label="Job Seeker"
-          name="jobPost"
+          label="Payments Update"
+          name="paymentsUpdate"
+          initialValue={emails.paymentsUpdate}
           rules={[
-            { required: true, message: "Please input the email for Job Post!" },
+            { required: true, message: "Please input the email for Payments Update!" },
           ]}
         >
-          <Input />
+          <Input placeholder="Enter email for Payments Update" />
+        </Form.Item>
+        <Form.Item
+          label="Admin Email"
+          name="adminEmail"
+          initialValue={emails.adminEmail}
+          rules={[
+            { required: true, message: "Please input the Admin email!" },
+          ]}
+        >
+          <Input placeholder="Enter Admin email" />
+        </Form.Item>
+        <Form.Item
+          label="Volunteers"
+          name="volunteers"
+          initialValue={emails.volunteers}
+          rules={[
+            {
+              required: true,
+              message: "Please input the email for Volunteers!",
+            },
+          ]}
+        >
+          <Input placeholder="Enter email for Volunteers" />
+        </Form.Item>
+        <Form.Item
+          label="Documents / Scheme"
+          name="documents"
+          initialValue={emails.documents}
+          rules={[
+            { required: true, message: "Please input the email for Documents / Scheme!" },
+          ]}
+        >
+          <Input placeholder="Enter email for Documents / Scheme" />
+        </Form.Item>
+        <Form.Item
+          label="Jobs Notification"
+          name="jobsNotification"
+          initialValue={emails.jobsNotification}
+          rules={[
+            {
+              required: true,
+              message: "Please input the email for Jobs Notification!",
+            },
+          ]}
+        >
+          <Input placeholder="Enter email for Jobs Notification" />
         </Form.Item>
         <Form.Item
           label="Skilling"
           name="skilling"
+          initialValue={emails.skilling}
           rules={[
             { required: true, message: "Please input the email for Skilling!" },
           ]}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Volunteer"
-          name="volunteer"
-          rules={[
-            {
-              required: true,
-              message: "Please input the email for Volunteer!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Document"
-          name="document"
-          rules={[
-            { required: true, message: "Please input the email for Document!" },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Welfare Scheme"
-          name="welfareScheme"
-          rules={[
-            {
-              required: true,
-              message: "Please input the email for Welfare Scheme!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="Subscription Plan"
-          name="subscriptionPlan"
-          rules={[
-            {
-              required: true,
-              message: "Please input the email for Subscription Plan!",
-            },
-          ]}
-        >
-          <Input />
+          <Input placeholder="Enter email for Skilling" />
         </Form.Item>
         <div>
-          <Button type="primary" htmlType="submit" className="bg-blue-800 font-semibold">
+          <Button type="primary" htmlType="submit">
             Update Emails
           </Button>
         </div>
