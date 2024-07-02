@@ -473,6 +473,8 @@ const Index = () => {
         subscription: "",
       });
 
+      await updateDoc(compony, { id: compony?.id });
+      
       await addDoc(collection(db, "Jobs"), {
         benefits: value?.otherBenefits,
         company_id: compony?.id,
@@ -1446,7 +1448,7 @@ const Index = () => {
                       >
                         <Select placeholder="Select">
                           <Option value="free">Free</Option>
-                          <Option value="paid">Paid</Option>
+                          <Option value="paid">Chargeable </Option>
                         </Select>
                       </Form.Item>
                       <Form.Item label="Amount" name={`fee${index}`}>
@@ -1939,7 +1941,7 @@ const Index = () => {
                 >
                   <Select placeholder="Select">
                     <Option value="free">Free</Option>
-                    <Option value="paid">Paid</Option>
+                    <Option value="paid">Chargeable </Option>
                   </Select>
                 </Form.Item>
                 <Form.Item label="Amount" name={`fee${index}`}>
@@ -2001,7 +2003,7 @@ const Index = () => {
           >
             <Select placeholder="Select course type">
               <Option value="free">Free</Option>
-              <Option value="paid">Paid</Option>
+              <Option value="paid">Chargeable </Option>
             </Select>
           </Form.Item>
           <Form.Item label="Amount" name={`fee`}>

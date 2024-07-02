@@ -17,8 +17,12 @@ function CompanyInfo() {
       id: doc.id,
       ...doc.data(),
     }));
+    console.log("🚀 ~ data ~ data:", data)
 
-    setCompanyData(data[0]);
+    const finalData = data[0]
+    console.log("🚀 ~ getCompanyInfo ~ finalData:", finalData)
+
+    setCompanyData(finalData);
   };
   const getCompanyJobs = async () => {
     const paymentsCollection = collection(db, "Jobs");
@@ -43,9 +47,9 @@ function CompanyInfo() {
       <div>
         <p className="text-base mb-5">
           Dashboard <span className="text-[#F7B652]">&gt;</span> Company
-          <span className="text-[#F7B652]"> &gt;</span> Tata Motors
+          <span className="text-[#F7B652]"> &gt;</span> 
         </p>
-        <p className="text-2xl font-semibold text-[#013D9D]">Tata Motors </p>
+        <p className="text-2xl font-semibold text-[#013D9D]">{companyData?.company_name} </p>
       </div>
       <div className="flex gap-4">
         <div className="mt-8 bg-[#EEF2F9] w-[50%] p-4 rounded-lg h-fit">
