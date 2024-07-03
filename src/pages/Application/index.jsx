@@ -85,7 +85,6 @@ const Applications = () => {
       const paymentDoc = querySnapshot.docs[0];
       setPaymentData(paymentDoc.data());
       setModalVisible(true);
-
     } else {
       setModalVisible(false);
       notification.error({
@@ -96,19 +95,15 @@ const Applications = () => {
     }
   };
   const fetchPaymentDatas = async (transactionId) => {
-    console.log("🚀 ~ fetchPaymentDatas ~ transactionId:", transactionId);
-    // Fetch data from the Payments collection based on transaction_id
     const paymentCollection = collection(db, "Payments");
     const paymentQuery = query(
       paymentCollection,
-      where("payment_id", "==", transactionId)
+      where("id", "==", transactionId)
     );
     const querySnapshot = await getDocs(paymentQuery);
 
-    if (!querySnapshot.empty) {
-      // Assuming you only need the first document
+    if (querySnapshot.docs.length != 0) {
       const paymentDoc = querySnapshot.docs[0];
-      console.log("🚀 ~ fetchPaymentDatas ~ querySnapshot:", paymentDoc.data());
       setPaymentData(paymentDoc.data());
       setModalVisible(true);
     } else {
@@ -116,18 +111,18 @@ const Applications = () => {
         message: "Payment data not found",
         description: "Please try again later.",
       });
-      console.log("No such document!");
     }
   };
 
   const handleButtonClick = async (record, index = 0) => {
-    if (record?.payment_id && index == 1) {
-      // setModalVisible(true);
-      await fetchPaymentDatas(record.payment_id);
-    } else if (record?.payment_id) {
-      // setModalVisible(true);
-      await fetchPaymentData(record.payment_id);
-    }
+    setSelectedItem(record)
+    // if (record?.payment_id && index == 1) {
+    // setModalVisible(true);
+    await fetchPaymentDatas(record.payment_id);
+    // } else if (record?.payment_id) {
+    // setModalVisible(true);
+    // await fetchPaymentData(record.payment_id);
+    // }
   };
   const getColumns = (tab) => {
     const commonColumns = [
@@ -286,9 +281,16 @@ const Applications = () => {
         {
           title: "Action",
           render: (text, record) => (
-            <Button onClick={() => showModal(record)} type="link">
-              <DownOutlined />
-            </Button>
+            <div>
+              <Button onClick={() => showModal(record)} type="link">
+                <DownOutlined />
+              </Button>
+              {record?.payment_id && (
+                <Button onClick={() => handleButtonClick(record)} type="link">
+                  View Payment
+                </Button>
+              )}
+            </div>
           ),
         },
       ];
@@ -365,6 +367,7 @@ const Applications = () => {
       id: doc.id,
       ...doc.data(),
     }));
+    // console.log("🚀 ~ skillingData ~ skillingData:", skillingData)
 
     const { courses, skills } = await getCoursesAndSkills();
 
@@ -423,6 +426,7 @@ const Applications = () => {
       ...doc.data(),
     }));
     setDocuments(data);
+    console.log("🚀 ~ getDocuments ~ data:", data);
   };
 
   const getWelfare = async () => {
@@ -559,7 +563,7 @@ const Applications = () => {
       });
       sendNotification(
         selectedItem?.user_id,
-        `Your request for skilling has been ${status}`
+        `Your request for skilling has been Completed`
       );
 
       handleCancel();
@@ -728,14 +732,17 @@ const Applications = () => {
       : applications;
     setFilteredApplications(filtered);
   };
-  const handleApprove = async (id, userId) => {
+  const handleApprove = async (id, userId, reason) => {
     try {
       const paymentDocRef = doc(db, "Payments", id);
       await updateDoc(paymentDocRef, {
         status: "Approved",
       });
 
-      sendNotification(userId, `Your payments request  has been approved`);
+      sendNotification(
+        userId,
+        `Your payments request for the ${reason} ${selectedItem?.profile_type ? `of ${selectedItem?.profile_type}`:''} has been approved`
+      );
 
       notification.success({
         message: "Payment Approved",
@@ -751,7 +758,7 @@ const Applications = () => {
     }
   };
 
-  const handleReject = async (id, userId) => {
+  const handleReject = async (id, userId,reason) => {
     try {
       const paymentDocRef = doc(db, "Payments", id);
       await updateDoc(paymentDocRef, {
@@ -763,7 +770,7 @@ const Applications = () => {
         message: "Payment Rejected",
         description: `Payment ID ${id} has been rejected successfully.`,
       });
-      sendNotification(userId, `Your payments request  has been rejected`);
+      sendNotification(userId, `Your payments request for the ${reason} ${selectedItem?.profile_type ? `of ${selectedItem?.profile_type}`:''} has been rejected`);
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -1224,6 +1231,7 @@ const Applications = () => {
                     <span>
                       {selectedItem?.adhaar_card_number ||
                         selectedItem?.adhaar_number ||
+                        selectedItem?.aadhaar_number ||
                         "Not Given"}
                     </span>
                   </div>
@@ -1237,7 +1245,11 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Service Selected</p>
-                    <span>{selectedItem?.profile_type}</span>
+                    <span>
+                      {selectedItem?.profile_type ||
+                        selectedItem?.document_service ||
+                        "Not Given"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1660,7 +1672,11 @@ const Applications = () => {
                     <div className="flex justify-end mt-5">
                       <button
                         onClick={() =>
-                          handleReject(paymentData?.id, paymentData?.user_id)
+                          handleReject(
+                            paymentData?.id,
+                            paymentData?.user_id,
+                            paymentData?.title
+                          )
                         }
                         className="bg-red-500 text-white py-2 px-4 rounded mr-2"
                       >
@@ -1668,7 +1684,11 @@ const Applications = () => {
                       </button>
                       <button
                         onClick={() =>
-                          handleApprove(paymentData?.id, paymentData?.user_id)
+                          handleApprove(
+                            paymentData?.id,
+                            paymentData?.user_id,
+                            paymentData?.title
+                          )
                         }
                         className="bg-blue-500 text-white py-2 px-4 rounded"
                       >
