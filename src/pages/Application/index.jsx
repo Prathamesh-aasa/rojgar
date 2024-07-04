@@ -373,33 +373,51 @@ const Applications = () => {
   };
 
   const getVolunteer = async () => {
-   
-    const volunteerCollection = collection(db, "Volunteer");
-    const volunteerSnapshot = await getDocs(query(volunteerCollection));
-    const volunteers = volunteerSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    try {
+      const volunteerCollection = collection(db, "Volunteer");
+      const volunteerSnapshot = await getDocs(volunteerCollection);
 
-    const { courses, skills } = await getCoursesAndSkills();
+      const { courses, skills } = await getCoursesAndSkills();
 
-    const aggregatedData = volunteers.map((volunteer) => {
-      const courseInfo = volunteer.volunteer_program_model.map((courseId) => {
-        return courses.find((c) => c.id === courseId);
-      });
+      const aggregatedData = await Promise.all(
+        volunteerSnapshot.docs.map(async (doc) => {
+          const volunteer = {
+            id: doc.id,
+            ...doc.data(),
+          };
 
-      const skills_name = courseInfo.map((course) => {
-        return skills.find((sk) => sk.id == course?.skillId)?.name;
-      });
+          const programsRef = collection(db, "Volunteer", doc.id, "Programs");
+          const programsSnapshot = await getDocs(programsRef);
 
-      const names = courseInfo.map((course) => course?.name);
-      volunteer.courses = names.join(",");
-      volunteer.skills_name = skills_name.join(",");
+          const programsData = programsSnapshot.docs.map((programDoc) => ({
+            id: programDoc.id,
+            ...programDoc.data(),
+          }));
+          volunteer.programs = programsData;
 
-      return volunteer;
-    });
+          const courseInfo = volunteer.programs.map((program) => {
+            return courses.find((c) => c.id === program.courseId);
+          });
 
-    setVolunteerData(aggregatedData);
+          const skillsName = courseInfo.map((program) => {
+            return skills.find((sk) => sk.id === program.skillId)?.name;
+          });
+
+          volunteer.courses = courseInfo
+            .map((program) => program.name)
+            .join(",");
+          volunteer.skills_name = skillsName.join(",");
+
+          return volunteer;
+        })
+      );
+
+      // Set aggregated data to state or perform further operations
+      setVolunteerData(aggregatedData);
+      console.log("🚀 ~ getVolunteerData ~ aggregatedData:", aggregatedData);
+    } catch (error) {
+      console.error("Error fetching volunteer data:", error);
+    }
   };
 
   const getDocuments = async () => {
@@ -1403,7 +1421,7 @@ const Applications = () => {
       </Modal>
 
       <Modal
-        title="Personal Details"
+        title=""
         open={isVolunteerModal}
         onCancel={() => setIsVolunteerModal(false)}
         width="100%"
@@ -1411,161 +1429,199 @@ const Applications = () => {
       >
         {selectedVolunteer && (
           <div className="flex  gap-8">
-            <div>
-              {selectedVolunteer?.profile_photo ? (
-                <img
-                  src={selectedVolunteer?.profile_photo}
-                  alt="No Image Uploaded By User"
-                  className="rounded-full w-20 h-20"
-                />
-              ) : (
-                <h1>No Image Uploaded By User</h1>
-              )}
-            </div>
-            <div className="w-full">
-              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
-                Personal Details
-              </h1>
-              <div className="grid grid-cols-5 mb-8">
-                <div className="flex flex-col">
-                  <p>Registration ID</p>
-                  <span>{selectedVolunteer?.id}</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Full Name</p>
-                  <span>{selectedVolunteer?.full_name}</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Phone No.</p>
-                  <span>{selectedVolunteer?.phone_number}</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Email ID</p>
-                  <span>{selectedVolunteer?.email_id}</span>
-                </div>
-                <div className="flex flex-col mb-5">
-                  <p>Linkedin Link</p>
-                  <a href={selectedVolunteer?.linkdin_link}>
-                    {selectedVolunteer?.linkdin_link}
-                  </a>
-                </div>
-                <div className="flex flex-col">
-                  <p>Other Social Media Link</p>
-                  {/* <span>https://www.facebook.com</span> */}
-                  <a href={selectedVolunteer?.other_social_media_link}>
-                    {selectedVolunteer?.other_social_media_link}
-                  </a>
-                </div>
-              </div>
-              <h1 className="mb-8 text-xl text-[rgb(1,61,157)] font-medium">
-                Address Details
-              </h1>
-              <div className="grid grid-cols-5 mb-8">
-                <div className="flex flex-col">
-                  <p>PIN</p>
-                  <span>{selectedVolunteer?.pin}</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>State</p>
-                  <span>{selectedVolunteer?.state}</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>District</p>
-                  <span>{selectedVolunteer?.district || "NA"}</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>City/Village</p>
-                  <span>{selectedVolunteer?.city || "NA"}</span>
+            <div className="w-full flex flex-col gap-3">
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                  Personal Details
+                </h1>
+                <div className="flex justify-between ">
+                  <div className="grid grid-cols-5 mb-8 gap-4 w-[90%]">
+                    <div className="flex flex-col">
+                      <p>Registration ID</p>
+                      <span>{selectedVolunteer?.id}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <p>Full Name</p>
+                      <span>{selectedVolunteer?.full_name}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <p>Phone No.</p>
+                      <span>{selectedVolunteer?.phone_number}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <p>Email ID</p>
+                      <span>{selectedVolunteer?.email_id}</span>
+                    </div>
+                    <div className="flex flex-col mb-5">
+                      <p>Linkedin Link</p>
+                      <a href={selectedVolunteer?.linkdin_link}>
+                        {selectedVolunteer?.linkdin_link}
+                      </a>
+                    </div>
+                    <div className="flex flex-col">
+                      <p>Other Social Media Link</p>
+                      {/* <span>https://www.facebook.com</span> */}
+                      <a href={selectedVolunteer?.other_social_media_link}>
+                        {selectedVolunteer?.other_social_media_link}
+                      </a>
+                    </div>
+                  </div>
+                  <div className="mr-4 shadow shadow-blue-300/40 p-5 px-12 rounded-md h-full">
+                    <h1 className="text-[#013D9D] font-semibold text-md mb-5">
+                      User Profile
+                    </h1>
+                    {selectedVolunteer?.profile_photo ? (
+                      <img
+                        src={selectedVolunteer?.profile_photo}
+                        alt="No Image Uploaded By User"
+                        className="rounded-full w-20 h-20"
+                      />
+                    ) : (
+                      <h1>No Image Uploaded By User</h1>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
-                Services Details
-              </h1>
-              <div className="grid grid-cols-5 mb-8">
-                {/* <div className="flex flex-col">
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="mb-8 text-xl text-[rgb(1,61,157)] font-medium">
+                  Address Details
+                </h1>
+                <div className="grid grid-cols-5 mb-8">
+                  <div className="flex flex-col">
+                    <p>PIN</p>
+                    <span>{selectedVolunteer?.pin}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>State</p>
+                    <span>{selectedVolunteer?.state}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>District</p>
+                    <span>{selectedVolunteer?.district || "NA"}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>City/Village</p>
+                    <span>{selectedVolunteer?.city || "NA"}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                  Services Details
+                </h1>
+                <div className="grid grid-cols-5 mb-8">
+                  {/* <div className="flex flex-col">
                   <p>Service Selected</p>
                   <span>{selectedVolunteer?.}</span>
                 </div> */}
-                <div className="flex flex-col">
-                  <p>Date</p>
-                  <span>
-                    {moment(selectedVolunteer?.date_of_registration).format(
-                      "DD-MM-YYYY"
-                    )}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Time</p>
-                  <span>
-                    {moment(selectedVolunteer?.date_of_registration).format(
-                      "HH:MM:SS"
-                    )}{" "}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Status</p>
-                  <span>{selectedVolunteer?.status}</span>
-                </div>
-                {/*    <div className="flex flex-col">
+                  <div className="flex flex-col">
+                    <p>Date</p>
+                    <span>
+                      {moment(selectedVolunteer?.date_of_registration).format(
+                        "DD-MM-YYYY"
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>Time</p>
+                    <span>
+                      {moment(selectedVolunteer?.date_of_registration).format(
+                        "HH:MM:SS"
+                      )}{" "}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>Status</p>
+                    <span>{selectedVolunteer?.status}</span>
+                  </div>
+                  {/*    <div className="flex flex-col">
                   <p>course(s)</p>
                   <span>BASIC EXCEL,BASIC PPT</span>
                 </div> */}
+                </div>
               </div>
-              <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
-                Additional Details
-              </h1>
-              <div className="grid grid-cols-5">
-                <div className="flex flex-col">
-                  <p>No. of family member</p>
-                  <span>
-                    {selectedVolunteer?.number_of_family_members || 0}
-                  </span>
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="mb-8 text-xl text-[#013D9D] font-medium">
+                  Additional Details
+                </h1>
+                <div className="grid grid-cols-3">
+                  <div className="flex flex-col">
+                    <p>No. of family member</p>
+                    <span>
+                      {selectedVolunteer?.number_of_family_members || 0}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>No. of female children</p>
+                    <span>
+                      {selectedVolunteer?.number_of_female_children || 0}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>No. of male children</p>
+                    <span>
+                      {selectedVolunteer?.number_of_male_children || 0}
+                    </span>
+                  </div>
+                  <div className="flex flex-col mb-5">
+                    <p>Main occupation of the family</p>
+                    <span>
+                      {selectedVolunteer?.main_occupation_of_family || "NA"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>have agricultural land?</p>
+                    <span>
+                      {selectedVolunteer?.do_you_have_agriculture_land
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>Need any agricultural products?</p>
+                    <span>YES</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>Mention agricultural products</p>
+                    <span>
+                      {selectedVolunteer?.do_you_need_any_farming_products
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <p>Have a toilet at home?</p>
+                    <span>
+                      {selectedVolunteer?.do_you_have_toilet_at_home
+                        ? "Yes"
+                        : "No"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <p>No. of female children</p>
-                  <span>
-                    {selectedVolunteer?.number_of_female_children || 0}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <p>No. of male children</p>
-                  <span>{selectedVolunteer?.number_of_male_children || 0}</span>
-                </div>
-                <div className="flex flex-col mb-5">
-                  <p>Main occupation of the family</p>
-                  <span>
-                    {selectedVolunteer?.main_occupation_of_family || "NA"}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <p>have agricultural land?</p>
-                  <span>
-                    {selectedVolunteer?.do_you_have_agriculture_land
-                      ? "Yes"
-                      : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Need any agricultural products?</p>
-                  <span>YES</span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Mention agricultural products</p>
-                  <span>
-                    {selectedVolunteer?.do_you_need_any_farming_products
-                      ? "Yes"
-                      : "No"}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <p>Have a toilet at home?</p>
-                  <span>
-                    {selectedVolunteer?.do_you_have_toilet_at_home
-                      ? "Yes"
-                      : "No"}
-                  </span>
-                </div>
+              </div>
+
+              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                <h1 className="mb-2 text-xl text-[rgb(1,61,157)] font-medium">
+                  Courses Info
+                </h1>
+                {selectedVolunteer?.programs?.map((program) => {
+                  return (
+                    <div key={program.courseId} className="grid grid-cols-3 mb-3">
+                      <div className="flex flex-col">
+                        <p>Course Name:</p>
+                        <span>{program.courseName}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <p>Event Date:</p>
+                        <span>{program.eventDate}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <p>Event Time:</p>
+                        <span>{program.eventTime}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <div className="flex justify-end">
                 {selectedVolunteer?.status !== "Completed" && (
