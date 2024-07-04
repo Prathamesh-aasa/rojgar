@@ -71,9 +71,9 @@ const CompanyApplications = () => {
       dataIndex: "resume_link",
       key: "resume_link",
       render: (text) => (
-        <a href={text} target="_blank" rel="noopener noreferrer">
+        text ? <a href={text} target="_blank" rel="noopener noreferrer">
           View Resume
-        </a>
+        </a> : <h1>No Resume Uploaded</h1>
       ),
     },
   ];

@@ -373,6 +373,7 @@ const Applications = () => {
   };
 
   const getVolunteer = async () => {
+   
     const volunteerCollection = collection(db, "Volunteer");
     const volunteerSnapshot = await getDocs(query(volunteerCollection));
     const volunteers = volunteerSnapshot.docs.map((doc) => ({
@@ -562,10 +563,10 @@ const Applications = () => {
   };
 
   const handelUpdateDocuments = async (status) => {
-    console.log("🚀 ~ handelUpdateDocuments ~ status:", status)
+    console.log("🚀 ~ handelUpdateDocuments ~ status:", status);
     try {
       if (status == "Rejected") {
-        console.log('if -----------------------');
+        console.log("if -----------------------");
         const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
         await updateDoc(jobSeekerDoc, {
           status: status,
@@ -590,9 +591,9 @@ const Applications = () => {
       if (!querySnapshot.empty) {
         const paymentDoc = querySnapshot.docs[0];
         const data = paymentDoc.data();
-        console.log("🚀 ~ handelUpdateDocuments ~ data:", data)
+        console.log("🚀 ~ handelUpdateDocuments ~ data:", data);
         if (data.status !== "Pending" && data.status !== "Rejected") {
-          console.log('if l2 -----------------');
+          console.log("if l2 -----------------");
           const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
           await updateDoc(jobSeekerDoc, {
             status: status,
@@ -744,11 +745,14 @@ const Applications = () => {
       title: "Resume Link",
       dataIndex: "resume_link",
       key: "resume_link",
-      render: (text) => (
-        <a href={text} target="_blank" rel="noopener noreferrer">
-          View Resume
-        </a>
-      ),
+      render: (text) =>
+        text ? (
+          <a href={text} target="_blank" rel="noopener noreferrer">
+            View Resume
+          </a>
+        ) : (
+          <h1>No Resume Uploaded</h1>
+        ),
     },
   ];
   const handleCompanyFilterChange = (value) => {
@@ -882,6 +886,7 @@ const Applications = () => {
               columns={getColumns("1")}
               dataSource={filterData(jobSeekerData)}
               pagination={false}
+              rowKey={"id"}
             />
           </div>
         </TabPane>
@@ -1667,7 +1672,6 @@ const Applications = () => {
                         Personal Details
                       </h1>
                       <div className="grid grid-cols-5  mb-16">
-                     
                         <div className="flex flex-col gap-3">
                           <p className="font-semibold">Phone No.</p>
                           <span>{paymentData?.phone_number}</span>
@@ -1691,7 +1695,7 @@ const Applications = () => {
                       </h1>
 
                       <div className="grid grid-cols-5 gap-14">
-                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3">
                           <p className="font-semibold">Status.</p>
                           <span>{paymentData?.status}</span>
                         </div>
