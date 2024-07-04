@@ -1,27 +1,12 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  Menu,
-  Tabs,
-  Select,
-  Input,
-  Modal,
-  notification,
-} from "antd";
+import { Table, Button, Tabs, Select, Input, Modal, notification } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
-import {
-  FilterOutlined,
-  DownloadOutlined,
-  SendOutlined,
-} from "@ant-design/icons";
 import { db } from "../../../firebase";
 import {
   addDoc,
   collection,
   doc,
-  getDoc,
   getDocs,
   query,
   updateDoc,
@@ -55,7 +40,6 @@ const Applications = () => {
 
   const sendNotification = async (userID, message) => {
     const userRef = doc(db, "Users", userID);
-    console.log("🚀 ~ sendNotification ~ userID:", userID);
     const notificationsRef = collection(userRef, "Notifications");
 
     const docRef = await addDoc(notificationsRef, {
@@ -115,7 +99,7 @@ const Applications = () => {
   };
 
   const handleButtonClick = async (record, index = 0) => {
-    setSelectedItem(record)
+    setSelectedItem(record);
     // if (record?.payment_id && index == 1) {
     // setModalVisible(true);
     await fetchPaymentDatas(record.payment_id);
@@ -578,22 +562,64 @@ const Applications = () => {
   };
 
   const handelUpdateDocuments = async (status) => {
+    console.log("🚀 ~ handelUpdateDocuments ~ status:", status)
     try {
-      const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
-      await updateDoc(jobSeekerDoc, {
-        status: status,
-      });
-      notification.success({
-        message: "Status Updated",
-        description: `Document ${selectedItem?.id} has been ${status} successfully.`,
-      });
-      sendNotification(
-        selectedItem?.user_id,
-        `Your request for document has been ${status}`
+      if (status == "Rejected") {
+        console.log('if -----------------------');
+        const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
+        await updateDoc(jobSeekerDoc, {
+          status: status,
+        });
+        notification.success({
+          message: "Status Updated",
+          description: `Document ${selectedItem?.id} has been ${status} successfully.`,
+        });
+        sendNotification(
+          selectedItem?.user_id,
+          `Document ${selectedItem?.id} has been ${status} successfully.`
+        );
+        return;
+      }
+      const paymentCollection = collection(db, "Payments");
+      const paymentQuery = query(
+        paymentCollection,
+        where("id", "==", selectedItem?.payment_id)
       );
+      const querySnapshot = await getDocs(paymentQuery);
 
-      handleCancel();
-      getDocuments();
+      if (!querySnapshot.empty) {
+        const paymentDoc = querySnapshot.docs[0];
+        const data = paymentDoc.data();
+        console.log("🚀 ~ handelUpdateDocuments ~ data:", data)
+        if (data.status !== "Pending" && data.status !== "Rejected") {
+          console.log('if l2 -----------------');
+          const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
+          await updateDoc(jobSeekerDoc, {
+            status: status,
+          });
+          notification.success({
+            message: "Status Updated",
+            description: `Document ${selectedItem?.id} has been ${status} successfully.`,
+          });
+          sendNotification(
+            selectedItem?.user_id,
+            `Document ${selectedItem?.id} has been ${status} successfully.`
+          );
+
+          handleCancel();
+          getDocuments();
+        } else {
+          return notification.error({
+            message: "Payment data approved",
+            description: "Payment for this job seeker have not been approved.",
+          });
+        }
+      } else {
+        return notification.error({
+          message: "Payment data not found",
+          description: "Please try again later.",
+        });
+      }
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -741,7 +767,9 @@ const Applications = () => {
 
       sendNotification(
         userId,
-        `Your payments request for the ${reason} ${selectedItem?.profile_type ? `of ${selectedItem?.profile_type}`:''} has been approved`
+        `Your payments request for the ${reason} ${
+          selectedItem?.profile_type ? `of ${selectedItem?.profile_type}` : ""
+        } has been approved`
       );
 
       notification.success({
@@ -758,7 +786,7 @@ const Applications = () => {
     }
   };
 
-  const handleReject = async (id, userId,reason) => {
+  const handleReject = async (id, userId, reason) => {
     try {
       const paymentDocRef = doc(db, "Payments", id);
       await updateDoc(paymentDocRef, {
@@ -770,7 +798,12 @@ const Applications = () => {
         message: "Payment Rejected",
         description: `Payment ID ${id} has been rejected successfully.`,
       });
-      sendNotification(userId, `Your payments request for the ${reason} ${selectedItem?.profile_type ? `of ${selectedItem?.profile_type}`:''} has been rejected`);
+      sendNotification(
+        userId,
+        `Your payments request for the ${reason} ${
+          selectedItem?.profile_type ? `of ${selectedItem?.profile_type}` : ""
+        } has been rejected`
+      );
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -1153,6 +1186,10 @@ const Applications = () => {
                     <p>Applied Post</p>
                     <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
                   </div>
+                  <div className="flex flex-col gap-2 mb-4">
+                    <p>Referred By</p>
+                    <span>{selectedItem?.referred_by || "NA"}</span>
+                  </div>
                 </div>
               </div>
               <div className="shadow shadow-blue-300/40 p-3 rounded-md">
@@ -1374,7 +1411,7 @@ const Applications = () => {
                 <img
                   src={selectedVolunteer?.profile_photo}
                   alt="No Image Uploaded By User"
-                  className="rounded-full w-20"
+                  className="rounded-full w-20 h-20"
                 />
               ) : (
                 <h1>No Image Uploaded By User</h1>
@@ -1630,6 +1667,7 @@ const Applications = () => {
                         Personal Details
                       </h1>
                       <div className="grid grid-cols-5  mb-16">
+                     
                         <div className="flex flex-col gap-3">
                           <p className="font-semibold">Phone No.</p>
                           <span>{paymentData?.phone_number}</span>
@@ -1653,6 +1691,10 @@ const Applications = () => {
                       </h1>
 
                       <div className="grid grid-cols-5 gap-14">
+                      <div className="flex flex-col gap-3">
+                          <p className="font-semibold">Status.</p>
+                          <span>{paymentData?.status}</span>
+                        </div>
                         <div className="flex flex-col gap-3">
                           <p className="font-semibold">Payment Amount</p>
                           <span>{paymentData?.amount}</span>
