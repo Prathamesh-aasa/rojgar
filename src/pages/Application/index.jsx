@@ -1878,7 +1878,7 @@ const Applications = () => {
                         href={paymentData?.screenshot_link}
                         download="payment_screenshot.png"
                         className="mt-3 bg-blue-500 text-white py-2 px-16 rounded"
-                        onClick={handleImageDownload}
+                        // onClick={handleImageDownload}
                       >
                         Download Image
                       </a>
@@ -1930,7 +1930,7 @@ const Applications = () => {
                       </div>
                     </div>
                   </div>
-                  {paymentData?.status == "Pending" && (
+                  {paymentData?.status == "Pending"&& selectedItem?.status != "Rejected" && (
                     <div className="flex justify-end mt-5">
                       <button
                         onClick={() =>
