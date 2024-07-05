@@ -316,14 +316,14 @@ const Applications = () => {
   };
 
   const getJobSeekers = async () => {
-    const jobSeekerCollectionRef = collection(db, 'Job Seekers');
-    const q = query(jobSeekerCollectionRef, orderBy('full_name', 'asc'));
+    const jobSeekerCollectionRef = collection(db, "Job Seekers");
+    const q = query(jobSeekerCollectionRef, orderBy("full_name", "asc"));
     const querySnapshot = await getDocs(q);
     const jobSeekerData = [];
     querySnapshot.forEach((doc) => {
       jobSeekerData.push({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       });
     });
     setJobSeekerData(jobSeekerData);
@@ -358,20 +358,20 @@ const Applications = () => {
       id: doc.id,
       ...doc.data(),
     }));
-  
+
     const { courses, skills } = await getCoursesAndSkills();
-  
+
     // Function to perform case-insensitive comparison
     const compareIgnoreCase = (str1, str2) => {
-      return str1.localeCompare(str2, undefined, { sensitivity: 'accent' });
+      return str1.localeCompare(str2, undefined, { sensitivity: "accent" });
     };
-  
+
     const aggregatedData = skillingData.map((skillingItem) => {
-      const courseItem = courses.find(
-        (course) => compareIgnoreCase(course.id, skillingItem.course_id)
+      const courseItem = courses.find((course) =>
+        compareIgnoreCase(course.id, skillingItem.course_id)
       );
-      const skillItem = skills.find(
-        (skill) => compareIgnoreCase(skill.id, skillingItem.skilling_proram_id)
+      const skillItem = skills.find((skill) =>
+        compareIgnoreCase(skill.id, skillingItem.skilling_proram_id)
       );
       return {
         ...skillingItem,
@@ -379,13 +379,17 @@ const Applications = () => {
         skill_name: skillItem ? skillItem.name : "",
       };
     });
-  
+
     // Sort aggregatedData by course_name or skill_name (case-insensitive)
-    aggregatedData.sort((a, b) => compareIgnoreCase(a.course_name, b.course_name) || compareIgnoreCase(a.skill_name, b.skill_name));
-  
+    aggregatedData.sort(
+      (a, b) =>
+        compareIgnoreCase(a.course_name, b.course_name) ||
+        compareIgnoreCase(a.skill_name, b.skill_name)
+    );
+
     setAggregatedData(aggregatedData);
   };
-  
+
   const getVolunteer = async () => {
     try {
       const volunteerCollection = collection(db, "Volunteer");
@@ -523,7 +527,7 @@ const Applications = () => {
 
   const handelUpdate = async (status) => {
     try {
-      if(status == "Rejected"){
+      if (status == "Rejected") {
         const jobSeekerDoc = doc(db, "Job Seekers", selectedItem?.id);
         await updateDoc(jobSeekerDoc, {
           status: status,
@@ -532,7 +536,7 @@ const Applications = () => {
           message: "Status Updated",
           description: `Job Seeker ${selectedItem?.id} has been ${status} successfully.`,
         });
-  
+
         sendNotification(
           selectedItem?.user_id,
           `Your request for job seeker has been ${status}`
@@ -588,6 +592,22 @@ const Applications = () => {
   };
   const handelCompleteSkilling = async () => {
     try {
+      const paymentCollection = collection(db, "Payments");
+      const paymentQuery = query(
+        paymentCollection,
+        where("payment_id", "==", selectedItem?.payment_id)
+      );
+      const querySnapshot = await getDocs(paymentQuery);
+      if (!querySnapshot.empty) {
+        const paymentDoc = querySnapshot.docs[0];
+        const data = paymentDoc.data();
+        if (data.status == "Pending" || data.status == "Rejected")
+          return notification.error({
+            message: "Payment data approved",
+            description: "Payment for this job seeker have not been approved.",
+          });
+        return;
+      }
       const skillingDoc = doc(db, "Skilling", selectedItem?.id);
       await updateDoc(skillingDoc, {
         status: "Completed",
