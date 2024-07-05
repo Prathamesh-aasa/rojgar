@@ -595,7 +595,7 @@ const Applications = () => {
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
         paymentCollection,
-        where("payment_id", "==", selectedItem?.payment_id)
+        where("id", "==", selectedItem?.payment_id)
       );
       const querySnapshot = await getDocs(paymentQuery);
       if (!querySnapshot.empty) {
