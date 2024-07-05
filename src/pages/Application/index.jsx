@@ -523,6 +523,24 @@ const Applications = () => {
 
   const handelUpdate = async (status) => {
     try {
+      if(status == "Rejected"){
+        const jobSeekerDoc = doc(db, "Job Seekers", selectedItem?.id);
+        await updateDoc(jobSeekerDoc, {
+          status: status,
+        });
+        notification.success({
+          message: "Status Updated",
+          description: `Job Seeker ${selectedItem?.id} has been ${status} successfully.`,
+        });
+  
+        sendNotification(
+          selectedItem?.user_id,
+          `Your request for job seeker has been ${status}`
+        );
+        handleCancel();
+        getJobSeekers();
+        return;
+      }
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
         paymentCollection,
