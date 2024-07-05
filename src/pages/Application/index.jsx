@@ -806,39 +806,44 @@ const Applications = () => {
         id: doc.id,
         ...doc.data(),
       }));
-
+  
       // Array to store promises for fetching job seeker data
       const jobSeekerPromises = [];
-
+  
       // Iterate through each application
       for (let index = 0; index < apps.length; index++) {
         const data = apps[index];
         if (data?.job_seeker_id) {
           const q = query(
             collection(db, "Job Seekers"),
-            where("id", "==", data?.job_seeker_id)
+            where("id", "==", data.job_seeker_id)
           );
-          // Push the promise of fetching job seeker data to the array
           jobSeekerPromises.push(getDocs(q));
+        } else {
+          // Handle case where job_seeker_id is missing or falsy
+          jobSeekerPromises.push(Promise.resolve({ empty: true }));
         }
       }
-
+  
       // Resolve all promises for fetching job seeker data
       const snapshots = await Promise.all(jobSeekerPromises);
-
+  
       // Map the fetched job seeker data to corresponding applications
-      snapshots.forEach((snapshot, index) => {
-        const jobSeekerData = snapshot.docs[0]?.data();
-        if (jobSeekerData) {
-          apps[index].jobSeekerData = jobSeekerData;
-        }
-      });
+      for (let index = 0; index < snapshots.length; index++) {
+        const snapshot = snapshots[index];
+        // Check if snapshot has data (avoid accessing [0] if it's empty or undefined)
+        const jobSeekerData = snapshot.empty ? null : snapshot.docs[0]?.data();
+        apps[index].jobSeekerData = jobSeekerData;
+      }
+  
+      // Update state with applications including job seeker data
       setApplications(apps);
       setFilteredApplications(apps);
     } catch (error) {
       console.error("Error fetching applications:", error);
     }
   };
+  
 
   const [applications, setApplications] = useState([]);
   const [allCompanies, setAllCompanies] = useState([]);
@@ -940,7 +945,7 @@ const Applications = () => {
         message: "Payment Approved",
         description: `Payment ID ${id} has been approved successfully.`,
       });
-      getJobSeekers()
+      // getJobSeekers()
       getSkilling()
       getVolunteer()
       getDocuments()
