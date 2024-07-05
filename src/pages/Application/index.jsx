@@ -306,6 +306,12 @@ const Applications = () => {
               <Button onClick={() => showModal(record)} type="link">
                 <DownOutlined />
               </Button>
+
+              {record?.payment_id && (
+                <Button onClick={() => handleButtonClick(record)} type="link">
+                  View Payment
+                </Button>
+              )}
             </div>
           ),
         },
@@ -555,33 +561,34 @@ const Applications = () => {
       if (!querySnapshot.empty) {
         const paymentDoc = querySnapshot.docs[0];
         const data = paymentDoc.data();
-        if (data.status == "Pending" || data.status == "Rejected")
+        if (data.status == "Pending" || data.status == "Rejected") {
           return notification.error({
             message: "Payment data approved",
             description: "Payment for this job seeker have not been approved.",
           });
+        } else {
+          const jobSeekerDoc = doc(db, "Job Seekers", selectedItem?.id);
+          await updateDoc(jobSeekerDoc, {
+            status: status,
+          });
+          notification.success({
+            message: "Status Updated",
+            description: `Job Seeker ${selectedItem?.id} has been ${status} successfully.`,
+          });
+
+          sendNotification(
+            selectedItem?.user_id,
+            `Your request for job seeker has been ${status}`
+          );
+          handleCancel();
+          getJobSeekers();
+        }
       } else {
         return notification.error({
           message: "Payment data not found",
           description: "Please try again later.",
         });
       }
-
-      const jobSeekerDoc = doc(db, "Job Seekers", selectedItem?.id);
-      await updateDoc(jobSeekerDoc, {
-        status: status,
-      });
-      notification.success({
-        message: "Status Updated",
-        description: `Job Seeker ${selectedItem?.id} has been ${status} successfully.`,
-      });
-
-      sendNotification(
-        selectedItem?.user_id,
-        `Your request for job seeker has been ${status}`
-      );
-      handleCancel();
-      getJobSeekers();
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -648,7 +655,7 @@ const Applications = () => {
           selectedItem?.user_id,
           `Document ${selectedItem?.id} has been ${status} successfully.`
         );
-        getDocuments()
+        getDocuments();
         return;
       }
       const paymentCollection = collection(db, "Payments");
@@ -700,22 +707,63 @@ const Applications = () => {
   };
   const handelUpdateWelfare = async (status) => {
     try {
-      const jobSeekerDoc = doc(db, "Welfare", selectedItem?.id);
-      await updateDoc(jobSeekerDoc, {
-        status: status,
-      });
-      notification.success({
-        message: "Status Updated",
-        description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
-      });
-      sendNotification(
-        selectedItem?.user_id,
-        `Your request for welfare has been ${status}`
-      );
+      if (status == "Rejected") {
+        const jobSeekerDoc = doc(db, "Welfare", selectedItem?.id);
+        await updateDoc(jobSeekerDoc, {
+          status: status,
+        });
+        notification.success({
+          message: "Status Updated",
+          description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
+        });
+        sendNotification(
+          selectedItem?.user_id,
+          `Your request for welfare has been ${status}`
+        );
 
-      handleCancel();
-      // getDocuments();
-      getWelfare()
+        handleCancel();
+        // getDocuments();
+        getWelfare();
+        return;
+      }
+
+      const paymentCollection = collection(db, "Payments");
+      const paymentQuery = query(
+        paymentCollection,
+        where("id", "==", selectedItem?.payment_id)
+      );
+      const querySnapshot = await getDocs(paymentQuery);
+      if (!querySnapshot.empty) {
+        const paymentDoc = querySnapshot.docs[0];
+        const data = paymentDoc.data();
+        if (data.status == "Pending" || data.status == "Rejected") {
+          return notification.error({
+            message: "Payment data approved",
+            description: "Payment for this job seeker have not been approved.",
+          });
+        } else {
+          const jobSeekerDoc = doc(db, "Welfare", selectedItem?.id);
+          await updateDoc(jobSeekerDoc, {
+            status: status,
+          });
+          notification.success({
+            message: "Status Updated",
+            description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
+          });
+          sendNotification(
+            selectedItem?.user_id,
+            `Your request for welfare has been ${status}`
+          );
+
+          handleCancel();
+          getWelfare();
+        }
+      } else {
+        return notification.error({
+          message: "Payment data not found",
+          description: "Please try again later.",
+        });
+      }
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -1930,34 +1978,35 @@ const Applications = () => {
                       </div>
                     </div>
                   </div>
-                  {paymentData?.status == "Pending"&& selectedItem?.status != "Rejected" && (
-                    <div className="flex justify-end mt-5">
-                      <button
-                        onClick={() =>
-                          handleReject(
-                            paymentData?.id,
-                            paymentData?.user_id,
-                            paymentData?.title
-                          )
-                        }
-                        className="bg-red-500 text-white py-2 px-4 rounded mr-2"
-                      >
-                        Reject
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleApprove(
-                            paymentData?.id,
-                            paymentData?.user_id,
-                            paymentData?.title
-                          )
-                        }
-                        className="bg-blue-500 text-white py-2 px-4 rounded"
-                      >
-                        Approve
-                      </button>
-                    </div>
-                  )}
+                  {paymentData?.status == "Pending" &&
+                    selectedItem?.status != "Rejected" && (
+                      <div className="flex justify-end mt-5">
+                        <button
+                          onClick={() =>
+                            handleReject(
+                              paymentData?.id,
+                              paymentData?.user_id,
+                              paymentData?.title
+                            )
+                          }
+                          className="bg-red-500 text-white py-2 px-4 rounded mr-2"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleApprove(
+                              paymentData?.id,
+                              paymentData?.user_id,
+                              paymentData?.title
+                            )
+                          }
+                          className="bg-blue-500 text-white py-2 px-4 rounded"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
