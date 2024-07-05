@@ -22,9 +22,12 @@ import logo from "../assets/Rozgar Dhaba logo1-1 1.png";
 import { Bell, User } from "lucide-react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
+
 const Navigation = () => {
   const { loginUser, loading, user, logOut } = useContext(AuthContext);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0); // State for unread notifications count
+  const currentPath = window.location.pathname; // Get the current path
+
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -34,10 +37,10 @@ const Navigation = () => {
           ...doc.data(),
         }));
       
-          // Calculate unread notifications count
-          const unreadCount = notificationData?.filter(notification => !notification?.read)?.length;
-          console.log("🚀 ~ fetchNotifications ~ unreadCount:", unreadCount)
-          setUnreadNotificationsCount(unreadCount);
+        // Calculate unread notifications count
+        const unreadCount = notificationData?.filter(notification => !notification?.read)?.length;
+        console.log("🚀 ~ fetchNotifications ~ unreadCount:", unreadCount);
+        setUnreadNotificationsCount(unreadCount);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -45,7 +48,6 @@ const Navigation = () => {
 
     fetchNotifications();
   }, []);
-
 
   const NotFound = () => {
     return <h1>404 Not Found</h1>;
@@ -99,31 +101,31 @@ const Navigation = () => {
           <div className="space-x-4">
             <a
               href="/dashboard"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md  font-medium text-lg"
+              className={`text-white px-3 py-2 rounded-md font-medium text-lg ${currentPath === '/dashboard' ? 'bg-[#F7B652]' : 'hover:text-[#F7B652]'}`}
             >
               Dashboard
             </a>
             <a
               href="/application"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md  font-medium text-lg"
+              className={`text-white px-3 py-2 rounded-md font-medium text-lg ${currentPath === '/application' ? 'bg-[#F7B652]' : 'hover:text-[#F7B652]'}`}
             >
               Application
             </a>
             <a
               href="/companies"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md font-medium text-lg"
+              className={`text-white px-3 py-2 rounded-md font-medium text-lg ${currentPath === '/companies' ? 'bg-[#F7B652]' : 'hover:text-[#F7B652]'}`}
             >
               Company
             </a>
             <a
               href="/services"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md font-medium text-lg"
+              className={`text-white px-3 py-2 rounded-md font-medium text-lg ${currentPath === '/services' ? 'bg-[#F7B652]' : 'hover:text-[#F7B652]'}`}
             >
               Services
             </a>
             <a
               href="/settings"
-              className="text-white hover:text-[#F7B652] px-3 py-2 rounded-md font-medium text-lg"
+              className={`text-white px-3 py-2 rounded-md font-medium text-lg ${currentPath === '/settings' ? 'bg-[#F7B652]' : 'hover:text-[#F7B652]'}`}
             >
               Settings
             </a>
