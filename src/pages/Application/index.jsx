@@ -8,6 +8,7 @@ import {
   collection,
   doc,
   getDocs,
+  orderBy,
   query,
   updateDoc,
   where,
@@ -315,14 +316,18 @@ const Applications = () => {
   };
 
   const getJobSeekers = async () => {
-    const jobSeekerCollection = collection(db, "Job Seekers");
-    const qry = query(jobSeekerCollection);
-    const snapshot = await getDocs(qry);
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setJobSeekerData(data);
+    const jobSeekerCollectionRef = collection(db, 'Job Seekers');
+    const q = query(jobSeekerCollectionRef, orderBy('full_name', 'asc'));
+    const querySnapshot = await getDocs(q);
+    const jobSeekerData = [];
+    querySnapshot.forEach((doc) => {
+      jobSeekerData.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    setJobSeekerData(jobSeekerData);
+    // setJobSeekerData(data);
   };
 
   const getCoursesAndSkills = async () => {
@@ -353,16 +358,20 @@ const Applications = () => {
       id: doc.id,
       ...doc.data(),
     }));
-    // console.log("🚀 ~ skillingData ~ skillingData:", skillingData)
-
+  
     const { courses, skills } = await getCoursesAndSkills();
-
+  
+    // Function to perform case-insensitive comparison
+    const compareIgnoreCase = (str1, str2) => {
+      return str1.localeCompare(str2, undefined, { sensitivity: 'accent' });
+    };
+  
     const aggregatedData = skillingData.map((skillingItem) => {
       const courseItem = courses.find(
-        (course) => course.id === skillingItem.course_id
+        (course) => compareIgnoreCase(course.id, skillingItem.course_id)
       );
       const skillItem = skills.find(
-        (skill) => skill.id === skillingItem.skilling_proram_id
+        (skill) => compareIgnoreCase(skill.id, skillingItem.skilling_proram_id)
       );
       return {
         ...skillingItem,
@@ -370,10 +379,13 @@ const Applications = () => {
         skill_name: skillItem ? skillItem.name : "",
       };
     });
-
+  
+    // Sort aggregatedData by course_name or skill_name (case-insensitive)
+    aggregatedData.sort((a, b) => compareIgnoreCase(a.course_name, b.course_name) || compareIgnoreCase(a.skill_name, b.skill_name));
+  
     setAggregatedData(aggregatedData);
   };
-
+  
   const getVolunteer = async () => {
     try {
       const volunteerCollection = collection(db, "Volunteer");
