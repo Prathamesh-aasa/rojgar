@@ -940,6 +940,12 @@ const Applications = () => {
         message: "Payment Approved",
         description: `Payment ID ${id} has been approved successfully.`,
       });
+      getJobSeekers()
+      getSkilling()
+      getVolunteer()
+      getDocuments()
+      getWelfare()
+      getJobSeekers()
       setModalVisible(false);
     } catch (error) {
       console.error("Error updating document:", error);
@@ -958,6 +964,15 @@ const Applications = () => {
       });
 
       setModalVisible(false);
+
+      getJobSeekers()
+      getSkilling()
+      getVolunteer()
+      getDocuments()
+      getWelfare()
+      getJobSeekers()
+
+
       notification.success({
         message: "Payment Rejected",
         description: `Payment ID ${id} has been rejected successfully.`,
