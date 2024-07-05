@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -20,8 +20,33 @@ import {
 } from "@ant-design/icons";
 import logo from "../assets/Rozgar Dhaba logo1-1 1.png";
 import { Bell, User } from "lucide-react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
 const Navigation = () => {
   const { loginUser, loading, user, logOut } = useContext(AuthContext);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0); // State for unread notifications count
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "Notification_Admin"));
+        const notificationData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      
+          // Calculate unread notifications count
+          const unreadCount = notificationData?.filter(notification => !notification?.read)?.length;
+          console.log("🚀 ~ fetchNotifications ~ unreadCount:", unreadCount)
+          setUnreadNotificationsCount(unreadCount);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+
   const NotFound = () => {
     return <h1>404 Not Found</h1>;
   };
@@ -107,6 +132,7 @@ const Navigation = () => {
             <a className="" href="/notifications">
               <Space>
                 <Bell className=" text-white" />
+                <p>{unreadNotificationsCount}</p>
               </Space>
             </a>
 

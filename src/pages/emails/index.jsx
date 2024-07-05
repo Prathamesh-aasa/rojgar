@@ -27,7 +27,7 @@ const Emails = () => {
         const querySnapshot = await getDocs(collection(db, "Emails"));
         if (!querySnapshot.empty) {
           const docData = querySnapshot.docs[0].data();
-          console.log("🚀 ~ fetchEmails ~ docData:", docData)
+          console.log("🚀 ~ fetchEmails ~ docData:", docData);
           setEmails(docData);
           form.setFieldsValue(docData); // Pre-fill form fields with existing values
         }
@@ -68,7 +68,6 @@ const Emails = () => {
       }
 
       setEmails(values); // Update emails state
-
     } catch (error) {
       console.error("Error saving emails:", error);
       notification.error({
@@ -93,7 +92,12 @@ const Emails = () => {
           name="paymentsUpdate"
           initialValue={emails.paymentsUpdate}
           rules={[
-            { required: true, message: "Please input the email for Payments Update!" },
+            {
+              type: "email",
+              whitespace: true,
+              required: true,
+              message: "Please input the email for Payments Update!",
+            },
           ]}
         >
           <Input placeholder="Enter email for Payments Update" />
@@ -103,7 +107,12 @@ const Emails = () => {
           name="adminEmail"
           initialValue={emails.adminEmail}
           rules={[
-            { required: true, message: "Please input the Admin email!" },
+            {
+              type: "email",
+              whitespace: true,
+              required: true,
+              message: "Please input the Admin email!",
+            },
           ]}
         >
           <Input placeholder="Enter Admin email" />
@@ -114,6 +123,8 @@ const Emails = () => {
           initialValue={emails.volunteers}
           rules={[
             {
+              type: "email",
+              whitespace: true,
               required: true,
               message: "Please input the email for Volunteers!",
             },
@@ -126,7 +137,12 @@ const Emails = () => {
           name="documents"
           initialValue={emails.documents}
           rules={[
-            { required: true, message: "Please input the email for Documents / Scheme!" },
+            {
+              type: "email",
+              whitespace: true,
+              required: true,
+              message: "Please input the email for Documents / Scheme!",
+            },
           ]}
         >
           <Input placeholder="Enter email for Documents / Scheme" />
@@ -137,6 +153,8 @@ const Emails = () => {
           initialValue={emails.jobsNotification}
           rules={[
             {
+              type: "email",
+              whitespace: true,
               required: true,
               message: "Please input the email for Jobs Notification!",
             },
@@ -149,7 +167,12 @@ const Emails = () => {
           name="skilling"
           initialValue={emails.skilling}
           rules={[
-            { required: true, message: "Please input the email for Skilling!" },
+            {
+              type: "email",
+              whitespace: true,
+              required: true,
+              message: "Please input the email for Skilling!",
+            },
           ]}
         >
           <Input placeholder="Enter email for Skilling" />

@@ -37,6 +37,8 @@ const Applications = () => {
   const [selectedVolunteer, setSelectedVolunteer] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
+  const [jobApplicationModal, setJobApplicationModal] = useState(false);
+  const [jobApplicationData, setJobApplicationData] = useState(false);
 
   const sendNotification = async (userID, message) => {
     const userRef = doc(db, "Users", userID);
@@ -581,7 +583,6 @@ const Applications = () => {
   };
 
   const handelUpdateDocuments = async (status) => {
-    console.log("🚀 ~ handelUpdateDocuments ~ status:", status);
     try {
       if (status == "Rejected") {
         console.log("if -----------------------");
@@ -609,7 +610,6 @@ const Applications = () => {
       if (!querySnapshot.empty) {
         const paymentDoc = querySnapshot.docs[0];
         const data = paymentDoc.data();
-        console.log("🚀 ~ handelUpdateDocuments ~ data:", data);
         if (data.status !== "Pending" && data.status !== "Rejected") {
           console.log("if l2 -----------------");
           const jobSeekerDoc = doc(db, "Document", selectedItem?.id);
@@ -697,28 +697,53 @@ const Applications = () => {
       });
     }
   };
+
+  const fetchApplications = async () => {
+    try {
+      const q = query(collection(db, "Job Applied"));
+      const querySnapshot = await getDocs(q);
+      const apps = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Array to store promises for fetching job seeker data
+      const jobSeekerPromises = [];
+
+      // Iterate through each application
+      for (let index = 0; index < apps.length; index++) {
+        const data = apps[index];
+        if (data?.job_seeker_id) {
+          const q = query(
+            collection(db, "Job Seekers"),
+            where("id", "==", data?.job_seeker_id)
+          );
+          // Push the promise of fetching job seeker data to the array
+          jobSeekerPromises.push(getDocs(q));
+        }
+      }
+
+      // Resolve all promises for fetching job seeker data
+      const snapshots = await Promise.all(jobSeekerPromises);
+
+      // Map the fetched job seeker data to corresponding applications
+      snapshots.forEach((snapshot, index) => {
+        const jobSeekerData = snapshot.docs[0]?.data();
+        if (jobSeekerData) {
+          apps[index].jobSeekerData = jobSeekerData;
+        }
+      });
+      setApplications(apps);
+      setFilteredApplications(apps);
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    }
+  };
+
   const [applications, setApplications] = useState([]);
   const [allCompanies, setAllCompanies] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);
   useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const q = query(
-          collection(db, "Job Applied")
-          // where("job_id", "==", id)
-        );
-        const querySnapshot = await getDocs(q);
-        const apps = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("🚀 ~ apps ~ apps:", apps);
-        setApplications(apps);
-        setFilteredApplications(apps);
-      } catch (error) {
-        console.error("Error fetching applications:", error);
-      }
-    };
     const getCompanies = async () => {
       const companyCollection = collection(db, "RegisterAsCompany");
       const companiesSnapshot = await getDocs(companyCollection);
@@ -735,9 +760,10 @@ const Applications = () => {
   }, []);
   const columns = [
     {
-      title: "Company Name",
-      dataIndex: "company_name",
-      key: "company_name",
+      title: "Name",
+      dataIndex: "full_name",
+      key: "full_name",
+      render: (text, record) => record?.jobSeekerData?.full_name,
     },
     {
       title: "Position",
@@ -770,6 +796,22 @@ const Applications = () => {
           </a>
         ) : (
           <h1>No Resume Uploaded</h1>
+        ),
+    },
+    {
+      title: "Action",
+      dataIndex: "ss",
+      key: "ss",
+      render: (text, record) =>
+        record?.job_seeker_id && (
+          <Button
+            onClick={() => {
+              setJobApplicationData(record);
+              setJobApplicationModal(record);
+            }}
+          >
+            View
+          </Button>
         ),
     },
   ];
@@ -842,6 +884,59 @@ const Applications = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleJobApplicationApprove = async (id, data) => {
+    try {
+      const jobDocRef = doc(db, "Job Applied", id);
+      await updateDoc(jobDocRef, {
+        status: "Approved",
+      });
+
+      sendNotification(
+        data?.jobSeekerData?.user_id,
+        `Your Job Application for ${data?.post} has been Approved`
+      );
+
+      notification.success({
+        message: "Job Application Approved",
+        description: `Job Application for ${data?.post} has been Approved.`,
+      });
+      setJobApplicationModal(false);
+      fetchApplications();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to approve payment. Please try again later.",
+      });
+    }
+  };
+  const handleJobApplicationReject = async (id, data) => {
+    try {
+      const jobDocRef = doc(db, "Job Applied", id);
+      await updateDoc(jobDocRef, {
+        status: "Rejected",
+      });
+
+      sendNotification(
+        data?.jobSeekerData?.user_id,
+        `Your Job Application for ${data?.post} has been Rejected`
+      );
+
+      notification.success({
+        message: "Job Application Approved",
+        description: `Job Application for ${data?.post} has been Rejected.`,
+      });
+      setJobApplicationModal(false);
+      fetchApplications();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to approve payment. Please try again later.",
+      });
+    }
   };
   return (
     <div className="p-6">
@@ -1213,6 +1308,13 @@ const Applications = () => {
                     <p>Referred By</p>
                     <span>{selectedItem?.referred_by || "NA"}</span>
                   </div>
+
+                  {selectedItem?.document_type == "Company Document" && (
+                    <div className="flex flex-col gap-2 mb-4">
+                      <p>GSTIN No</p>
+                      <span>{selectedItem?.aadhaar_number || "NA"}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="shadow shadow-blue-300/40 p-3 rounded-md">
@@ -1253,11 +1355,11 @@ const Applications = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="flex flex-col gap-2">
                     <p>Highest Qualification</p>
-                    <span>{selectedItem?.highest_qualification}</span>
+                    <span>{selectedItem?.highest_qualification || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Trade</p>
-                    <span>{selectedItem?.trade}</span>
+                    <span>{selectedItem?.trade || "NA"}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                     <p>Experience</p>
@@ -1286,15 +1388,17 @@ const Applications = () => {
                   Documents & Service Details
                 </h1>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <p>Aadhaar No.</p>
-                    <span>
-                      {selectedItem?.adhaar_card_number ||
-                        selectedItem?.adhaar_number ||
-                        selectedItem?.aadhaar_number ||
-                        "Not Given"}
-                    </span>
-                  </div>
+                  {selectedItem?.document_type != "Company Document" && (
+                    <div className="flex flex-col gap-2">
+                      <p>Aadhaar No.</p>
+                      <span>
+                        {selectedItem?.adhaar_card_number ||
+                          selectedItem?.adhaar_number ||
+                          selectedItem?.aadhaar_number ||
+                          "Not Given"}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2">
                     <p>Pan No.</p>
                     <span>
@@ -1306,7 +1410,8 @@ const Applications = () => {
                   <div className="flex flex-col gap-2">
                     <p>Service Selected</p>
                     <span>
-                      {selectedItem?.profile_type ||
+                      {selectedItem?.welfare_schemes ||
+                        selectedItem?.profile_type ||
                         selectedItem?.document_service ||
                         "Not Given"}
                     </span>
@@ -1606,7 +1711,10 @@ const Applications = () => {
                 </h1>
                 {selectedVolunteer?.programs?.map((program) => {
                   return (
-                    <div key={program.courseId} className="grid grid-cols-3 mb-3">
+                    <div
+                      key={program.courseId}
+                      className="grid grid-cols-3 mb-3"
+                    >
                       <div className="flex flex-col">
                         <p>Course Name:</p>
                         <span>{program.courseName}</span>
@@ -1805,6 +1913,123 @@ const Applications = () => {
         ) : (
           <p>Loading...</p>
         )}
+      </Modal>
+
+      <Modal
+        title=""
+        open={jobApplicationModal}
+        onCancel={() => setJobApplicationModal(false)}
+        footer={null}
+        width={1200}
+        className="w-full"
+      >
+        <>
+          <h1 className="text-xl font-semibold p-5 text-blue-900 bg-blue-400/25 my-3 rounded-md mt-5">
+            Job Application
+          </h1>
+          <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+              Personal Details
+            </h1>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col gap-2">
+                <p>Name</p>
+                <span>{jobApplicationData?.jobSeekerData?.full_name}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>Email</p>
+                <span>{jobApplicationData?.jobSeekerData?.email}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>DOB</p>
+                <span>
+                  {moment(
+                    jobApplicationData?.jobSeekerData?.date_of_birth
+                  )?.format("DD-MM-YYYY")}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>DOB</p>
+                <span>{jobApplicationData?.jobSeekerData?.phone_number}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>City</p>
+                <span>{jobApplicationData?.jobSeekerData?.city}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>Address</p>
+                <span>{jobApplicationData?.jobSeekerData?.address}</span>
+              </div>
+              {jobApplicationData?.jobSeekerData?.resume_link && (
+                <div className="flex flex-col gap-2">
+                  <p>Resume</p>
+                  <span>
+                    <a
+                      href={jobApplicationData?.jobSeekerData?.resume_link}
+                      className="p-3 bg-blue-700/40 rounded flex gap-4"
+                    >
+                      <div>
+                        <FileTextIcon className="h-5 w-5" />
+                      </div>
+                      <p className="text-blue-900">Resume</p>
+                    </a>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+            <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+              Company Details
+            </h1>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col gap-2">
+                <p>Company Name</p>
+                <span>{jobApplicationData?.company_name}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>Place</p>
+                <span>{jobApplicationData?.place}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>Position</p>
+                <span>{jobApplicationData?.post}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>Apply Date</p>
+                <span>
+                  {moment(jobApplicationData?.date).format("DD-MM-YYYY")}
+                </span>
+              </div>
+            </div>
+          </div>
+          {jobApplicationData?.status == "Applied" && (
+            <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+              <button
+                className="bg-green-500/40 border-green-500 border px-6 py-2 text-green-900 font-semibold rounded-lg"
+                onClick={() =>
+                  handleJobApplicationApprove(
+                    jobApplicationData?.id,
+                    jobApplicationData
+                  )
+                }
+              >
+                Approve
+              </button>
+              <button
+                className="bg-red-500/40 border-red-500 border px-6 py-2 text-red-900 font-semibold rounded-lg ml-4"
+                onClick={() =>
+                  handleJobApplicationReject(
+                    jobApplicationData?.id,
+                    jobApplicationData
+                  )
+                }
+              >
+                Reject
+              </button>
+            </div>
+          )}
+        </>
       </Modal>
     </div>
   );

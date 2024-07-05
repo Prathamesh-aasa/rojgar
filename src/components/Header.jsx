@@ -5,11 +5,28 @@ import { AuthContext } from "../AuthProvider";
 const Header = () => {
   // Access the user, logOut, and loading state from the AuthContext
   const { user, logOut, loading } = useContext(AuthContext);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0); // State for unread notifications count
 
-  // Use the useNavigate hook to programmatically navigate between pages
-//   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "Notification_Admin"));
+        const notificationData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+     
+          // Calculate unread notifications count
+          const unreadCount = notificationData?.filter(notification => !notification?.read)?.length;
+          setUnreadNotificationsCount(unreadCount);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
 
-  // Handle user logout
+    fetchNotifications();
+  }, []);
+
   const handleSignOut = () => {
     logOut()
       .then(() => {
@@ -73,8 +90,7 @@ const Header = () => {
               {navLinks}
             </ul>
           </div>
-          {/* Application title */}
-          <a className="btn btn-ghost normal-case text-xl">Firebase Auth</a>
+        
         </div>
         <div className="navbar-center hidden lg:flex">
           {/* Horizontal navigation menu for larger screens */}

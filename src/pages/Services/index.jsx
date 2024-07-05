@@ -269,7 +269,12 @@ const Index = () => {
   };
   const getWelfare = async () => {
     const welfareCollection = collection(db, "All Welfare Schemes");
-    const listSnapshot = await getDocs(welfareCollection);
+
+    const query2 = query(welfareCollection, where("status", "==", "active"));
+
+    const listSnapshot = await getDocs(query2);
+
+    // const listSnapshot = await getDocs(welfareCollection);
     const listData = listSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -278,11 +283,14 @@ const Index = () => {
   };
   const getDocuments = async () => {
     const documentCollection = collection(db, "All Documents");
-    const listSnapshot = await getDocs(documentCollection);
+    const query2 = query(documentCollection, where("status", "==", "active"));
+
+    const listSnapshot = await getDocs(query2);
     const listData = listSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
+
     setDocuments(listData);
   };
   const getSkilling = async () => {
@@ -381,6 +389,7 @@ const Index = () => {
       const welfareRef = await addDoc(collection(db, "All Welfare Schemes"), {
         name,
         fee: fee || 0,
+        status: "active",
       });
 
       const welfareId = welfareRef.id;
@@ -403,7 +412,14 @@ const Index = () => {
   };
   const deleteWelfareSchemes = async (id, name) => {
     try {
-      await deleteDoc(doc(db, "All Welfare Schemes", id));
+      const documentRef = doc(db, "All Welfare Schemes", id);
+
+      // Update the document
+      await updateDoc(documentRef, {
+        status: "deleted",
+      });
+
+      // await deleteDoc(doc(db, "All Welfare Schemes", id));
       notification.success({
         message: "Item Deleted",
         description: `Welfare Schemes ${name} has been deleted successfully.`,
@@ -422,6 +438,7 @@ const Index = () => {
       await addDoc(collection(db, "All Documents"), {
         name,
         fee: fee || 0,
+        status: "active",
       });
       notification.success({
         message: "Item Added",
@@ -439,7 +456,14 @@ const Index = () => {
   };
   const deleteDocument = async (id, name) => {
     try {
-      await deleteDoc(doc(db, "All Documents", id));
+      const documentRef = doc(db, "All Documents", id);
+
+      // Update the document
+      await updateDoc(documentRef, {
+        status: "deleted",
+      });
+
+      // await updateDoc(doc(db, "All Documents", id));
       notification.success({
         message: "Item Deleted",
         description: `Documents ${name} has been deleted successfully.`,
@@ -536,7 +560,16 @@ const Index = () => {
         benefits: values.benefits,
       };
 
-      await addDoc(collection(db, "Subscription Plans"), subscriptionPlan);
+      const docRef = await addDoc(
+        collection(db, "Subscription Plans"),
+        subscriptionPlan
+      );
+      // Get the ID of the newly added document
+      const newDocumentId = docRef.id;
+      console.log("New Document ID:", newDocumentId);
+
+      // Update the same document with the ID field
+      await updateDoc(docRef, { id: newDocumentId });
 
       notification.success({
         message: "Success",
@@ -1975,9 +2008,10 @@ const Index = () => {
                 </Form.Item>
                 <Form.Item label="Duration (Months)" name={`duration${index}`}>
                   <Input placeholder="Duration" />
-                </Form.Item> <Form.Item label="Start Date" name={`startDate${index}`}>
-                        <Input placeholder="start Date" type="date" />
-                      </Form.Item>
+                </Form.Item>{" "}
+                <Form.Item label="Start Date" name={`startDate${index}`}>
+                  <Input placeholder="start Date" type="date" />
+                </Form.Item>
               </div>
               {courses.length > 1 && (
                 <Button type="link" onClick={() => removeCourse(course.key)}>
