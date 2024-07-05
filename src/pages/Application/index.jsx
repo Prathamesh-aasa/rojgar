@@ -648,6 +648,7 @@ const Applications = () => {
           selectedItem?.user_id,
           `Document ${selectedItem?.id} has been ${status} successfully.`
         );
+        getDocuments()
         return;
       }
       const paymentCollection = collection(db, "Payments");
@@ -713,7 +714,8 @@ const Applications = () => {
       );
 
       handleCancel();
-      getDocuments();
+      // getDocuments();
+      getWelfare()
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
