@@ -610,8 +610,8 @@ const Applications = () => {
         const data = paymentDoc.data();
         if (data.status == "Pending" || data.status == "Rejected")
           return notification.error({
-            message: "Payment data approved",
-            description: "Payment for this job seeker have not been approved.",
+            message: "Payment",
+            description: "Payment for this skilling have not been approved.",
           });
         return;
       }
@@ -687,8 +687,8 @@ const Applications = () => {
           getDocuments();
         } else {
           return notification.error({
-            message: "Payment data approved",
-            description: "Payment for this job seeker have not been approved.",
+            message: "Payment",
+            description: "Payment for this document have not been approved.",
           });
         }
       } else {
@@ -738,8 +738,8 @@ const Applications = () => {
         const data = paymentDoc.data();
         if (data.status == "Pending" || data.status == "Rejected") {
           return notification.error({
-            message: "Payment data approved",
-            description: "Payment for this job seeker have not been approved.",
+            message: "Payment",
+            description: "Payment for this welfare have not been approved.",
           });
         } else {
           const jobSeekerDoc = doc(db, "Welfare", selectedItem?.id);
