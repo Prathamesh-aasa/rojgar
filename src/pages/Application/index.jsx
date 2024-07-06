@@ -48,6 +48,7 @@ const Applications = () => {
     const docRef = await addDoc(notificationsRef, {
       user_id: userID,
       text: message,
+      read:false,
       sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
       image_link: null,
     });

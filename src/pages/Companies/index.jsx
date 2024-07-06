@@ -32,6 +32,7 @@ const CompaniesPage = () => {
     const docRef = await addDoc(notificationsRef, {
       company_id: id,
       text: message,
+      read:false,
       sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
       image_link: null,
     });
