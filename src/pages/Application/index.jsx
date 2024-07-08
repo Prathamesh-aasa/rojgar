@@ -2010,7 +2010,7 @@ const Applications = () => {
                       </div>
                       <div className="flex flex-col">
                         <p>Event Time:</p>
-                        <span>{program.eventTime}</span>
+                        <span>{moment(program.eventTime, 'HH:mm').format('h:mm A')}</span>
                       </div>
                     </div>
                   );
