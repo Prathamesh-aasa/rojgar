@@ -25,6 +25,7 @@ import {
 } from "firebase/firestore";
 import moment from "moment";
 import { FileTextIcon } from "lucide-react";
+import { Sorter } from "../../utils/sorter";
 const { Option } = Select;
 
 const Applications = () => {
@@ -150,6 +151,10 @@ const Applications = () => {
         title: "Name",
         dataIndex: "full_name",
         key: "full_name",
+        sorter: (a, b) =>
+          a?.full_name
+            ?.toLowerCase()
+            ?.localeCompare(b?.full_name?.toLowerCase()),
       },
       {
         title: "Registration ID",
@@ -160,17 +165,24 @@ const Applications = () => {
         title: "Phone Number",
         dataIndex: "phone_number",
         key: "phone_number",
+        sorter: Sorter.DEFAULT,
       },
       {
         title: "Date of Registration",
         dataIndex: "date_of_registration",
         key: "date_of_registration",
+        sorter: (dateA, dateB) =>
+          moment(dateA?.date_of_registration).diff(
+            moment(dateB?.date_of_registration)
+          ),
         render: (text) => moment(text).format("DD-MM-YYYY"),
       },
       {
         title: "Status",
         key: "status",
         dataIndex: "status",
+        sorter: (a, b) =>
+          a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
       },
     ];
 
@@ -181,6 +193,8 @@ const Applications = () => {
           title: "Email",
           dataIndex: "email",
           key: "email",
+          sorter: (a, b) =>
+            a?.email?.toLowerCase()?.localeCompare(b?.email?.toLowerCase()),
         },
         {
           title: "Applied Company",
@@ -219,6 +233,10 @@ const Applications = () => {
           title: "Email",
           dataIndex: "email_id",
           key: "email_id",
+          sorter: (a, b) =>
+            a?.email_id
+              ?.toLowerCase()
+              ?.localeCompare(b?.email_id?.toLowerCase()),
         },
         {
           title: "Skilling Program",
@@ -253,6 +271,10 @@ const Applications = () => {
           title: "Email",
           dataIndex: "email_id",
           key: "email_id",
+          sorter: (a, b) =>
+            a?.email_id
+              ?.toLowerCase()
+              ?.localeCompare(b?.email_id?.toLowerCase()),
         },
         // {
         //   title: "Date & Time",
@@ -291,6 +313,8 @@ const Applications = () => {
           title: "Email",
           dataIndex: "email",
           key: "email",
+          sorter: (a, b) =>
+            a?.email?.toLowerCase()?.localeCompare(b?.email?.toLowerCase()),
         },
         {
           title: "Document(s)",
@@ -321,6 +345,8 @@ const Applications = () => {
           title: "Email",
           dataIndex: "email",
           key: "email",
+          sorter: (a, b) =>
+            a?.email?.toLowerCase()?.localeCompare(b?.email?.toLowerCase()),
         },
         {
           title: "Family Income",
@@ -905,12 +931,18 @@ const Applications = () => {
       title: "Name",
       dataIndex: "full_name",
       key: "full_name",
+      sorter: (a, b) =>
+        a?.jobSeekerData?.full_name
+          ?.toLowerCase()
+          ?.localeCompare(b?.jobSeekerData?.full_name?.toLowerCase()),
       render: (text, record) => record?.jobSeekerData?.full_name,
     },
     {
       title: "Position",
       dataIndex: "post",
       key: "post",
+      sorter: (a, b) =>
+        a?.post?.toLowerCase()?.localeCompare(b?.post?.toLowerCase()),
     },
     {
       title: "Number of Posts",
@@ -921,11 +953,17 @@ const Applications = () => {
       title: "Qualification",
       dataIndex: "qualification",
       key: "qualification",
+      sorter: (a, b) =>
+        a?.qualification
+          ?.toLowerCase()
+          ?.localeCompare(b?.qualification?.toLowerCase()),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      sorter: (a, b) =>
+        a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
     },
     {
       title: "Resume Link",
@@ -1216,7 +1254,7 @@ const Applications = () => {
               </Select>
             </div>
           </div>
-          <div>
+          <div className="overflow-scroll">
             <Table
               columns={getColumns("1")}
               dataSource={filterData(jobSeekerData)}
@@ -1257,13 +1295,14 @@ const Applications = () => {
               </div> */}
             </div>
           </div>
-          <Table
-            columns={getColumns("2")}
-            dataSource={filterData(aggregatedData)}
-            // dataSource={aggregatedData}
-            pagination={true}
-
-          />
+          <div className="overflow-scroll">
+            <Table
+              columns={getColumns("2")}
+              dataSource={filterData(aggregatedData)}
+              // dataSource={aggregatedData}
+              pagination={true}
+            />
+          </div>
         </TabPane>
         <TabPane
           // tab="Volunteer"
@@ -1296,12 +1335,13 @@ const Applications = () => {
               </div> */}
             </div>
           </div>
-          <Table
-            columns={getColumns("3")}
-            dataSource={filterData(volunteerData)}
-            pagination={true}
-
-          />
+          <div className="overflow-scroll">
+            <Table
+              columns={getColumns("3")}
+              dataSource={filterData(volunteerData)}
+              pagination={true}
+            />
+          </div>
         </TabPane>
         <TabPane
           tab={<span className="font-semibold">Documents</span>}
@@ -1335,12 +1375,13 @@ const Applications = () => {
               </div> */}
             </div>
           </div>
-          <Table
-            columns={getColumns("4")}
-            dataSource={filterData(documents)}
-            pagination={true}
-
-          />
+          <div className="overflow-scroll">
+            <Table
+              columns={getColumns("4")}
+              dataSource={filterData(documents)}
+              pagination={true}
+            />
+          </div>
         </TabPane>
         <TabPane
           // tab="Welfare Scheme"
@@ -1374,12 +1415,13 @@ const Applications = () => {
               </div> */}
             </div>
           </div>
-          <Table
-            columns={getColumns("5")}
-            dataSource={filterData(welfares)}
-            pagination={true}
-
-          />
+          <div className="overflow-scroll">
+            <Table
+              columns={getColumns("5")}
+              dataSource={filterData(welfares)}
+              pagination={true}
+            />
+          </div>
         </TabPane>
         <TabPane
           // tab="Job Application"
@@ -1399,13 +1441,14 @@ const Applications = () => {
                 </Option>
               ))}
             </Select>
-            <Table
-              dataSource={filteredApplications}
-              columns={columns}
-              rowKey="id"
-              pagination={true}
-
-            />
+            <div className="overflow-scroll">
+              <Table
+                dataSource={filteredApplications}
+                columns={columns}
+                rowKey="id"
+                pagination={true}
+              />
+            </div>
           </div>
         </TabPane>
       </Tabs>
