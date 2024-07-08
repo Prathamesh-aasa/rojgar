@@ -325,7 +325,7 @@ const Applications = () => {
         {
           title: "Action",
           render: (text, record) => (
-            <div>
+            <div className="flex">
               <Button onClick={() => showModal(record)} type="link">
                 <DownOutlined />
               </Button>
