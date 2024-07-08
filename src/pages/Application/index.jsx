@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Tabs, Select, Input, Modal, notification } from "antd";
+import {
+  Table,
+  Button,
+  Tabs,
+  Select,
+  Input,
+  Modal,
+  notification,
+  Form,
+} from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
 import { db } from "../../../firebase";
@@ -10,6 +19,7 @@ import {
   getDocs,
   orderBy,
   query,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -40,6 +50,10 @@ const Applications = () => {
   const [paymentData, setPaymentData] = useState(null);
   const [jobApplicationModal, setJobApplicationModal] = useState(false);
   const [jobApplicationData, setJobApplicationData] = useState(false);
+  const [addManualPaymentDataModal, setAddManualPaymentDataModal] =
+    useState(false);
+  const [volPaymentData, setVolPaymentData] = useState(null);
+  const [secondPaymentData, setSecondPaymentData] = useState(null);
 
   const sendNotification = async (userID, message) => {
     const userRef = doc(db, "Users", userID);
@@ -48,7 +62,7 @@ const Applications = () => {
     const docRef = await addDoc(notificationsRef, {
       user_id: userID,
       text: message,
-      read:false,
+      read: false,
       sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
       image_link: null,
     });
@@ -59,30 +73,46 @@ const Applications = () => {
     });
   };
 
-  const fetchPaymentData = async (transactionId) => {
-    // Fetch data from the Payments collection based on transaction_id
+  const fetchSecondPaymentData = async (transactionId) => {
     const paymentCollection = collection(db, "Payments");
     const paymentQuery = query(
       paymentCollection,
-      where("transaction_id", "==", transactionId)
+      where("id", "==", transactionId)
     );
     const querySnapshot = await getDocs(paymentQuery);
 
     if (!querySnapshot.empty) {
-      // Assuming you only need the first document
       const paymentDoc = querySnapshot.docs[0];
-      setPaymentData(paymentDoc.data());
-      setModalVisible(true);
+      console.log("🚀 ~ fetchSecondPaymentData ~ paymentDoc:", paymentDoc);
+      setSecondPaymentData(paymentDoc.data());
     } else {
-      setModalVisible(false);
       notification.error({
         message: "Payment data not found",
         description: "Please try again later.",
       });
-      console.log("No such document!");
+    }
+  };
+  const fetchPaymentData = async (transactionId) => {
+    const paymentCollection = collection(db, "Payments");
+    const paymentQuery = query(
+      paymentCollection,
+      where("id", "==", transactionId)
+    );
+    const querySnapshot = await getDocs(paymentQuery);
+
+    if (!querySnapshot.empty) {
+      const paymentDoc = querySnapshot.docs[0];
+      setVolPaymentData(paymentDoc.data());
+      setAddManualPaymentDataModal(true);
+    } else {
+      notification.error({
+        message: "Payment data not found",
+        description: "Please try again later.",
+      });
     }
   };
   const fetchPaymentDatas = async (transactionId) => {
+    setSecondPaymentData(null);
     const paymentCollection = collection(db, "Payments");
     const paymentQuery = query(
       paymentCollection,
@@ -107,6 +137,8 @@ const Applications = () => {
     // if (record?.payment_id && index == 1) {
     // setModalVisible(true);
     await fetchPaymentDatas(record.payment_id);
+    if (record?.complete_payment_id && record?.complete_payment_id !== "")
+      await fetchSecondPaymentData(record?.complete_payment_id);
     // } else if (record?.payment_id) {
     // setModalVisible(true);
     // await fetchPaymentData(record.payment_id);
@@ -360,7 +392,9 @@ const Applications = () => {
 
   const getSkilling = async () => {
     const skillingCollection = collection(db, "Skilling");
-    const skillingSnapshot = await getDocs(query(skillingCollection));
+    const skillingSnapshot = await getDocs(
+      query(skillingCollection, orderBy("full_name", "asc"))
+    );
     const skillingData = skillingSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -374,25 +408,29 @@ const Applications = () => {
     };
 
     const aggregatedData = skillingData.map((skillingItem) => {
-      const courseItem = courses.find((course) =>
-        compareIgnoreCase(course.id, skillingItem.course_id)
+      const courseItem = courses.find(
+        (course) => course?.id == skillingItem?.course_id
       );
-      const skillItem = skills.find((skill) =>
-        compareIgnoreCase(skill.id, skillingItem.skilling_proram_id)
+      const skillItem = skills.find(
+        (skill) => skill?.id,
+        skillingItem?.skilling_proram_id
       );
+
       return {
         ...skillingItem,
         course_name: courseItem ? courseItem.name : "",
+        course_amount: courseItem ? courseItem.fee : "",
+        isFree: courseItem ? courseItem.isFree : "",
         skill_name: skillItem ? skillItem.name : "",
       };
     });
 
     // Sort aggregatedData by course_name or skill_name (case-insensitive)
-    aggregatedData.sort(
-      (a, b) =>
-        compareIgnoreCase(a.course_name, b.course_name) ||
-        compareIgnoreCase(a.skill_name, b.skill_name)
-    );
+    // aggregatedData.sort(
+    //   (a, b) =>
+    //     compareIgnoreCase(a.course_name, b.course_name) ||
+    //     compareIgnoreCase(a.skill_name, b.skill_name)
+    // );
 
     setAggregatedData(aggregatedData);
   };
@@ -639,7 +677,6 @@ const Applications = () => {
       });
     }
   };
-
   const handelUpdateDocuments = async (status) => {
     try {
       if (status == "Rejected") {
@@ -807,10 +844,10 @@ const Applications = () => {
         id: doc.id,
         ...doc.data(),
       }));
-  
+
       // Array to store promises for fetching job seeker data
       const jobSeekerPromises = [];
-  
+
       // Iterate through each application
       for (let index = 0; index < apps.length; index++) {
         const data = apps[index];
@@ -825,10 +862,10 @@ const Applications = () => {
           jobSeekerPromises.push(Promise.resolve({ empty: true }));
         }
       }
-  
+
       // Resolve all promises for fetching job seeker data
       const snapshots = await Promise.all(jobSeekerPromises);
-  
+
       // Map the fetched job seeker data to corresponding applications
       for (let index = 0; index < snapshots.length; index++) {
         const snapshot = snapshots[index];
@@ -836,7 +873,7 @@ const Applications = () => {
         const jobSeekerData = snapshot.empty ? null : snapshot.docs[0]?.data();
         apps[index].jobSeekerData = jobSeekerData;
       }
-  
+
       // Update state with applications including job seeker data
       setApplications(apps);
       setFilteredApplications(apps);
@@ -844,7 +881,6 @@ const Applications = () => {
       console.error("Error fetching applications:", error);
     }
   };
-  
 
   const [applications, setApplications] = useState([]);
   const [allCompanies, setAllCompanies] = useState([]);
@@ -938,7 +974,11 @@ const Applications = () => {
       sendNotification(
         userId,
         `Your payments request for the ${reason} ${
-          selectedItem?.profile_type ? `of ${selectedItem?.profile_type}` : ""
+          selectedItem?.profile_type &&
+          selectedItem?.profile_type != "Job Seeker" &&
+          selectedItem?.profile_type != "Skilling"
+            ? `of ${selectedItem?.profile_type}`
+            : ""
         } has been approved`
       );
 
@@ -947,11 +987,11 @@ const Applications = () => {
         description: `Payment ID ${id} has been approved successfully.`,
       });
       // getJobSeekers()
-      getSkilling()
-      getVolunteer()
-      getDocuments()
-      getWelfare()
-      getJobSeekers()
+      getSkilling();
+      getVolunteer();
+      getDocuments();
+      getWelfare();
+      getJobSeekers();
       setModalVisible(false);
     } catch (error) {
       console.error("Error updating document:", error);
@@ -971,13 +1011,12 @@ const Applications = () => {
 
       setModalVisible(false);
 
-      getJobSeekers()
-      getSkilling()
-      getVolunteer()
-      getDocuments()
-      getWelfare()
-      getJobSeekers()
-
+      getJobSeekers();
+      getSkilling();
+      getVolunteer();
+      getDocuments();
+      getWelfare();
+      getJobSeekers();
 
       notification.success({
         message: "Payment Rejected",
@@ -1059,6 +1098,68 @@ const Applications = () => {
       });
     }
   };
+
+  const handleAddSecondPayment = async () => {
+    try {
+      const paymentRef = doc(collection(db, "Payments"));
+      const newId = paymentRef.id;
+
+      // Generate a random order ID
+      const newTransactionId = `order_${Math.random()
+        .toString(36)
+        .substring(2, 9)}`;
+
+      // Define the new payment data
+      const newPaymentData = {
+        amount: selectedItem?.course_amount - volPaymentData?.amount || 0,
+        date: moment().format("YYYY-MM-DDTHH:mm:ss.SSSSSS"),
+        email_id: selectedItem?.email_id,
+        full_name: selectedItem?.full_name,
+        id: newId,
+        is_individual: true,
+        is_payment_gateway: false,
+        phone_number: selectedItem?.phone_number,
+        screenshot_link: null,
+        status: "Completed",
+        title: "Skilling",
+        transaction_id: newTransactionId,
+        user_id: selectedItem?.user_id,
+      };
+
+      // Add the new payment record to the Payments collection
+      await setDoc(paymentRef, newPaymentData);
+
+      // Update the status in the Skilling document
+      const skillingDoc = doc(db, "Skilling", selectedItem?.id);
+      await updateDoc(skillingDoc, {
+        complete_payment_id: newId,
+        paid: true,
+      });
+
+      // Close modal and reset states
+      setAddManualPaymentDataModal(false);
+      getSkilling();
+      setVolPaymentData(null);
+      setSelectedItem(null);
+      setIsModalVisible(false);
+
+      // Show success notification
+      notification.success({
+        message: "Payment Completed",
+        description: "Payment has been marked as completed successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating payment status", error);
+
+      // Show error notification
+      notification.error({
+        message: "Error",
+        description:
+          "Failed to mark payment as completed. Please try again later.",
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       <div>
@@ -1119,7 +1220,7 @@ const Applications = () => {
             <Table
               columns={getColumns("1")}
               dataSource={filterData(jobSeekerData)}
-              pagination={false}
+              pagination={true}
               rowKey={"id"}
             />
           </div>
@@ -1160,7 +1261,8 @@ const Applications = () => {
             columns={getColumns("2")}
             dataSource={filterData(aggregatedData)}
             // dataSource={aggregatedData}
-            pagination={false}
+            pagination={true}
+
           />
         </TabPane>
         <TabPane
@@ -1197,7 +1299,8 @@ const Applications = () => {
           <Table
             columns={getColumns("3")}
             dataSource={filterData(volunteerData)}
-            pagination={false}
+            pagination={true}
+
           />
         </TabPane>
         <TabPane
@@ -1235,7 +1338,8 @@ const Applications = () => {
           <Table
             columns={getColumns("4")}
             dataSource={filterData(documents)}
-            pagination={false}
+            pagination={true}
+
           />
         </TabPane>
         <TabPane
@@ -1273,7 +1377,8 @@ const Applications = () => {
           <Table
             columns={getColumns("5")}
             dataSource={filterData(welfares)}
-            pagination={false}
+            pagination={true}
+
           />
         </TabPane>
         <TabPane
@@ -1298,7 +1403,8 @@ const Applications = () => {
               dataSource={filteredApplications}
               columns={columns}
               rowKey="id"
-              pagination={false}
+              pagination={true}
+
             />
           </div>
         </TabPane>
@@ -1339,6 +1445,17 @@ const Applications = () => {
                   >
                     Complete
                   </Button>
+
+                  {selectedItem?.paid == false &&
+                    selectedItem?.isFree == false && (
+                      <Button
+                        onClick={() => {
+                          fetchPaymentData(selectedItem?.payment_id);
+                        }}
+                      >
+                        Manual Payment
+                      </Button>
+                    )}
                 </>
               )}
               {tab == "4" && (
@@ -1727,7 +1844,11 @@ const Applications = () => {
                   </div>
                   <div className="flex flex-col">
                     <p>City/Village</p>
-                    <span>{selectedVolunteer?.city || "NA"}</span>
+                    <span>
+                      {selectedVolunteer?.city_village ||
+                        selectedVolunteer?.city ||
+                        "NA"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1937,11 +2058,11 @@ const Applications = () => {
               <div className="w-full">
                 <div className="border-t border-gray-300 pt-5">
                   <div className="flex justify-evenly gap-5">
-                    <div className="col-span-1 flex flex-col items-center">
+                    <div className="col-span-1 flex flex-col items-center shadow shadow-blue-300/40 p-3 rounded-md mb-4">
                       <img
                         src={paymentData?.screenshot_link}
                         alt="Payment Screenshots"
-                        className="w-[250px] h-[450px]"
+                        className="w-[350px] h-[450px] object-contain aspect-auto"
                       />
                       <a
                         href={paymentData?.screenshot_link}
@@ -1953,50 +2074,81 @@ const Applications = () => {
                       </a>
                     </div>
                     <div>
-                      <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
-                        Personal Details
-                      </h1>
-                      <div className="grid grid-cols-5  mb-16">
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Phone No.</p>
-                          <span>{paymentData?.phone_number}</span>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Full Name.</p>
-                          <span>{paymentData?.full_name}</span>
-                        </div>
+                      <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+                        <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
+                          Personal Details
+                        </h1>
+                        <div className="grid grid-cols-5  mb-16">
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Phone No.</p>
+                            <span>{paymentData?.phone_number}</span>
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Full Name.</p>
+                            <span>{paymentData?.full_name}</span>
+                          </div>
 
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Email Id</p>
-                          <span>{paymentData?.email_id}</span>
-                        </div>
-                        <div className="flex flex-col gap-3 ">
-                          <p className="font-semibold">Registration ID</p>
-                          <span>{paymentData?.user_id}</span>
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Email Id</p>
+                            <span>{paymentData?.email_id}</span>
+                          </div>
+                          <div className="flex flex-col gap-3 ">
+                            <p className="font-semibold">Registration ID</p>
+                            <span>{paymentData?.user_id}</span>
+                          </div>
                         </div>
                       </div>
-                      <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
-                        Payment Details
-                      </h1>
+                      <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+                        <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
+                          Payment Details
+                        </h1>
 
-                      <div className="grid grid-cols-5 gap-14">
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Status.</p>
-                          <span>{paymentData?.status}</span>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Payment Amount</p>
-                          <span>{paymentData?.amount}</span>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Registration Fee paid</p>
-                          <span>{paymentData?.amount}</span>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                          <p className="font-semibold">Transaction Id</p>
-                          <span>{paymentData?.transaction_id}</span>
+                        <div className="grid grid-cols-5 gap-14">
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Status.</p>
+                            <span>{paymentData?.status}</span>
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Pending Amount</p>
+                            <span>
+                              {selectedItem?.course_amount - paymentData.amount}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">
+                              Registration Fee Paid
+                            </p>
+                            <span>{paymentData?.amount}</span>
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Transaction Id</p>
+                            <span>{paymentData?.transaction_id}</span>
+                          </div>
                         </div>
                       </div>
+                      {secondPaymentData && (
+                        <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+                          <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
+                            Second Payment Details
+                          </h1>
+
+                          <div className="grid grid-cols-5 gap-14">
+                            <div className="flex flex-col gap-3">
+                              <p className="font-semibold">Status.</p>
+                              <span>{secondPaymentData?.status}</span>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                              <p className="font-semibold">Payment Amount</p>
+                              <span>{secondPaymentData?.amount}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                              <p className="font-semibold">Transaction Id</p>
+                              <span>{secondPaymentData?.transaction_id}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {paymentData?.status == "Pending" &&
@@ -2152,6 +2304,44 @@ const Applications = () => {
             </div>
           )}
         </>
+      </Modal>
+      <Modal
+        open={addManualPaymentDataModal}
+        onClose={() => setAddManualPaymentDataModal(false)}
+        onCancel={() => setAddManualPaymentDataModal(false)}
+        footer={null}
+      >
+        <div className="flex flex-col gap-4 my-3">
+          <h1 className="text-xl font-semibold bg-emerald-400 p-3 rounded-md ">
+            Add Manual Payment Data
+          </h1>
+          <div className="shadow shadow-emerald-300/50 p-3 rounded-md">
+            <div className="flex justify-between">
+              <h1 className="font-semibold text-lg">Total Amount</h1>
+              <p className="font-semibold">
+                {selectedItem?.course_amount || 0}
+              </p>
+            </div>
+            <div className="flex justify-between">
+              <h1 className="font-semibold text-lg">Amount Paid</h1>
+              <p className="font-semibold">{volPaymentData?.amount || 0}</p>
+            </div>
+            <div className="flex justify-between">
+              <h1 className="font-semibold text-lg">Remaining Amount</h1>
+              <p className="font-semibold">
+                {selectedItem?.course_amount - volPaymentData?.amount || 0}
+              </p>
+            </div>
+          </div>
+          <div className="shadow shadow-emerald-300/50 p-3 rounded-md justify-end flex">
+            <button
+              onClick={handleAddSecondPayment}
+              className="font-semibold text-white bg-emerald-700 p-2 rounded-md"
+            >
+              Compete payment
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
