@@ -119,7 +119,7 @@ const PaymentInfo = () => {
             </h2>
           </div>
           <div className="border-t border-gray-300 pt-5">
-            <h1 className="bg-[#4A59AE] text-white font-semibold p-3 mb-5 rounded-md">Manual Payment Details</h1>
+            <h1 className="bg-[#4A59AE] text-white font-semibold p-3 mb-5 rounded-md">{paymentDetails?.is_payment_gateway ? "Online":"Manual"} Payment Details</h1>
             <div className="flex justify-evenly gap-5">
               <div className="col-span-1 flex flex-col items-center">
                 <img
@@ -166,7 +166,7 @@ const PaymentInfo = () => {
                   Payment Details
                 </h1>
 
-                <div className="grid grid-cols-5 gap-14">
+                <div className="grid grid-cols-3 gap-14">
                   {/* <div className="flex flex-col gap-3">
                     <p className="font-semibold">Payment Amount</p>
                     <span>{paymentDetails?.amount}</span>
@@ -178,6 +178,10 @@ const PaymentInfo = () => {
                   <div className="flex flex-col gap-3">
                     <p className="font-semibold">Transaction Id</p>
                     <span>{paymentDetails?.transaction_id|| "NOT GIVEN"}</span>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <p className="font-semibold">Payment Mode</p>
+                    <span>{paymentDetails?.is_payment_gateway ? "Online":"Manual"}</span>
                   </div>
                 </div>
               </div>

@@ -951,7 +951,7 @@ const Applications = () => {
     }
   };
 
-  const handelCourseComplete = async (volunteerId, programId) => {
+  const handelCourseComplete = async (volunteerId, programId, courseName) => {
     const programDocRef = doc(
       db,
       "Volunteer",
@@ -963,10 +963,11 @@ const Applications = () => {
       await updateDoc(programDocRef, {
         status: "Completed",
       });
-      // sendNotification(
-      //   selectedVolunteer?.user_id,
-      //   `Your request for volunteer has been ${status}`
-      // );
+      setIsVolunteerModal(false)
+      sendNotification(
+        selectedVolunteer?.user_id,
+        `${courseName} has been completed successfully for volunteer.`
+      );
       notification.success({
         message: "Course Completed",
         description: `Course ${programId} has been completed successfully for volunteer ${volunteerId}.`,
@@ -1644,6 +1645,13 @@ const Applications = () => {
                     </span>
                   </div>
                   <div className="flex flex-col gap-2">
+                    <p>DOB</p>
+                    <span>
+                      {moment(selectedItem?.dob).format("DD-MM-YYYY") ||
+                        "Not Given"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
                     <p>Date of Registration</p>
                     <span>
                       {moment(selectedItem?.date_of_registration).format(
@@ -1667,7 +1675,12 @@ const Applications = () => {
                     <p>Referred By</p>
                     <span>{selectedItem?.referred_by || "NA"}</span>
                   </div>
-
+                  {tab == "2" && (
+                    <div className="flex flex-col gap-2 mb-4">
+                      <p>City User Want For Offline Skilling</p>
+                      <span>{selectedItem?.preferred_city || "NA"}</span>
+                    </div>
+                  )}
                   {selectedItem?.document_type == "Company Document" && (
                     <div className="flex flex-col gap-2 mb-4">
                       <p>GSTIN No</p>
@@ -1936,6 +1949,13 @@ const Applications = () => {
                       <p>Email ID</p>
                       <span>{selectedVolunteer?.email_id}</span>
                     </div>
+                    <div className="flex flex-col">
+                      <p>DOB</p>
+                      <span>
+                        {moment(selectedVolunteer?.dob)?.format("DD-MM-YYYY") ||
+                          "Not Given"}
+                      </span>
+                    </div>
                     <div className="flex flex-col mb-5">
                       <p>Linkedin Link</p>
                       <a href={selectedVolunteer?.linkdin_link}>
@@ -2116,18 +2136,21 @@ const Applications = () => {
                         <p>Status:</p>
                         <span>{program?.status || "NA"}</span>
                       </div>
-                      <div className="flex flex-col">
-                        <Button
-                          onClick={() =>
-                            handelCourseComplete(
-                              selectedVolunteer?.id,
-                              program?.id
-                            )
-                          }
-                        >
-                          Complete
-                        </Button>
-                      </div>
+                      {program?.status != "Completed" && (
+                        <div className="flex flex-col">
+                          <Button
+                            onClick={() =>
+                              handelCourseComplete(
+                                selectedVolunteer?.id,
+                                program?.id,
+                                program?.courseName
+                              )
+                            }
+                          >
+                            Complete
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -2270,7 +2293,10 @@ const Applications = () => {
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Pending Amount</p>
                             <span>
-                              {selectedItem?.course_amount!= 0 ? selectedItem?.course_amount - paymentData.amount : 0}
+                              {selectedItem?.course_amount != 0
+                                ? selectedItem?.course_amount -
+                                  paymentData.amount
+                                : 0}
                             </span>
                           </div>
                           <div className="flex flex-col gap-3">
