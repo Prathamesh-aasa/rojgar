@@ -8,7 +8,6 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 const { Title, Text } = Typography;
 
 const PaymentInfo = () => {
-  
   const navigate = useNavigate();
   const { id } = useParams();
   const [paymentDetails, setPaymentDetails] = useState(null);
@@ -105,18 +104,22 @@ const PaymentInfo = () => {
               Dashboard <span className="text-[#F7B652]">&gt;</span> Payment
               Report <span className="text-[#F7B652]">&gt;</span> View Details
             </p>
-         
 
             <h2 className="text-2xl font-semibold mb-5 text-[#013D9D]">
-              <span className="text-[#013D9D]">   <Button
-              size="small"
-              type="dashed"
-              icon={<ArrowLeftIcon />}
-              onClick={() => navigate("/dashboard-payment-report")}
-            /></span> View Details
+              <span className="text-[#013D9D]">
+                {" "}
+                <Button
+                  size="small"
+                  type="dashed"
+                  icon={<ArrowLeftIcon />}
+                  onClick={() => navigate("/dashboard-payment-report")}
+                />
+              </span>{" "}
+              View Details
             </h2>
           </div>
           <div className="border-t border-gray-300 pt-5">
+            <h1 className="bg-[#4A59AE] text-white font-semibold p-3 mb-5 rounded-md">Manual Payment Details</h1>
             <div className="flex justify-evenly gap-5">
               <div className="col-span-1 flex flex-col items-center">
                 <img
@@ -138,10 +141,6 @@ const PaymentInfo = () => {
                   Personal Details
                 </h1>
                 <div className="grid grid-cols-5  mb-16">
-                  <div className="flex flex-col gap-3 ">
-                    <p className="font-semibold">Registration ID</p>
-                    <span>{paymentDetails?.user_id}</span>
-                  </div>
                   <div className="flex flex-col gap-3">
                     <p className="font-semibold">Phone No.</p>
                     <span>{paymentDetails?.phone_number}</span>
@@ -158,23 +157,27 @@ const PaymentInfo = () => {
                     <p className="font-semibold">Email Id</p>
                     <span>{paymentDetails?.email_id}</span>
                   </div>
+                  <div className="flex flex-col gap-3 ">
+                    <p className="font-semibold">Registration ID</p>
+                    <span>{paymentDetails?.user_id}</span>
+                  </div>
                 </div>
                 <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
                   Payment Details
                 </h1>
 
                 <div className="grid grid-cols-5 gap-14">
-                  <div className="flex flex-col gap-3">
+                  {/* <div className="flex flex-col gap-3">
                     <p className="font-semibold">Payment Amount</p>
                     <span>{paymentDetails?.amount}</span>
-                  </div>
+                  </div> */}
                   <div className="flex flex-col gap-3">
                     <p className="font-semibold">Registration Fee paid</p>
                     <span>{paymentDetails?.amount}</span>
                   </div>
                   <div className="flex flex-col gap-3">
                     <p className="font-semibold">Transaction Id</p>
-                    <span>{paymentDetails?.transaction_id}</span>
+                    <span>{paymentDetails?.transaction_id|| "NOT GIVEN"}</span>
                   </div>
                 </div>
               </div>

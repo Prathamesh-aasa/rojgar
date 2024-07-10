@@ -17,6 +17,7 @@ import {
   doc,
   getDocs,
   updateDoc,
+  addDoc
 } from "firebase/firestore";
 import moment from "moment";
 const { TextArea } = Input;

@@ -12,6 +12,7 @@ import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "fireb
 import { db } from "../../../firebase";
 import { Link } from "react-router-dom";
 import moment from "moment";
+import { Sorter } from "../../utils/sorter";
 
 const { Option } = Select;
 
@@ -133,6 +134,10 @@ const CompaniesPage = () => {
       title: "Name",
       dataIndex: "company_name",
       key: "company_name",
+      sorter: (a, b) =>
+        a?.company_name
+          ?.toLowerCase()
+          ?.localeCompare(b?.company_name?.toLowerCase()),
     },
     {
       title: "Company ID",
@@ -143,21 +148,34 @@ const CompaniesPage = () => {
       title: "Job poster Email Id",
       dataIndex: "job_poster_email",
       key: "job_poster_email",
+      sorter: (a, b) =>
+        a?.job_poster_email
+          ?.toLowerCase()
+          ?.localeCompare(b?.job_poster_email?.toLowerCase()),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      sorter: (a, b) =>
+        a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase())
     },
     {
       title: "Job poster Ph No.",
       dataIndex: "job_poster_phone_number",
       key: "job_poster_phone_number",
+      sorter: (a, b) =>
+        a?.job_poster_phone_number
+          ?.localeCompare(b?.job_poster_phone_number),
     },
     {
       title: "Date of Registration",
       dataIndex: "date_of_registration",
       key: "date_of_registration",
+      sorter: (dateA, dateB) =>
+        moment(dateA?.date_of_registration).diff(
+          moment(dateB?.date_of_registration)
+        ),
       render: (text) => {
         return moment(text).format("DD-MM-YYYY");
       },
@@ -166,11 +184,20 @@ const CompaniesPage = () => {
       title: "Address",
       dataIndex: "registered_address",
       key: "registered_address",
+      sorter: (a, b) =>
+        a?.registered_address
+          ?.toLowerCase()
+          ?.localeCompare(b?.registered_address?.toLowerCase()),
+
     },
     {
       title: "No of Job post",
       dataIndex: "jobCount",
       key: "jobCount",
+      sorter: {
+        compare: (a, b) => a.jobCount - b.jobCount,
+        multiple: 2,
+      },
     },
     {
       title: "",
@@ -232,7 +259,7 @@ const CompaniesPage = () => {
       <Table
         columns={columns}
         dataSource={filteredCompanies}
-        pagination={false}
+        pagination={true}
         rowKey={"id"}
       />
       <Modal
@@ -323,7 +350,7 @@ const CompaniesPage = () => {
             </Button>
             <Button
               className="text-[#FFFFFF] bg-[#013D9D]"
-              onClick={() => handelUpdate("Completed")}
+              onClick={() => handelUpdate("Approved")}
             >
               Approve
             </Button>

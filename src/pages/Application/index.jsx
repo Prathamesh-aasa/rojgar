@@ -165,7 +165,8 @@ const Applications = () => {
         title: "Phone Number",
         dataIndex: "phone_number",
         key: "phone_number",
-        sorter: Sorter.DEFAULT,
+        sorter: (a, b) => a?.phone_number?.localeCompare(b?.phone_number),
+        // sorter: Sorter.DEFAULT,
       },
       {
         title: "Date of Registration",
@@ -200,11 +201,19 @@ const Applications = () => {
           title: "Applied Company",
           dataIndex: "company_name",
           key: "company_name",
+          sorter: (a, b) =>
+            a?.company_name
+              ?.toLowerCase()
+              ?.localeCompare(b?.company_name?.toLowerCase()),
         },
         {
           title: "Applied Post",
           key: "job_you_want_to_apply",
           dataIndex: "job_you_want_to_apply",
+          sorter: (a, b) =>
+            a?.job_you_want_to_apply
+              ?.toLowerCase()
+              ?.localeCompare(b?.job_you_want_to_apply?.toLowerCase()),
         },
         {
           title: "Action",
@@ -242,11 +251,20 @@ const Applications = () => {
           title: "Skilling Program",
           dataIndex: "skill_name",
           key: "skill_name",
+          sorter: (a, b) =>
+            a?.skill_name
+              ?.toLowerCase()
+              ?.localeCompare(b?.skill_name?.toLowerCase()),
         },
         {
           title: "Course",
           key: "course_name",
           dataIndex: "course_name",
+
+          sorter: (a, b) =>
+            a?.course_name
+              ?.toLowerCase()
+              ?.localeCompare(b?.course_name?.toLowerCase()),
         },
         {
           title: "Action",
@@ -285,11 +303,17 @@ const Applications = () => {
           title: "Training Program(s)",
           dataIndex: "skills_name",
           key: "skills_name",
+          sorter: (a, b) =>
+            a?.skills_name
+              ?.toLowerCase()
+              ?.localeCompare(b?.skills_name?.toLowerCase()),
         },
         {
           title: "Course(s)",
           dataIndex: "courses",
           key: "courses",
+          sorter: (a, b) =>
+            a?.courses?.toLowerCase()?.localeCompare(b?.courses?.toLowerCase()),
         },
         {
           title: "Action",
@@ -320,6 +344,10 @@ const Applications = () => {
           title: "Document(s)",
           dataIndex: "document_service",
           key: "document_service",
+          sorter: (a, b) =>
+            a?.document_service
+              ?.toLowerCase()
+              ?.localeCompare(b?.document_service?.toLowerCase()),
         },
 
         {
@@ -352,11 +380,19 @@ const Applications = () => {
           title: "Family Income",
           dataIndex: "family_income",
           key: "family_income",
+          sorter: (a, b) =>
+            a?.family_income
+              ?.toLowerCase()
+              ?.localeCompare(b?.family_income?.toLowerCase()),
         },
         {
           title: "Scheme(s)",
           dataIndex: "welfare_schemes",
           key: "welfare_schemes",
+          sorter: (a, b) =>
+            a?.welfare_schemes
+              ?.toLowerCase()
+              ?.localeCompare(b?.welfare_schemes?.toLowerCase()),
         },
         {
           title: "Action",
@@ -434,12 +470,15 @@ const Applications = () => {
     };
 
     const aggregatedData = skillingData.map((skillingItem) => {
+      console.log(
+        "🚀 ~ aggregatedData ~ skillingItem:",
+        skillingItem?.skilling_proram_id
+      );
       const courseItem = courses.find(
         (course) => course?.id == skillingItem?.course_id
       );
       const skillItem = skills.find(
-        (skill) => skill?.id,
-        skillingItem?.skilling_proram_id
+        (skill) => skill?.id == skillingItem?.skilling_proram_id
       );
 
       return {
@@ -846,8 +885,12 @@ const Applications = () => {
         message: "Status Updated",
         description: `Volunteer ${selectedVolunteer?.id} has been ${status} successfully.`,
       });
+      console.log(
+        "🚀 ~ handelCompleteVolunteer ~ selectedItem?.user_id:",
+        selectedVolunteer?.user_id
+      );
       sendNotification(
-        selectedItem?.user_id,
+        selectedVolunteer?.user_id,
         `Your request for volunteer has been ${status}`
       );
 
@@ -908,6 +951,37 @@ const Applications = () => {
     }
   };
 
+  const handelCourseComplete = async (volunteerId, programId) => {
+    const programDocRef = doc(
+      db,
+      "Volunteer",
+      volunteerId,
+      "Programs",
+      programId
+    );
+    try {
+      await updateDoc(programDocRef, {
+        status: "Completed",
+      });
+      // sendNotification(
+      //   selectedVolunteer?.user_id,
+      //   `Your request for volunteer has been ${status}`
+      // );
+      notification.success({
+        message: "Course Completed",
+        description: `Course ${programId} has been completed successfully for volunteer ${volunteerId}.`,
+      });
+
+      getVolunteer();
+      console.log("Program status updated successfully!");
+    } catch (error) {
+      console.error("Error updating program status: ", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to update course status. Please try again later.",
+      });
+    }
+  };
   const [applications, setApplications] = useState([]);
   const [allCompanies, setAllCompanies] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);
@@ -1577,14 +1651,18 @@ const Applications = () => {
                       )}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Applied Company</p>
-                    <span>{selectedItem?.company_name || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mb-4">
-                    <p>Applied Post</p>
-                    <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
-                  </div>
+                  {selectedItem?.company_name && (
+                    <div className="flex flex-col gap-2">
+                      <p>Applied Company</p>
+                      <span>{selectedItem?.company_name || "NA"}</span>
+                    </div>
+                  )}
+                  {selectedItem?.job_you_want_to_apply && (
+                    <div className="flex flex-col gap-2 mb-4">
+                      <p>Applied Post</p>
+                      <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2 mb-4">
                     <p>Referred By</p>
                     <span>{selectedItem?.referred_by || "NA"}</span>
@@ -1629,39 +1707,47 @@ const Applications = () => {
                   </div>
                 </div>
               </div>
-              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
-                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                  Educational & Professional Details
-                </h1>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <p>Highest Qualification</p>
-                    <span>{selectedItem?.highest_qualification || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Trade</p>
-                    <span>{selectedItem?.trade || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Experience</p>
-                    <span>{selectedItem?.years_of_experience || "NA"}</span>
-                  </div>
+              {tab != "4" && tab != "5" && (
+                <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                  <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                    Educational & Professional Details
+                  </h1>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-col gap-2">
+                      <p>Highest Qualification</p>
+                      <span>{selectedItem?.highest_qualification || "NA"}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Trade</p>
+                      <span>{selectedItem?.trade || "NA"}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Experience</p>
+                      <span>{selectedItem?.years_of_experience || "NA"}</span>
+                    </div>
 
-                  <div className="flex flex-col gap-2">
-                    <p>Company Name</p>
-                    <span>{selectedItem?.company_name || "NA"}</span>
-                  </div>
+                    {selectedItem?.company_name && (
+                      <div className="flex flex-col gap-2">
+                        <p>Company Name</p>
+                        <span>{selectedItem?.company_name || "NA"}</span>
+                      </div>
+                    )}
 
-                  <div className="flex flex-col gap-2">
-                    <p>Area of Experience</p>
-                    <span>{selectedItem?.area_of_experience || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mb-4">
-                    <p>Years of Experience</p>
-                    <span>{selectedItem?.years_of_experience || "NA"}</span>
+                    {selectedItem?.area_of_experience && (
+                      <div className="flex flex-col gap-2">
+                        <p>Area of Experience</p>
+                        <span>{selectedItem?.area_of_experience || "NA"}</span>
+                      </div>
+                    )}
+                    {selectedItem?.years_of_experience && (
+                      <div className="flex flex-col gap-2 mb-4">
+                        <p>Years of Experience</p>
+                        <span>{selectedItem?.years_of_experience || "NA"}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
             <div className="flex-1 flex flex-col space--x-4 space-y-4 h-full">
               <div className="shadow shadow-blue-300/40 p-3 rounded-md">
@@ -1699,108 +1785,120 @@ const Applications = () => {
                   </div>
                 </div>
               </div>
-              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
-                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                  Other Details
-                </h1>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <p>Job you want to apply</p>
-                    <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Location of work</p>
-                    <span>{selectedItem?.preferred_city_of_work || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Any criminal record</p>
-                    <span>
-                      {selectedItem?.do_you_have_any_criminal_record
-                        ? "Yes"
-                        : "No"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Registration Fee paid</p>
-                    <span>{selectedItem?.fee_paid || "NA"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mb-4">
-                    <p>Driving license</p>
-                    <span>
-                      {selectedItem?.do_you_have_any_driving_license
-                        ? "Yes"
-                        : "No"}
-                    </span>
+              {tab != "2" && tab != "4" && tab != "5" && (
+                <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                  <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                    Other Details
+                  </h1>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-col gap-2">
+                      <p>Job you want to apply</p>
+                      <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Location of work</p>
+                      <span>
+                        {selectedItem?.preferred_city_of_work || "NA"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Any criminal record</p>
+                      <span>
+                        {selectedItem?.do_you_have_any_criminal_record
+                          ? "Yes"
+                          : "No"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Registration Fee paid</p>
+                      <span>{selectedItem?.fee_paid || "NA"}</span>
+                    </div>
+                    <div className="flex flex-col gap-2 mb-4">
+                      <p>Driving license</p>
+                      <span>
+                        {selectedItem?.do_you_have_any_driving_license
+                          ? "Yes"
+                          : "No"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="shadow shadow-blue-300/40 p-3 rounded-md">
-                <h1 className="text-[#013D9D] font-medium text-xl mb-5">
-                  Additional Details
-                </h1>
+              )}
+              {tab != "2" && (
+                <div className="shadow shadow-blue-300/40 p-3 rounded-md">
+                  <h1 className="text-[#013D9D] font-medium text-xl mb-5">
+                    Additional Details
+                  </h1>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <p>No. of family member</p>
-                    <span>{selectedItem?.number_of_family_members}</span>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-col gap-2">
+                      <p>No. of family member</p>
+                      <span>{selectedItem?.number_of_family_members}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>No. of female children</p>
+                      <span>
+                        {selectedItem?.number_of_female_children || 0}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>No. of male children</p>
+                      <span>{selectedItem?.number_of_male_children || 0}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Main occupation of the family</p>
+                      <span>
+                        {selectedItem?.main_occupation_of_family || "Not Given"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Need any agricultural products?</p>
+                      <span>
+                        {selectedItem?.do_you_need_any_farming_products
+                          ? "Yes"
+                          : "No"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>have agricultural land?</p>
+                      <span>
+                        {selectedItem?.do_you_have_agriculture_land
+                          ? "Yes"
+                          : "No"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Mention agricultural products</p>
+                      <span>
+                        {selectedItem?.farming_product || "Not Given"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p>Have a toilet at home?</p>
+                      <span>
+                        {selectedItem?.do_you_have_toilet_at_home
+                          ? "Yes"
+                          : "No"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <p>No. of female children</p>
-                    <span>{selectedItem?.number_of_female_children || 0}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>No. of male children</p>
-                    <span>{selectedItem?.number_of_male_children || 0}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Main occupation of the family</p>
-                    <span>
-                      {selectedItem?.main_occupation_of_family || "Not Given"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Need any agricultural products?</p>
-                    <span>
-                      {selectedItem?.do_you_need_any_farming_products
-                        ? "Yes"
-                        : "No"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>have agricultural land?</p>
-                    <span>
-                      {selectedItem?.do_you_have_agriculture_land
-                        ? "Yes"
-                        : "No"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Mention agricultural products</p>
-                    <span>{selectedItem?.farming_product || "Not Given"}</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Have a toilet at home?</p>
-                    <span>
-                      {selectedItem?.do_you_have_toilet_at_home ? "Yes" : "No"}
-                    </span>
+                  <div className="flex">
+                    {selectedItem?.resume_link && (
+                      <>
+                        <a
+                          href={selectedItem?.resume_link}
+                          className="p-3 bg-blue-700/40 rounded flex gap-4"
+                        >
+                          <div>
+                            <FileTextIcon className="h-5 w-5" />
+                          </div>
+                          <p className="text-blue-900">Resume</p>
+                        </a>
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="flex">
-                  {selectedItem?.resume_link && (
-                    <>
-                      <a
-                        href={selectedItem?.resume_link}
-                        className="p-3 bg-blue-700/40 rounded flex gap-4"
-                      >
-                        <div>
-                          <FileTextIcon className="h-5 w-5" />
-                        </div>
-                        <p className="text-blue-900">Resume</p>
-                      </a>
-                    </>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -1998,7 +2096,7 @@ const Applications = () => {
                   return (
                     <div
                       key={program.courseId}
-                      className="grid grid-cols-3 mb-3"
+                      className="grid grid-cols-5 mb-3"
                     >
                       <div className="flex flex-col">
                         <p>Course Name:</p>
@@ -2010,13 +2108,31 @@ const Applications = () => {
                       </div>
                       <div className="flex flex-col">
                         <p>Event Time:</p>
-                        <span>{moment(program.eventTime, 'HH:mm').format('h:mm A')}</span>
+                        <span>
+                          {moment(program.eventTime, "HH:mm").format("h:mm A")}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <p>Status:</p>
+                        <span>{program?.status || "NA"}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <Button
+                          onClick={() =>
+                            handelCourseComplete(
+                              selectedVolunteer?.id,
+                              program?.id
+                            )
+                          }
+                        >
+                          Complete
+                        </Button>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <div className="flex justify-end">
+              {/* <div className="flex justify-end">
                 {selectedVolunteer?.status !== "Completed" && (
                   <Button
                     className="bg-[#013D9D] text-white"
@@ -2025,7 +2141,7 @@ const Applications = () => {
                     Complete
                   </Button>
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
         )}
@@ -2121,7 +2237,7 @@ const Applications = () => {
                         <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
                           Personal Details
                         </h1>
-                        <div className="grid grid-cols-5  mb-16">
+                        <div className="grid grid-cols-3 gap-5 mb-16">
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Phone No.</p>
                             <span>{paymentData?.phone_number}</span>
@@ -2146,7 +2262,7 @@ const Applications = () => {
                           Payment Details
                         </h1>
 
-                        <div className="grid grid-cols-5 gap-14">
+                        <div className="grid grid-cols-3  gap-5">
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Status.</p>
                             <span>{paymentData?.status}</span>
@@ -2154,7 +2270,7 @@ const Applications = () => {
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Pending Amount</p>
                             <span>
-                              {selectedItem?.course_amount - paymentData.amount}
+                              {selectedItem?.course_amount!= 0 ? selectedItem?.course_amount - paymentData.amount : 0}
                             </span>
                           </div>
                           <div className="flex flex-col gap-3">
@@ -2165,7 +2281,9 @@ const Applications = () => {
                           </div>
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Transaction Id</p>
-                            <span>{paymentData?.transaction_id}</span>
+                            <span>
+                              {paymentData?.transaction_id || "Not Generated"}
+                            </span>
                           </div>
                         </div>
                       </div>
