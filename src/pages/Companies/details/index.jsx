@@ -216,10 +216,10 @@ function CompanyInfo() {
                     <p className="font-semibold text-sm">Job Id</p>
                     <span className="text-sm">{job?.id}</span>
                   </div>
-                  <div className="flex flex-col mb-4">
+                  {/* <div className="flex flex-col mb-4">
                     <p className="font-semibold text-sm">Payment Mode</p>
                     <span className="text-sm">{job?.payment_mode || "NA"}</span>
-                  </div>
+                  </div> */}
                   <div className="flex flex-col mb-4">
                     <p className="font-semibold text-sm">Benefit</p>
                     <span className="text-sm">{job?.benefits}</span>

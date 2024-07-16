@@ -178,18 +178,18 @@ const Applications = () => {
           ),
         render: (text) => moment(text).format("DD-MM-YYYY"),
       },
-      {
-        title: "Status",
-        key: "status",
-        dataIndex: "status",
-        sorter: (a, b) =>
-          a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
-      },
     ];
 
     if (tab === "1") {
       return [
         ...commonColumns,
+        {
+          title: "Status",
+          key: "status",
+          dataIndex: "status",
+          sorter: (a, b) =>
+            a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
+        },
         {
           title: "Email",
           dataIndex: "email",
@@ -223,7 +223,7 @@ const Applications = () => {
                 <DownOutlined />
               </Button>
 
-              {record?.payment_id && (
+              {record?.payment_id != "" && (
                 <Button
                   onClick={() => handleButtonClick(record, 1)}
                   type="link"
@@ -238,6 +238,13 @@ const Applications = () => {
     } else if (tab === "2") {
       return [
         ...commonColumns,
+        {
+          title: "Status",
+          key: "status",
+          dataIndex: "status",
+          sorter: (a, b) =>
+            a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
+        },
         {
           title: "Email",
           dataIndex: "email_id",
@@ -285,6 +292,30 @@ const Applications = () => {
     } else if (tab === "3") {
       return [
         ...commonColumns,
+        // {
+        //   title: "Status",
+        //   key: "status",
+        //   dataIndex: "status",
+
+        //   sorter: (a, b) =>
+        //     a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
+        // },
+        {
+          title: "Status",
+          key: "status",
+          dataIndex: "status",
+          render: (text, record) => {
+            let overallStatus = "Completed";
+            if (record?.programs) {
+              record.programs.map((pr) => {
+                if (pr?.status?.toLowerCase() != "completed") {
+                  overallStatus = "Pending";
+                }
+              });
+            }
+            return overallStatus;
+          },
+        },
         {
           title: "Email",
           dataIndex: "email_id",
@@ -334,6 +365,13 @@ const Applications = () => {
       return [
         ...commonColumns,
         {
+          title: "Status",
+          key: "status",
+          dataIndex: "status",
+          sorter: (a, b) =>
+            a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
+        },
+        {
           title: "Email",
           dataIndex: "email",
           key: "email",
@@ -357,7 +395,7 @@ const Applications = () => {
               <Button onClick={() => showModal(record)} type="link">
                 <DownOutlined />
               </Button>
-              {record?.payment_id && (
+              {record?.payment_id != "" && (
                 <Button onClick={() => handleButtonClick(record)} type="link">
                   View Payment
                 </Button>
@@ -369,6 +407,13 @@ const Applications = () => {
     } else if (tab == "5") {
       return [
         ...commonColumns,
+        {
+          title: "Status",
+          key: "status",
+          dataIndex: "status",
+          sorter: (a, b) =>
+            a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
+        },
         {
           title: "Email",
           dataIndex: "email",
@@ -402,7 +447,7 @@ const Applications = () => {
                 <DownOutlined />
               </Button>
 
-              {record?.payment_id && (
+              {record?.payment_id != "" && (
                 <Button onClick={() => handleButtonClick(record)} type="link">
                   View Payment
                 </Button>
@@ -756,13 +801,15 @@ const Applications = () => {
         });
         notification.success({
           message: "Status Updated",
-          description: `Document ${selectedItem?.id} has been ${status} successfully.`,
+          description: `${selectedItem?.document_service} has been ${status} successfully.`,
         });
         sendNotification(
           selectedItem?.user_id,
-          `Document ${selectedItem?.id} has been ${status} successfully.`
+          `${selectedItem?.document_service} has been ${status}.`
         );
         getDocuments();
+        handleCancel();
+
         return;
       }
       const paymentCollection = collection(db, "Payments");
@@ -783,11 +830,11 @@ const Applications = () => {
           });
           notification.success({
             message: "Status Updated",
-            description: `Document ${selectedItem?.id} has been ${status} successfully.`,
+            description: `${selectedItem?.document_service} has been ${status} successfully.`,
           });
           sendNotification(
             selectedItem?.user_id,
-            `Document ${selectedItem?.id} has been ${status} successfully.`
+            `${selectedItem?.document_service} has been ${status}.`
           );
 
           handleCancel();
@@ -968,13 +1015,17 @@ const Applications = () => {
         status: "Completed",
       });
       setIsVolunteerModal(false);
+      console.log(
+        "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=>",
+        selectedVolunteer?.user_id
+      );
       sendNotification(
         selectedVolunteer?.user_id,
         `${courseName} has been completed successfully for volunteer.`
       );
       notification.success({
         message: "Course Completed",
-        description: `Course ${programId} has been completed successfully for volunteer ${volunteerId}.`,
+        description: `${courseName} has been completed successfully for volunteer ${selectedVolunteer?.full_name}.`,
       });
 
       getVolunteer();
@@ -1676,10 +1727,12 @@ const Applications = () => {
                       <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
                     </div>
                   )}
-                  <div className="flex flex-col gap-2 mb-4">
-                    <p>Referred By</p>
-                    <span>{selectedItem?.referred_by || "NA"}</span>
-                  </div>
+                  {tab != "4" && tab != "5" && (
+                    <div className="flex flex-col gap-2 mb-4">
+                      <p>Referred By</p>
+                      <span>{selectedItem?.referred_by || "NA"}</span>
+                    </div>
+                  )}
                   {tab == "2" && (
                     <div className="flex flex-col gap-2 mb-4">
                       <p>City User Want For Offline Skilling</p>
@@ -1739,12 +1792,14 @@ const Applications = () => {
                       <p>Trade</p>
                       <span>{selectedItem?.trade || "NA"}</span>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <p>Experience</p>
-                      <span>
-                        {selectedItem?.years_of_experience ? "YES" : "NO"}
-                      </span>
-                    </div>
+                    {tab != "2" && (
+                      <div className="flex flex-col gap-2">
+                        <p>Experience</p>
+                        <span>
+                          {selectedItem?.years_of_experience ? "YES" : "NO"}
+                        </span>
+                      </div>
+                    )}
 
                     {selectedItem?.company_name && (
                       <div className="flex flex-col gap-2">
@@ -1794,15 +1849,23 @@ const Applications = () => {
                         "Not Given"}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <p>Service Selected</p>
-                    <span>
-                      {selectedItem?.welfare_schemes ||
-                        selectedItem?.profile_type ||
-                        selectedItem?.document_service ||
-                        "Not Given"}
-                    </span>
-                  </div>
+                  {tab !== "2" && (
+                    <div className="flex flex-col gap-2">
+                      <p>Service Selected</p>
+                      <span>
+                        {selectedItem?.welfare_schemes ||
+                          selectedItem?.profile_type ||
+                          selectedItem?.document_service ||
+                          "Not Given"}
+                      </span>
+                    </div>
+                  )}
+                  {tab == "2" && (
+                    <div className="flex flex-col gap-2">
+                      <p>Service Courses</p>
+                      <span>{selectedItem?.course_name || "Not Given"}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               {tab != "2" && tab != "4" && tab != "5" && (
@@ -1830,7 +1893,7 @@ const Applications = () => {
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <p>Registration Fee paid</p>
+                      <p>Booking Fee paid</p>
                       <span>{selectedItem?.fee_paid || "NA"}</span>
                     </div>
                     <div className="flex flex-col gap-2 mb-4">
@@ -2141,7 +2204,7 @@ const Applications = () => {
                       </div>
                       <div className="flex flex-col">
                         <p>Status:</p>
-                        <span>{program?.status || "NA"}</span>
+                        <span>{program?.status || "Pending"}</span>
                       </div>
                       {program?.status != "Completed" && (
                         <div className="flex flex-col">
@@ -2299,15 +2362,17 @@ const Applications = () => {
                             <p className="font-semibold">Status.</p>
                             <span>{paymentData?.status}</span>
                           </div>
-                          <div className="flex flex-col gap-3">
-                            <p className="font-semibold">Pending Amount</p>
-                            <span>
-                              {selectedItem?.course_amount != 0
-                                ? selectedItem?.course_amount -
-                                  paymentData.amount
-                                : 0}
-                            </span>
-                          </div>
+                          {tab != "4" && (
+                            <div className="flex flex-col gap-3">
+                              <p className="font-semibold">Pending Amount</p>
+                              <span>
+                                {selectedItem?.course_amount != 0
+                                  ? selectedItem?.course_amount -
+                                    paymentData.amount
+                                  : 0}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">
                               Registration Fee Paid

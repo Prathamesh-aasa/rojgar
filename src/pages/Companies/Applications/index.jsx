@@ -22,6 +22,38 @@ const CompanyApplications = () => {
           id: doc.id,
           ...doc.data(),
         }));
+
+        // Array to store promises for fetching job seeker data
+        const jobSeekerPromises = [];
+
+        // Iterate through each application
+        for (let index = 0; index < apps.length; index++) {
+          const data = apps[index];
+          if (data?.job_seeker_id) {
+            const q = query(
+              collection(db, "Job Seekers"),
+              where("id", "==", data.job_seeker_id)
+            );
+            jobSeekerPromises.push(getDocs(q));
+          } else {
+            // Handle case where job_seeker_id is missing or falsy
+            jobSeekerPromises.push(Promise.resolve({ empty: true }));
+          }
+        }
+
+        // Resolve all promises for fetching job seeker data
+        const snapshots = await Promise.all(jobSeekerPromises);
+
+        // Map the fetched job seeker data to corresponding applications
+        for (let index = 0; index < snapshots.length; index++) {
+          const snapshot = snapshots[index];
+          // Check if snapshot has data (avoid accessing [0] if it's empty or undefined)
+          const jobSeekerData = snapshot.empty
+            ? null
+            : snapshot.docs[0]?.data();
+          apps[index].jobSeekerData = jobSeekerData;
+        }
+
         console.log("🚀 ~ apps ~ apps:", apps);
         setApplications(apps);
       } catch (error) {
@@ -42,19 +74,23 @@ const CompanyApplications = () => {
   // Define columns for the table
   const columns = [
     {
-      title: "Company Name",
-      dataIndex: "company_name",
-      key: "company_name",
+      title: "Name",
+      dataIndex: "full_name",
+      render: (text, record) => record?.jobSeekerData?.full_name,
+      // key: "jobSeekerData.full_name",
     },
     {
-      title: "Position",
-      dataIndex: "post",
-      key: "post",
+      title: "Email",
+      dataIndex: "email",
+      render: (text, record) => record?.jobSeekerData?.email,
+
+      // key: "email",
     },
     {
-      title: "Number of Posts",
-      dataIndex: "openings",
-      key: "openings",
+      title: "Phone",
+      dataIndex: "phone_number",
+      render: (text, record) => record?.jobSeekerData?.phone_number,
+      key: "phone_number",
     },
     {
       title: "Qualification",
@@ -70,11 +106,14 @@ const CompanyApplications = () => {
       title: "Resume Link",
       dataIndex: "resume_link",
       key: "resume_link",
-      render: (text) => (
-        text ? <a href={text} target="_blank" rel="noopener noreferrer">
-          View Resume
-        </a> : <h1>No Resume Uploaded</h1>
-      ),
+      render: (text) =>
+        text ? (
+          <a href={text} target="_blank" rel="noopener noreferrer">
+            View Resume
+          </a>
+        ) : (
+          <h1>No Resume Uploaded</h1>
+        ),
     },
   ];
 
@@ -88,12 +127,17 @@ const CompanyApplications = () => {
           type="primary"
           onClick={downloadExcel}
           style={{ marginBottom: 16 }}
-          icon={<DownloadIcon  height={17} />}
+          icon={<DownloadIcon height={17} />}
         >
-          Download Applications 
+          Download Applications
         </Button>
       </div>
-      <Table dataSource={applications} columns={columns} rowKey="id" pagination={false}/>
+      <Table
+        dataSource={applications}
+        columns={columns}
+        rowKey="id"
+        pagination={false}
+      />
     </div>
   );
 };

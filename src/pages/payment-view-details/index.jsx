@@ -172,7 +172,7 @@ const PaymentInfo = () => {
                     <span>{paymentDetails?.amount}</span>
                   </div> */}
                   <div className="flex flex-col gap-3">
-                    <p className="font-semibold">Registration Fee paid</p>
+                    <p className="font-semibold">Booking Fee paid</p>
                     <span>{paymentDetails?.amount}</span>
                   </div>
                   <div className="flex flex-col gap-3">
