@@ -1,5 +1,5 @@
 import { Button } from "antd";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDoc, getDocs, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { db } from "../../../../firebase";
@@ -17,10 +17,23 @@ function CompanyInfo() {
       id: doc.id,
       ...doc.data(),
     }));
-    console.log("🚀 ~ data ~ data:", data)
+    console.log("🚀 ~ data ~ data:", data);
 
-    const finalData = data[0]
-    console.log("🚀 ~ getCompanyInfo ~ finalData:", finalData)
+    const finalData = data[0];
+    if (finalData?.subscription) {
+      const subscriptionCollection = collection(db, "Subscription Plans");
+      const subQry = query(
+        subscriptionCollection,
+        where("id", "==", finalData?.subscription)
+      );
+      const snap = await getDocs(subQry);
+      const snapData = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      finalData.subscription = snapData[0];
+    }
+    console.log("🚀 ~ getCompanyInfo ~ finalData:", finalData);
 
     setCompanyData(finalData);
   };
@@ -47,9 +60,11 @@ function CompanyInfo() {
       <div>
         <p className="text-base mb-5">
           Dashboard <span className="text-[#F7B652]">&gt;</span> Company
-          <span className="text-[#F7B652]"> &gt;</span> 
+          <span className="text-[#F7B652]"></span>
         </p>
-        <p className="text-2xl font-semibold text-[#013D9D]">{companyData?.company_name} </p>
+        <p className="text-2xl font-semibold text-[#013D9D]">
+          {companyData?.company_name}{" "}
+        </p>
       </div>
       <div className="flex gap-4">
         <div className="mt-8 bg-[#EEF2F9] w-[50%] p-4 rounded-lg h-fit">
@@ -122,6 +137,38 @@ function CompanyInfo() {
               <span className="text-sm">{companyData?.registered_address}</span>
             </div>
           </div>
+
+          <h1 className="mb-5 text-[#013D9D] text-[22px] font-medium">
+            Subscription Details
+          </h1>
+         { companyData?.subscription ?
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col">
+              <p className="font-semibold text-sm">Name</p>
+              <span className="text-sm">{companyData?.subscription?.name}</span>
+            </div>
+            <div className="flex flex-col">
+              <p className="font-semibold text-sm">Interval</p>
+              <span className="text-sm">{companyData?.subscription?.per}</span>
+            </div>
+            <div className="flex flex-col mb-5">
+              <p className="font-semibold text-sm">Price</p>
+              <span className="text-sm">
+                {companyData?.subscription?.price}
+              </span>
+            </div>
+            <div className="flex flex-col mb-5 col-span-2">
+              <p className="font-semibold text-sm mb-3">Benefits</p>
+              <span className="text-sm">
+                {companyData?.subscription?.benefits?.map((be, idx) => (
+                  <p key={be}>
+                    {idx + 1}. {be}
+                  </p>
+                ))}
+              </span>
+            </div>
+          </div>
+          : <p>No Subscription Taken</p>}
         </div>
         <div className="mt-8 p-4 w-[50%] flex flex-col gap-5">
           {companyJobs?.map((job) => {

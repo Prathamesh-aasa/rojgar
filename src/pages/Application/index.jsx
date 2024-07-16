@@ -273,7 +273,7 @@ const Applications = () => {
               <Button onClick={() => showModal(record)} type="link">
                 <DownOutlined />
               </Button>
-              {record?.payment_id && (
+              {record?.payment_id != "" && (
                 <Button onClick={() => handleButtonClick(record)} type="link">
                   View Payment
                 </Button>
@@ -455,7 +455,7 @@ const Applications = () => {
   const getSkilling = async () => {
     const skillingCollection = collection(db, "Skilling");
     const skillingSnapshot = await getDocs(
-      query(skillingCollection, orderBy("full_name", "asc"))
+      query(skillingCollection, orderBy("date_of_registration", "desc"))
     );
     const skillingData = skillingSnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -702,6 +702,7 @@ const Applications = () => {
     }
   };
   const handelCompleteSkilling = async () => {
+    console.log("ccccccccccccccccccccccccc");
     try {
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
@@ -717,7 +718,6 @@ const Applications = () => {
             message: "Payment",
             description: "Payment for this skilling have not been approved.",
           });
-        return;
       }
       const skillingDoc = doc(db, "Skilling", selectedItem?.id);
       await updateDoc(skillingDoc, {
@@ -727,6 +727,10 @@ const Applications = () => {
         message: "Status Updated",
         description: `Skilling ${selectedItem?.id} has been Completed successfully.`,
       });
+      console.log(
+        "🚀 ~ handelCompleteSkilling ~  selectedItem?.user_id,:",
+        selectedItem?.user_id
+      );
       sendNotification(
         selectedItem?.user_id,
         `Your request for skilling has been Completed`
@@ -963,7 +967,7 @@ const Applications = () => {
       await updateDoc(programDocRef, {
         status: "Completed",
       });
-      setIsVolunteerModal(false)
+      setIsVolunteerModal(false);
       sendNotification(
         selectedVolunteer?.user_id,
         `${courseName} has been completed successfully for volunteer.`
@@ -1166,6 +1170,7 @@ const Applications = () => {
         status: "Approved",
       });
 
+      console.log("CCCCCCCCCCCCCCCCCCCCCCCCCCC", data?.jobSeekerData?.user_id);
       sendNotification(
         data?.jobSeekerData?.user_id,
         `Your Job Application for ${data?.post} has been Approved`
@@ -1736,7 +1741,9 @@ const Applications = () => {
                     </div>
                     <div className="flex flex-col gap-2">
                       <p>Experience</p>
-                      <span>{selectedItem?.years_of_experience || "NA"}</span>
+                      <span>
+                        {selectedItem?.years_of_experience ? "YES" : "NO"}
+                      </span>
                     </div>
 
                     {selectedItem?.company_name && (
@@ -1895,7 +1902,7 @@ const Applications = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="flex">
+                  <div className="flex mt-4">
                     {selectedItem?.resume_link && (
                       <>
                         <a
@@ -2267,12 +2274,14 @@ const Applications = () => {
                           </div>
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Full Name.</p>
-                            <span>{paymentData?.full_name}</span>
+                            <span>{selectedItem?.full_name}</span>
                           </div>
 
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">Email Id</p>
-                            <span>{paymentData?.email_id}</span>
+                            <span>
+                              {selectedItem?.email || selectedItem?.email_id}
+                            </span>
                           </div>
                           <div className="flex flex-col gap-3 ">
                             <p className="font-semibold">Registration ID</p>
@@ -2410,7 +2419,7 @@ const Applications = () => {
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                <p>DOB</p>
+                <p>Phone</p>
                 <span>{jobApplicationData?.jobSeekerData?.phone_number}</span>
               </div>
               <div className="flex flex-col gap-2">

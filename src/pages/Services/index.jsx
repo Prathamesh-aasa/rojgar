@@ -486,7 +486,7 @@ const Index = () => {
         city: "",
         company_email: value.email,
         company_name: value?.companyName,
-        date_of_registration: moment().format("DD-MM-YYYY HH:mm:ss"),
+        date_of_registration: moment().format("YYYY-MM-DDTHH:mm:ss"),
         gstin: value?.companyGstin,
         job_poster_email: value.email,
         job_poster_name: "",
@@ -495,7 +495,7 @@ const Index = () => {
         profile_type: "Company",
         registered_address: value?.companyAddress,
         state: value?.companyState,
-        status: "Completed",
+        status: "Approved",
         verified: false,
         subscription: "",
         created_at:moment().format("DD-MM-YYYY HH:mm:ss")
