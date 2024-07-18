@@ -868,11 +868,11 @@ const Applications = () => {
         });
         notification.success({
           message: "Status Updated",
-          description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
+          description: `Welfare ${selectedItem?.welfare_schemes} has been ${status} successfully.`,
         });
         sendNotification(
           selectedItem?.user_id,
-          `Your request for welfare has been ${status}`
+          `Your request for ${selectedItem?.welfare_schemes} has been ${status}`
         );
 
         handleCancel();
@@ -902,11 +902,11 @@ const Applications = () => {
           });
           notification.success({
             message: "Status Updated",
-            description: `Welfare ${selectedItem?.id} has been ${status} successfully.`,
+            description: `Welfare ${selectedItem?.welfare_schemes} has been ${status} successfully.`,
           });
           sendNotification(
             selectedItem?.user_id,
-            `Your request for welfare has been ${status}`
+            `Your request for ${selectedItem?.welfare_schemes} has been ${status}`
           );
 
           handleCancel();
