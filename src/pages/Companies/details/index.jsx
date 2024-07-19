@@ -175,8 +175,8 @@ function CompanyInfo() {
             return (
               <div className="shadow-lg p-4 rounded-lg" key={job?.id}>
                 <div className="flex items-center justify-between mb-5 ">
-                  <h1 className=" text-[#013D9D] text-[22px] font-medium">
-                    {job?.job_position}
+                  <h1 className=" text-[#013D9D] text-[22px] font-medium flex gap-3 items-center">
+                    {job?.job_position} {job?.isOpen ? <p className="bg-green-600 text-white px-2 rounded-lg text-center text-sm font-light">Open</p>:<p className="bg-red-600 text-white px-2 rounded-lg text-center text-sm font-light">Closed</p>}
                   </h1>
                   <Link
                     className="underline text-[#013D9D]"
