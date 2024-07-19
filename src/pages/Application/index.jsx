@@ -280,7 +280,7 @@ const Applications = () => {
               <Button onClick={() => showModal(record)} type="link">
                 <DownOutlined />
               </Button>
-              {record?.payment_id != "" && (
+              {record?.payment_id != "" && record?.course_amount != 0  && (
                 <Button onClick={() => handleButtonClick(record)} type="link">
                   View Payment
                 </Button>
@@ -543,6 +543,7 @@ const Applications = () => {
     // );
 
     setAggregatedData(aggregatedData);
+    console.log("🚀 ~ getSkilling ~ aggregatedData:", aggregatedData);
   };
 
   const getVolunteer = async () => {
