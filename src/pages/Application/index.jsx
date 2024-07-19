@@ -2200,7 +2200,7 @@ const Applications = () => {
                       <div className="flex flex-col">
                         <p>Event Time:</p>
                         <span>
-                          {moment(program.eventTime, "HH:mm").format("h:mm A")}
+                          {program?.eventTime}
                         </span>
                       </div>
                       <div className="flex flex-col">
