@@ -65,7 +65,19 @@ const CompanyApplications = () => {
   }, [id]);
 
   const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(applications);
+    const newData = [];
+    applications.forEach((app) =>
+      newData.push({
+        Id: app?.jobSeekerData?.id || "-",
+        Name: app?.jobSeekerData?.full_name || "-",
+        Email: app?.jobSeekerData?.email || "-",
+        Phone: app?.jobSeekerData?.phone_number || "-",
+        Qualification: app?.qualification || "-",
+        Status: app?.status || "-",
+        Resume_Link: app?.resume_link || "-",
+      })
+    );
+    const worksheet = XLSX.utils.json_to_sheet(newData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
     XLSX.writeFile(workbook, "Applications.xlsx");

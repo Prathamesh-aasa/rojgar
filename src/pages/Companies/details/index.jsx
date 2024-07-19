@@ -79,7 +79,7 @@ function CompanyInfo() {
             <div className="flex flex-col">
               <p className="font-semibold text-sm">Phone No.</p>
               <span className="text-sm">
-                {companyData?.job_poster_phone_number}
+                {companyData?.company_phone || "Not Given"}
               </span>
             </div>
 

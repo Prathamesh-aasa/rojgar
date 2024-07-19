@@ -86,7 +86,7 @@ const CompaniesPage = () => {
       sendNotification(selectedItems?.id,`Your company request has been ${status}`)
       notification.success({
         message: "Status Updated",
-        description: `Company ${selectedItems?.id} has been ${status} successfully.`,
+        description: `Company ${selectedItems?.company_name} has been ${status} successfully.`,
       });
       handleCancel();
       getCompanies();

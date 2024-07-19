@@ -280,7 +280,7 @@ const Applications = () => {
               <Button onClick={() => showModal(record)} type="link">
                 <DownOutlined />
               </Button>
-              {record?.payment_id != "" && record?.course_amount != 0  && (
+              {record?.payment_id != "" && record?.course_amount != 0 && (
                 <Button onClick={() => handleButtonClick(record)} type="link">
                   View Payment
                 </Button>
@@ -2311,21 +2311,23 @@ const Applications = () => {
               <div className="w-full">
                 <div className="border-t border-gray-300 pt-5">
                   <div className="flex justify-evenly gap-5">
-                    <div className="col-span-1 flex flex-col items-center shadow shadow-blue-300/40 p-3 rounded-md mb-4">
-                      <img
-                        src={paymentData?.screenshot_link}
-                        alt="Payment Screenshots"
-                        className="w-[350px] h-[450px] object-contain aspect-auto"
-                      />
-                      <a
-                        href={paymentData?.screenshot_link}
-                        download="payment_screenshot.png"
-                        className="mt-3 bg-blue-500 text-white py-2 px-16 rounded"
-                        // onClick={handleImageDownload}
-                      >
-                        Download Image
-                      </a>
-                    </div>
+                    {paymentData?.screenshot_link && (
+                      <div className="col-span-1 flex flex-col items-center shadow shadow-blue-300/40 p-3 rounded-md mb-4">
+                        <img
+                          src={paymentData?.screenshot_link}
+                          alt="Payment Screenshots"
+                          className="w-[350px] h-[450px] object-contain aspect-auto"
+                        />
+                        <a
+                          href={paymentData?.screenshot_link}
+                          download="payment_screenshot.png"
+                          className="mt-3 bg-blue-500 text-white py-2 px-16 rounded"
+                          // onClick={handleImageDownload}
+                        >
+                          Download Image
+                        </a>
+                      </div>
+                    )}
                     <div>
                       <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
                         <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
@@ -2363,7 +2365,7 @@ const Applications = () => {
                             <p className="font-semibold">Status.</p>
                             <span>{paymentData?.status}</span>
                           </div>
-                          {tab != "4" && (
+                          {tab != "4" && tab !== "1" && (
                             <div className="flex flex-col gap-3">
                               <p className="font-semibold">Pending Amount</p>
                               <span>
@@ -2384,6 +2386,14 @@ const Applications = () => {
                             <p className="font-semibold">Transaction Id</p>
                             <span>
                               {paymentData?.transaction_id || "Not Generated"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            <p className="font-semibold">Payment Mode</p>
+                            <span>
+                              {paymentData?.is_payment_gateway
+                                ? "Online"
+                                : "Manual"}
                             </span>
                           </div>
                         </div>
