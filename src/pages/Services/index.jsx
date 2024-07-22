@@ -389,7 +389,7 @@ const Index = () => {
     try {
       const welfareRef = await addDoc(collection(db, "All Welfare Schemes"), {
         name,
-        fee: fee || 0,
+        fee: Number(fee) || 0,
         status: "active",
         created_at:moment().format("DD-MM-YYYY HH:mm:ss")
       });
@@ -439,7 +439,7 @@ const Index = () => {
     try {
       await addDoc(collection(db, "All Documents"), {
         name,
-        fee: fee || 0,
+        fee: Number(fee) || 0,
         status: "active",
         created_at:moment().format("DD-MM-YYYY HH:mm:ss")
       });
@@ -623,7 +623,7 @@ const Index = () => {
           name: courseName,
           videoLink: courseVideoLink,
           isFree: courseType,
-          fee: fee,
+          fee:  Number(fee),
           location: location,
           duration: duration,
           startDate: startDate,
@@ -633,7 +633,7 @@ const Index = () => {
           skillId: program.id,
           name: courseName,
           videoLink: courseVideoLink,
-          fee: fee,
+          fee: Number(fee),
           isFree: true,
           location: location,
           duration: duration,
@@ -693,7 +693,7 @@ const Index = () => {
           name: courseName,
           videoLink: courseVideoLink || "",
           isFree: courseType,
-          fee: fee || "",
+          fee: Number(fee) || "",
           location: location || "",
           duration: duration || "",
           startDate: startDate || "",
@@ -719,7 +719,7 @@ const Index = () => {
         skillId: selectedSkill?.id,
         name: values.courseName,
         videoLink: values.courseVideoLink || "",
-        fee: values.fee || 0,
+        fee: Number(values.fee) || 0,
         location: values.location || "",
         duration: values.duration || "",
         startDate: values.startDate || "",
