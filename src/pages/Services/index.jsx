@@ -11,6 +11,7 @@ import {
   Radio,
   notification,
   Card,
+  message,
 } from "antd";
 import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
@@ -25,7 +26,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { CrossIcon, Minus, MinusCircle, XIcon } from "lucide-react";
+import { CrossIcon, Minus, MinusCircle, PenBoxIcon, XIcon } from "lucide-react";
 import moment from "moment";
 
 let index1 = 0;
@@ -779,6 +780,56 @@ const Index = () => {
       });
     }
   };
+  const updateDocument = async (id, name) => {
+    if (!id) message.error("Please Select Document First TO Edit.");
+
+    try {
+      const documentRef = doc(db, "All Documents", id);
+
+      // Update the document
+      await updateDoc(documentRef, {
+        name: name,
+      });
+
+      // await updateDoc(doc(db, "All Documents", id));
+      notification.success({
+        message: "Document",
+        description: `Documents ${name} has been updated successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to delete item. Please try again later.",
+      });
+    } finally {
+      getDocuments();
+    }
+  };
+  const updateWelfareSchemes = async (id, name, fee) => {
+    try {
+      if (!id) message.error("Please Select a Welfare scheme to edit.");
+      const documentRef = doc(db, "All Welfare Schemes", id);
+
+      // Update the document
+      await updateDoc(documentRef, {
+        name: name,
+        fee: fee,
+      });
+
+      // await deleteDoc(doc(db, "All Welfare Schemes", id));
+      notification.success({
+        message: "Welfare Updated",
+        description: `Welfare Schemes ${name} has been updated successfully.`,
+      });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to updated item. Please try again later.",
+      });
+    } finally {
+      getWelfare();
+    }
+  };
   useEffect(() => {
     getSuggestiveList();
     getWelfare();
@@ -1231,7 +1282,7 @@ const Index = () => {
                     },
                   ]}
                 >
-                   <Input placeholder="+917837432342" />
+                  <Input placeholder="+917837432342" />
                 </Form.Item>
               </div>
 
@@ -1675,57 +1726,74 @@ const Index = () => {
                 <Button
                   type="primary"
                   className="bg-[#013D9D] text-white"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false);
+                    documentService.resetFields();
+                  }}
                 >
                   Add
                 </Button>
               ) : (
                 <Button
                   className="bg-[#013D9D] text-white"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setIsEditing(true);
+                    documentService.resetFields();
+                  }}
                 >
                   <EditOutlined />
                   Edit
                 </Button>
               )}
             </div>
-            {!isEditing && (
-              <Form
-                className="mt-4"
-                form={documentService}
-                onFinish={(values) =>
-                  createDocument(values?.document, values?.fee)
-                }
+
+            <Form
+              layout="vertical"
+              className="mt-4"
+              form={documentService}
+              onFinish={(values) =>
+                !isEditing
+                  ? createDocument(values?.document, values?.fee)
+                  : updateDocument(values?.document_id, values?.document)
+              }
+            >
+              <Form.Item
+                name="document"
+                label="Name"
+                rules={[
+                  {
+                    whitespace: true,
+                    required: true,
+                    message: "Document Name is required",
+                  },
+                ]}
               >
-                <Form.Item
-                  name="document"
-                  rules={[
-                    {
-                      whitespace: true,
-                      required: true,
-                      message: "Document Name is required",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Document Name" />
+                <Input placeholder="Document Name" />
+              </Form.Item>
+              {isEditing && (
+                <Form.Item name="document_id" label="ID">
+                  <Input placeholder="Document Id" disabled />
                 </Form.Item>
-                <Form.Item
-                  name="fee"
-                  hidden
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //     message: "Amount is required",
-                  //   },
-                  // ]}
-                >
-                  <Input placeholder="Amount" type="number" />
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType="submit">Save</Button>
-                </Form.Item>
-              </Form>
-            )}
+              )}
+              <Form.Item
+                name="fee"
+                hidden
+                // rules={[
+                //   {
+                //     required: true,
+                //     message: "Amount is required",
+                //   },
+                // ]}
+              >
+                <Input placeholder="Amount" type="number" />
+              </Form.Item>
+              <Form.Item>
+                <Button htmlType="submit">
+                  {isEditing ? "Update" : "Save"}
+                </Button>
+              </Form.Item>
+            </Form>
+
             <div className="flex gap-3 mt-5 flex-wrap">
               {documents?.map((document) => {
                 return (
@@ -1735,11 +1803,30 @@ const Index = () => {
                       <Button
                         type="link"
                         size="small"
+                        className="ml-3"
+                        onClick={() => {
+                          documentService.setFieldValue(
+                            "document",
+                            document?.name
+                          );
+                          documentService.setFieldValue(
+                            "document_id",
+                            document?.id
+                          );
+                        }}
+                      >
+                        <PenBoxIcon className="text-white h-4 w-4" />
+                      </Button>
+                    )}
+                    {isEditing && (
+                      <Button
+                        type="link"
+                        size="small"
                         onClick={() =>
                           deleteDocument(document?.id, document?.name)
                         }
                       >
-                        <XIcon className="text-white" />
+                        <XIcon className="text-white h-4 w-4" />
                       </Button>
                     )}
                   </p>
@@ -1761,14 +1848,20 @@ const Index = () => {
                 <Button
                   type="primary"
                   className="bg-[#013D9D] text-white"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false);
+                    welfareForm.resetFields();
+                  }}
                 >
                   Add
                 </Button>
               ) : (
                 <Button
                   className="bg-[#013D9D] text-white"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setIsEditing(true);
+                    welfareForm.resetFields();
+                  }}
                 >
                   <EditOutlined />
                   Edit
@@ -1776,40 +1869,56 @@ const Index = () => {
               )}
             </div>
 
-            {!isEditing && (
-              <Form
-                className="mt-4"
-                form={welfareForm}
-                onFinish={(values) => createScheme(values?.scheme, values?.fee)}
+            <Form
+              className="mt-4"
+              form={welfareForm}
+              layout="vertical"
+              onFinish={(values) =>
+                isEditing
+                  ? updateWelfareSchemes(
+                      values?.welfare_id,
+                      values?.scheme,
+                      values?.fee
+                    )
+                  : createScheme(values?.scheme, values?.fee)
+              }
+            >
+              <Form.Item
+                name="scheme"
+                label="Benefit Name"
+                rules={[
+                  {
+                    whitespace: true,
+                    required: true,
+                    message: "Benefit Name is required",
+                  },
+                ]}
               >
-                <Form.Item
-                  name="scheme"
-                  rules={[
-                    {
-                      whitespace: true,
-                      required: true,
-                      message: "Benefit Name is required",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Benefit Name" />
+                <Input placeholder="Benefit Name" />
+              </Form.Item>
+              {isEditing && (
+                <Form.Item name="welfare_id" label="ID">
+                  <Input placeholder="Welfare Id" disabled />
                 </Form.Item>
-                <Form.Item
-                  name="fee"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Amount is required",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Amount" type="number" />
-                </Form.Item>
-                <Form.Item>
-                  <Button htmlType="submit">Save</Button>
-                </Form.Item>
-              </Form>
-            )}
+              )}
+              <Form.Item
+                name="fee"
+                label="Fee"
+                rules={[
+                  {
+                    required: true,
+                    message: "Amount is required",
+                  },
+                ]}
+              >
+                <Input placeholder="Amount" type="number" />
+              </Form.Item>
+              <Form.Item>
+                <Button htmlType="submit">
+                  {isEditing ? "Update" : "Save"}
+                </Button>
+              </Form.Item>
+            </Form>
 
             <div className="flex gap-3 mt-5 flex-wrap">
               {welfareList?.map((welfare) => {
@@ -1820,11 +1929,27 @@ const Index = () => {
                       <Button
                         type="link"
                         size="small"
+                        className="ml-2"
+                        onClick={() =>
+                          welfareForm.setFieldsValue({
+                            scheme: welfare?.name,
+                            welfare_id: welfare.id,
+                            fee: welfare?.fee,
+                          })
+                        }
+                      >
+                        <PenBoxIcon className="text-white h-4 w-4" />
+                      </Button>
+                    )}
+                    {isEditing && (
+                      <Button
+                        type="link"
+                        size="small"
                         onClick={() =>
                           deleteWelfareSchemes(welfare?.id, welfare?.name)
                         }
                       >
-                        <XIcon className="text-white" />
+                        <XIcon className="text-white h-4 w-4" />
                       </Button>
                     )}
                   </p>

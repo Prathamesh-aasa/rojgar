@@ -1688,6 +1688,10 @@ const Applications = () => {
                     <p>Name</p>
                     <span>{selectedItem?.full_name}</span>
                   </div>
+                  <div className="flex flex-col gap-2">
+                    <p>Gender</p>
+                    <span>{selectedItem?.gender || "Not Given"}</span>
+                  </div>
 
                   <div className="flex flex-col gap-2">
                     <p>Phone Number</p>
