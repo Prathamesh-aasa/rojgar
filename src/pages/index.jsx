@@ -15,4 +15,5 @@ export { default as Notification } from "./Notification"
 export { default as Dashboard } from "./Dashboard"
 export { default as CompaniesApplications } from "./Companies/Applications"
 export { default as EmailSetting } from "./emails"
+export { default as AddCompanyJob } from "./Companies/details/AddJob"
 

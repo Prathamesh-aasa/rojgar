@@ -189,6 +189,8 @@ const Navigation = () => {
                 path="/companies/details/:id"
                 element={<Pages.Details />}
               />
+              <Route path="/companies/add-job/:id" element={<Pages.AddCompanyJob />} />
+
               <Route path="/services" element={<Pages.Services />} />
               <Route path="/user" element={<Pages.Setting />} />
               <Route path="/settings" element={<Pages.EmailSetting />} />

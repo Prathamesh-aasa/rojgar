@@ -3,6 +3,7 @@ import { collection, getDoc, getDocs, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { db } from "../../../../firebase";
+import { PlusCircle } from "lucide-react";
 
 function CompanyInfo() {
   const [companyData, setCompanyData] = useState({});
@@ -57,21 +58,31 @@ function CompanyInfo() {
 
   return (
     <div className="p-8">
-      <div>
-        <p className="text-base mb-5">
-          Dashboard <span className="text-[#F7B652]">&gt;</span> Company
-          <span className="text-[#F7B652]"></span>
-        </p>
-        <p className="text-2xl font-semibold text-[#013D9D]">
-          {companyData?.company_name}{" "}
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-base mb-5">
+            Dashboard <span className="text-[#F7B652]">&gt;</span> Company
+            <span className="text-[#F7B652]"></span>
+          </p>
+          <p className="text-2xl font-semibold text-[#013D9D]">
+            {companyData?.company_name}{" "}
+          </p>
+        </div>
+        <div>
+          <Link to={`/companies/add-job/${id}`}>
+            <Button type="primary">
+              <PlusCircle className="h-4 w-4" />
+              Add New Job
+            </Button>
+          </Link>
+        </div>
       </div>
-      <div className="flex gap-4">
-        <div className="mt-8 bg-[#EEF2F9] w-[50%] p-4 rounded-lg h-fit">
-          <h1 className="mb-5 text-[#013D9D] text-[22px] font-medium">
+      <div className="">
+        <div className="mt-8 shadow-lg p-5 rounded-lg">
+          <h1 className="text-emerald-600 font-bold text-lg bg-emerald-600/20 p-2 rounded-lg my-4">
             Company Details
           </h1>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 p-3">
             <div className="flex flex-col">
               <p className="font-semibold text-sm">Email Id</p>
               <span className="text-sm">{companyData?.company_email}</span>
@@ -92,10 +103,10 @@ function CompanyInfo() {
               <span className="text-sm">{id}</span>
             </div>
           </div>
-          <h1 className="mb-5 text-[#013D9D] text-[22px] font-medium">
+          <h1 className="text-emerald-600 font-bold text-lg bg-emerald-600/20 p-2 rounded-lg my-4">
             Job Poster Details
           </h1>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 p-3">
             <div className="flex flex-col">
               <p className="font-semibold text-sm">Full Name</p>
               <span className="text-sm">{companyData?.job_poster_name}</span>
@@ -112,10 +123,10 @@ function CompanyInfo() {
             </div>
           </div>
 
-          <h1 className="mb-5 text-[#013D9D] text-[22px] font-medium">
+          <h1 className="text-emerald-600 font-bold text-lg bg-emerald-600/20 p-2 rounded-lg my-4">
             Address Details
           </h1>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 p-3">
             <div className="flex flex-col">
               <p className="font-semibold text-sm">PIN</p>
               <span className="text-sm">{companyData?.pin}</span>
@@ -138,45 +149,60 @@ function CompanyInfo() {
             </div>
           </div>
 
-          <h1 className="mb-5 text-[#013D9D] text-[22px] font-medium">
+          <h1 className="text-emerald-600 font-bold text-lg bg-emerald-600/20 p-2 rounded-lg my-4">
             Subscription Details
           </h1>
-         { companyData?.subscription ?
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col">
-              <p className="font-semibold text-sm">Name</p>
-              <span className="text-sm">{companyData?.subscription?.name}</span>
+          {companyData?.subscription ? p-3 (
+            <div className="grid grid-cols-3 gap-3 p-3 mb-3">
+              <div className="flex flex-col">
+                <p className="font-semibold text-sm">Name</p>
+                <span className="text-sm">
+                  {companyData?.subscription?.name}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <p className="font-semibold text-sm">Interval</p>
+                <span className="text-sm">
+                  {companyData?.subscription?.per}
+                </span>
+              </div>
+              <div className="flex flex-col mb-5">
+                <p className="font-semibold text-sm">Price</p>
+                <span className="text-sm">
+                  {companyData?.subscription?.price}
+                </span>
+              </div>
+              <div className="flex flex-col mb-5 col-span-2">
+                <p className="font-semibold text-sm mb-3">Benefits</p>
+                <span className="text-sm">
+                  {companyData?.subscription?.benefits?.map((be, idx) => (
+                    <p key={be}>
+                      {idx + 1}. {be}
+                    </p>
+                  ))}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <p className="font-semibold text-sm">Interval</p>
-              <span className="text-sm">{companyData?.subscription?.per}</span>
-            </div>
-            <div className="flex flex-col mb-5">
-              <p className="font-semibold text-sm">Price</p>
-              <span className="text-sm">
-                {companyData?.subscription?.price}
-              </span>
-            </div>
-            <div className="flex flex-col mb-5 col-span-2">
-              <p className="font-semibold text-sm mb-3">Benefits</p>
-              <span className="text-sm">
-                {companyData?.subscription?.benefits?.map((be, idx) => (
-                  <p key={be}>
-                    {idx + 1}. {be}
-                  </p>
-                ))}
-              </span>
-            </div>
-          </div>
-          : <p>No Subscription Taken</p>}
+          ) : (
+            <p className="mb-3 p-3">No Subscription Taken</p>
+          )}
         </div>
-        <div className="mt-8 p-4 w-[50%] flex flex-col gap-5">
+        <div className="mt-8 p-4  flex flex-col gap-5">
           {companyJobs?.map((job) => {
             return (
               <div className="shadow-lg p-4 rounded-lg" key={job?.id}>
                 <div className="flex items-center justify-between mb-5 ">
                   <h1 className=" text-[#013D9D] text-[22px] font-medium flex gap-3 items-center">
-                    {job?.job_position} {job?.isOpen ? <p className="bg-green-600 text-white px-2 rounded-lg text-center text-sm font-light">Open</p>:<p className="bg-red-600 text-white px-2 rounded-lg text-center text-sm font-light">Closed</p>}
+                    {job?.job_position}{" "}
+                    {job?.isOpen ? (
+                      <p className="bg-green-600 text-white px-2 rounded-lg text-center text-sm font-light">
+                        Open
+                      </p>
+                    ) : (
+                      <p className="bg-red-600 text-white px-2 rounded-lg text-center text-sm font-light">
+                        Closed
+                      </p>
+                    )}
                   </h1>
                   <Link
                     className="underline text-[#013D9D]"

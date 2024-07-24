@@ -345,6 +345,7 @@ const Index = () => {
       acc[type].push(item);
       return acc;
     }, {});
+    console.log(groupedData);
     setSuggestiveList(groupedData);
     setLoading(false);
   };
@@ -353,7 +354,7 @@ const Index = () => {
       await addDoc(collection(db, "All Suggestive Lists"), {
         name,
         type: tab,
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
       notification.success({
         message: "Item Added",
@@ -391,7 +392,7 @@ const Index = () => {
         name,
         fee: Number(fee) || 0,
         status: "active",
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
 
       const welfareId = welfareRef.id;
@@ -441,7 +442,7 @@ const Index = () => {
         name,
         fee: Number(fee) || 0,
         status: "active",
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
       notification.success({
         message: "Item Added",
@@ -486,11 +487,12 @@ const Index = () => {
         city: "",
         company_email: value.email,
         company_name: value?.companyName,
+        company_phone: value?.phone,
         date_of_registration: moment().format("YYYY-MM-DDTHH:mm:ss"),
         gstin: value?.companyGstin,
-        job_poster_email: value.email,
-        job_poster_name: "",
-        job_poster_phone_number: value.phone,
+        job_poster_email: value.job_poster_email,
+        job_poster_name: value.job_poster_name,
+        job_poster_phone_number: value.job_poster_phone,
         pin: value?.companyPin,
         profile_type: "Company",
         registered_address: value?.companyAddress,
@@ -498,7 +500,7 @@ const Index = () => {
         status: "Approved",
         verified: false,
         subscription: "",
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
 
       await updateDoc(compony, { id: compony?.id });
@@ -513,10 +515,11 @@ const Index = () => {
         min_experience_in_months: 0,
         payout_from: value?.payout_from,
         payout_to: value?.payout_to,
+        isOpen: true,
         posted_on: moment().format("DD-MM-YYYY HH:mm:ss"),
         qualification: value?.educationQualification,
         skills_required: value?.skillRequired,
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
       notification.success({
         message: "Item Added",
@@ -563,7 +566,7 @@ const Index = () => {
         price: values.plan_price,
         per: values.plan_tenure,
         benefits: values.benefits,
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       };
 
       const docRef = await addDoc(
@@ -601,7 +604,7 @@ const Index = () => {
       const program = await addDoc(collection(db, "Skills"), {
         name: programName,
         isFree: true,
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
 
       await updateDoc(program, { id: program.id });
@@ -623,7 +626,7 @@ const Index = () => {
           name: courseName,
           videoLink: courseVideoLink,
           isFree: courseType,
-          fee:  Number(fee),
+          fee: Number(fee),
           location: location,
           duration: duration,
           startDate: startDate,
@@ -638,7 +641,7 @@ const Index = () => {
           location: location,
           duration: duration,
           startDate: startDate,
-          created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+          created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
         });
 
         const courseId = courseRef.id;
@@ -724,7 +727,7 @@ const Index = () => {
         duration: values.duration || "",
         startDate: values.startDate || "",
         isFree: values.courseType == "free" ? true : false,
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
 
       const courseId = courseRef.id;
@@ -758,7 +761,7 @@ const Index = () => {
         },
         skillId: "",
         videoLink: "",
-        created_at:moment().format("DD-MM-YYYY HH:mm:ss")
+        created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       };
       await addDoc(collection(db, "Courses"), volunteer);
       getVolunteer();
@@ -1182,6 +1185,54 @@ const Index = () => {
                 >
                   <Input placeholder="+917837432342" />
                 </Form.Item>
+                <Form.Item
+                  label="Job Poster Name"
+                  name="job_poster_name"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Job Poster Name is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Job Poster Name is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Job Poster Name" />
+                </Form.Item>
+                <Form.Item
+                  label="Job Poster Email"
+                  name="job_poster_email"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Job Poster email is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Job Poster email is required",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Job Poster email" />
+                </Form.Item>
+                <Form.Item
+                  label="Job Poster Phone"
+                  name="job_poster_phone"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Job Poster phone is required",
+                    },
+                    {
+                      whitespace: true,
+                      message: "Job Poster phone is required",
+                    },
+                  ]}
+                >
+                   <Input placeholder="+917837432342" />
+                </Form.Item>
               </div>
 
               <h1 className="text-lg font-medium text-[#013D9D] mb-4 ml-32">
@@ -1379,7 +1430,7 @@ const Index = () => {
                       flex: 1,
                     }}
                   >
-                    {suggestiveList["Other Benefits"]?.map((op) => {
+                    {suggestiveList["Benefit"]?.map((op) => {
                       return (
                         <Option value={op?.name} key={op?.id}>
                           {op?.name}
@@ -1390,7 +1441,6 @@ const Index = () => {
                 </Form.Item>
               </div>
               <div className="flex justify-end gap-8">
-                <Button className="px-8 py-2">Cancel</Button>
                 <Button
                   className="px-8 py-2 bg-[#013D9D] text-white"
                   htmlType="submit"
