@@ -152,7 +152,7 @@ function CompanyInfo() {
           <h1 className="text-emerald-600 font-bold text-lg bg-emerald-600/20 p-2 rounded-lg my-4">
             Subscription Details
           </h1>
-          {companyData?.subscription ? p-3 (
+          {companyData?.subscription ? (
             <div className="grid grid-cols-3 gap-3 p-3 mb-3">
               <div className="flex flex-col">
                 <p className="font-semibold text-sm">Name</p>

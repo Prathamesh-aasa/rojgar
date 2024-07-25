@@ -12,6 +12,8 @@ const AddJob = () => {
   const [companyData, setCompanyData] = useState({});
   const [otherBenefits, setOtherBenefits] = useState([]);
   const [requiredSkills, setRequiredSkills] = useState([]);
+  const [trades, setTrades] = useState([]);
+  const [educationQualification, setEducationQualification] = useState("");
 
   const getSuggestiveList = async () => {
     const suggestiveListCollection = collection(db, "All Suggestive Lists");
@@ -24,9 +26,14 @@ const AddJob = () => {
       suggestiveListCollection,
       where("type", "==", "Benefit")
     );
+    const tradesQry = query(
+      suggestiveListCollection,
+      where("type", "==", "Trades")
+    );
 
     const skillSnapshot = await getDocs(skillQry);
     const benefitSnapshot = await getDocs(benefitQry);
+    const tradesQrySnapshot = await getDocs(tradesQry);
 
     const skillsData = skillSnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -36,8 +43,13 @@ const AddJob = () => {
       id: doc.id,
       ...doc.data(),
     }));
+    const tradesData = tradesQrySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     setOtherBenefits(benefitsData);
     setRequiredSkills(skillsData);
+    setTrades(tradesData);
   };
 
   const getCompanyInfo = async () => {
@@ -139,8 +151,11 @@ const AddJob = () => {
         Add New Job
       </h1>
       <Card className="shadow-[#013D9D]/20 shadow-md mb-8">
-        <Form layout="vertical" onFinish={handelCreateJobPost} form={companyForm}>
-      
+        <Form
+          layout="vertical"
+          onFinish={handelCreateJobPost}
+          form={companyForm}
+        >
           <div className="grid grid-cols-3 gap-2  mx-auto">
             <Form.Item
               label="Job Position"
@@ -179,6 +194,7 @@ const AddJob = () => {
                 style={{
                   flex: 1,
                 }}
+                onChange={(e) => setEducationQualification(e)}
               >
                 <Option value="5th pass">5th pass</Option>
                 <Option value="8th pass">8th pass</Option>
@@ -197,6 +213,33 @@ const AddJob = () => {
                 <Option value="Other">Other</Option>
               </Select>
             </Form.Item>
+
+            {educationQualification == "ITI" && (
+              <Form.Item
+                label="Trade"
+                name="trade"
+                className="mb-2"
+                rules={[
+                  { required: true, message: "Trade is required" },
+                  { whitespace: true, message: "Trade is required" },
+                ]}
+              >
+                <Select
+                  placeholder="Tarde"
+                  style={{
+                    flex: 1,
+                  }}
+                >
+                  {trades?.map((op) => {
+                    return (
+                      <Option value={op?.name} key={op?.id}>
+                        {op?.name}
+                      </Option>
+                    );
+                  })}
+                </Select>
+              </Form.Item>
+            )}
             <Form.Item
               name="jobPlace"
               label="Job Place"
@@ -290,7 +333,7 @@ const AddJob = () => {
                 },
               ]}
             >
-              <Input placeholder="Eg.100" />
+              <Input placeholder="Eg.100" type="number" />
             </Form.Item>
             <div className="flex items-center justify-center gap-2 w-full">
               <Form.Item
@@ -325,10 +368,16 @@ const AddJob = () => {
               name="otherBenefits"
               label="Other Benefits"
               className="mb-2"
+              rules={[
+                {
+                  required: true,
+                  message: "Other Benefits are required",
+                },
+              ]}
             >
               <Select
                 placeholder="Other Benefits"
-                mode="tags"
+                mode="multiple"
                 style={{
                   flex: 1,
                 }}

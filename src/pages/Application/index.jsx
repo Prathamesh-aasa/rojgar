@@ -748,7 +748,6 @@ const Applications = () => {
     }
   };
   const handelCompleteSkilling = async () => {
-    console.log("ccccccccccccccccccccccccc");
     try {
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
@@ -976,6 +975,7 @@ const Applications = () => {
           const q = query(
             collection(db, "Job Seekers"),
             where("id", "==", data.job_seeker_id)
+            // orderBy("date","desc")
           );
           jobSeekerPromises.push(getDocs(q));
         } else {
@@ -994,6 +994,15 @@ const Applications = () => {
         const jobSeekerData = snapshot.empty ? null : snapshot.docs[0]?.data();
         apps[index].jobSeekerData = jobSeekerData;
       }
+
+
+      // sort apps by date
+      apps.sort((a, b) => {
+        if (a.date < b.date) return 1;
+        if (a.date > b.date) return -1;
+        return 0;
+      });
+
 
       // Update state with applications including job seeker data
       setApplications(apps);
@@ -1197,6 +1206,13 @@ const Applications = () => {
           selectedItem?.profile_type ? `of ${selectedItem?.profile_type}` : ""
         } has been rejected`
       );
+
+      if (tab == "2") {
+        const paymentDocRef = doc(db, "Skilling", selectedItem?.id);
+        await updateDoc(paymentDocRef, {
+          status: "Rejected",
+        });
+      }
     } catch (error) {
       console.error("Error updating document:", error);
       notification.error({
@@ -1206,14 +1222,7 @@ const Applications = () => {
     }
   };
 
-  const handleImageDownload = () => {
-    const link = document.createElement("a");
-    link.href = paymentDetails?.screenshot_link;
-    link.download = "payment_screenshot.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+
 
   const handleJobApplicationApprove = async (id, data) => {
     try {
@@ -1222,7 +1231,6 @@ const Applications = () => {
         status: "Approved",
       });
 
-      console.log("CCCCCCCCCCCCCCCCCCCCCCCCCCC", data?.jobSeekerData?.user_id);
       sendNotification(
         data?.jobSeekerData?.user_id,
         `Your Job Application for ${data?.post} has been Approved`
@@ -1942,9 +1950,7 @@ const Applications = () => {
                     <div className="flex flex-col gap-2">
                       <p>Need any agricultural products?</p>
                       <span>
-                        {selectedItem?.do_you_need_any_farming_products
-                          ? "Yes"
-                          : "No"}
+                        {selectedItem?.do_you_need_any_farming_products || "Not Given"}
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -2203,9 +2209,7 @@ const Applications = () => {
                       </div>
                       <div className="flex flex-col">
                         <p>Event Time:</p>
-                        <span>
-                          {program?.eventTime}
-                        </span>
+                        <span>{program?.eventTime}</span>
                       </div>
                       <div className="flex flex-col">
                         <p>Status:</p>
@@ -2369,7 +2373,7 @@ const Applications = () => {
                             <p className="font-semibold">Status.</p>
                             <span>{paymentData?.status}</span>
                           </div>
-                          {tab != "4" && tab !== "1" && (
+                          {tab != "4" && tab !== "1" && tab!== "5"&& (
                             <div className="flex flex-col gap-3">
                               <p className="font-semibold">Pending Amount</p>
                               <span>

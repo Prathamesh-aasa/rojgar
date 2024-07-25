@@ -17,7 +17,7 @@ import {
   doc,
   getDocs,
   updateDoc,
-  addDoc
+  addDoc,
 } from "firebase/firestore";
 import moment from "moment";
 const { TextArea } = Input;
@@ -29,19 +29,26 @@ const Notifications = () => {
   const [users, setUsers] = useState([]);
   const [notificationForm] = Form.useForm();
   const [notificationMessageForm] = Form.useForm();
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0); // State for unread notifications count
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [selectedUserType, setSelectedUserType] = useState("Job Seekers");
+  const [documentType, setDocumentType] = useState("");
+
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "Notification_Admin"));
+        const querySnapshot = await getDocs(
+          collection(db, "Notification_Admin")
+        );
         const notificationData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         setNotifications(notificationData);
-          // Calculate unread notifications count
-          const unreadCount = notificationData?.filter(notification => !notification?.read)?.length;
-          setUnreadNotificationsCount(unreadCount);
+        // Calculate unread notifications count
+        const unreadCount = notificationData?.filter(
+          (notification) => !notification?.read
+        )?.length;
+        setUnreadNotificationsCount(unreadCount);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -51,18 +58,15 @@ const Notifications = () => {
     getUsers();
   }, []);
 
-  const getUsers = async () => {
+  const getUsers = async (e) => {
     try {
-      const querySnapshot = await getDocs(collection(db, "Users"));
-      const userData = querySnapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter(
-          (user) =>
-            user.phone_number !== null && user.phone_number !== undefined
-        );
+      const querySnapshot = await getDocs(
+        collection(db, e || selectedUserType)
+      );
+      const userData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
       setUsers(userData);
     } catch (error) {
@@ -123,16 +127,83 @@ const Notifications = () => {
 
     try {
       const note = {
-        service_type: service_type,
+        service_type: selectedUserType,
+        text: message,
+        sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+      };
+
+      // const promises = user?.map(async (userId) => {
+      //   const userRef = doc(db, "Users", userId);
+      //   const notificationsRef = collection(userRef, "Notifications");
+      //   const docRef = await addDoc(notificationsRef, {
+      //     user_id: userId,
+      //     ...note,
+      //     image_link: null, // Assuming you want to set image_link to null
+      //   });
+      //   // Update the document with its ID
+      //   await updateDoc(docRef, {
+      //     id: docRef.id,
+      //   });
+      // });
+
+      const promises = user?.map(async (selectedUser,index) => {
+        let collectionName = "Users";
+        let idField = "user_id";
+        let userId = selectedUser.value;
+
+        if (
+          selectedUserType == "Document" &&
+          documentType[index]?.document_type == "Company Document"
+        ) {
+          collectionName = "RegisterAsCompany";
+          idField = "company_id";
+        }
+        
+        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',selectedUserType,'sssssssssssss',documentType,collectionName);
+        const userRef = doc(db, collectionName, userId);
+        const notificationsRef = collection(userRef, "Notifications");
+        const docRef = await addDoc(notificationsRef, {
+          [idField]: userId,
+          ...note,
+          image_link: null,
+        });
+
+
+        // Update the document with its ID
+        await updateDoc(docRef, {
+          id: docRef.id,
+        });
+      });
+      await Promise.all(promises);
+
+      setIsModalVisible(false);
+      notificationMessageForm.resetFields();
+      notification.success({
+        message: "Notification sent successfully",
+        description: "Notifications sent successfully to selected users.",
+      });
+    } catch (error) {
+      console.error("Error sending notifications:", error);
+      notification.error({
+        message: "Error sending notifications",
+        description: "Error sending notifications to selected users.",
+      });
+    }
+  };
+  const handelNotificationSentToSelectedForCompany = async (values) => {
+    const { user, message } = values;
+
+    try {
+      const note = {
         text: message,
         sent_at: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
       };
 
       const promises = user?.map(async (userId) => {
-        const userRef = doc(db, "Users", userId);
+        const userRef = doc(db, "RegisterAsCompany", userId);
         const notificationsRef = collection(userRef, "Notifications");
         const docRef = await addDoc(notificationsRef, {
-          user_id: userId,
+          company_id: userId,
           ...note,
           image_link: null, // Assuming you want to set image_link to null
         });
@@ -159,7 +230,6 @@ const Notifications = () => {
     }
   };
 
-
   const markAsRead = async (notificationId) => {
     try {
       const notificationRef = doc(db, "Notification_Admin", notificationId);
@@ -168,7 +238,9 @@ const Notifications = () => {
       });
       // Update local state to reflect the change (optional)
       const updatedNotifications = notifications.map((notification) =>
-        notification.id === notificationId ? { ...notification, read: true } : notification
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
       );
       setNotifications(updatedNotifications);
     } catch (error) {
@@ -179,7 +251,6 @@ const Notifications = () => {
       });
     }
   };
-
 
   const markAllAsRead = async () => {
     try {
@@ -274,7 +345,7 @@ const Notifications = () => {
         ))}
       </div>
       <Modal
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCancel}
         footer={null}
         width={700}
@@ -324,49 +395,109 @@ const Notifications = () => {
                 <div className="bg-white p-8 w-full max-w-2xl">
                   <Form
                     form={notificationMessageForm}
-                    onFinish={handelNotificationSentToSelected}
+                    onFinish={(e) =>
+                      selectedUserType == "RegisterAsCompany"
+                        ? handelNotificationSentToSelectedForCompany(e)
+                        : handelNotificationSentToSelected(e)
+                    }
                     layout="vertical"
                   >
                     <div className="mb-4">
-                      <Form.Item
-                        name={"service_type"}
-                        label="Select Service"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select service!",
-                          },
-                        ]}
-                      >
-                        <Radio.Group>
-                          <Radio value="jobseeker">Jobseeker</Radio>
-                          <Radio value="skilling">Skilling</Radio>
-                          <Radio value="volunteer">Volunteer</Radio>
-                          <Radio value="document">Document</Radio>
-                          <Radio value="welfare">Welfare</Radio>
-                          <Radio value="company">Company</Radio>
+                      <Form.Item name={"service_type"} label="Select Service">
+                        <Radio.Group
+                          defaultValue={selectedUserType}
+                          onChange={(e) => {
+                            setSelectedUserType(e.target.value);
+                            getUsers(e.target.value);
+                            notificationMessageForm.resetFields();
+                          }}
+                        >
+                          <Radio value="Job Seekers">JobSeeker</Radio>
+                          <Radio value="Skilling">Skilling</Radio>
+                          <Radio value="Volunteer">Volunteer</Radio>
+                          <Radio value="Document">Document</Radio>
+                          <Radio value="Welfare">Welfare</Radio>
+                          <Radio value="RegisterAsCompany">Company</Radio>
                         </Radio.Group>
                       </Form.Item>
                     </div>
                     <div className="mb-4">
-                      <Form.Item
-                        name={"user"}
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select user!",
-                          },
-                        ]}
-                        label="User"
-                      >
-                        <Select mode="multiple">
-                          {users?.map((user) => (
-                            <Select.Option key={user.id} value={user.id}>
-                              {user.phone_number}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
+                      {selectedUserType != "RegisterAsCompany" && (
+                        <Form.Item
+                          name={"user"}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select user!",
+                            },
+                          ]}
+                          label="User"
+                        >
+                          <Select
+                            mode="multiple"
+                            labelInValue
+                            onChange={(selectedOptions) => {
+                              if (selectedUserType === "Document") {
+                                const selectedValues = selectedOptions.map(option => {
+                                  const user = users.find(u => u.user_id === option.value);
+                                  return {
+                                    user_id: option.value,
+                                    document_type: user ? user.document_type : null,
+                                  };
+                                });
+                                console.log('Selected Document Types:', selectedValues);
+                                setDocumentType(selectedValues);
+                              }
+                            }}
+                          >
+                            {users
+                              ?.filter(
+                                (user, index, self) =>
+                                  index ===
+                                  self.findIndex(
+                                    (t) => t.user_id === user.user_id
+                                  )
+                              )
+                              .map((user) => (
+                                <Select.Option
+                                  key={user.user_id}
+                                  value={user.user_id}
+                                >
+                                  {user.full_name}
+                                </Select.Option>
+                              ))}
+                          </Select>
+                        </Form.Item>
+                      )}
+                      {selectedUserType == "RegisterAsCompany" && (
+                        <Form.Item
+                          name={"user"}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select user!",
+                            },
+                          ]}
+                          label="Company"
+                        >
+                          <Select
+                            mode="multiple"
+                            onSelect={(e) => console.log(e)}
+                            options={users
+                              .filter(
+                                (user, index, self) =>
+                                  index ===
+                                  self.findIndex(
+                                    (t) => t.user_id === user.user_id
+                                  )
+                              )
+                              .map((user) => ({
+                                value: user.user_id,
+                                label: user.company_name,
+                              }))}
+                          />
+                        </Form.Item>
+                      )}
                     </div>
                     <div className="mb-4">
                       <Form.Item

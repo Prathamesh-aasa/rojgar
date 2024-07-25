@@ -251,7 +251,7 @@ const CompaniesPage = () => {
           >
             <Option value="">All</Option>
             <Option value="Pending">Pending</Option>
-            <Option value="Completed">Completed</Option>
+            {/* <Option value="Completed">Completed</Option> */}
             <Option value="Rejected">Rejected</Option>
           </Select>
         </div>

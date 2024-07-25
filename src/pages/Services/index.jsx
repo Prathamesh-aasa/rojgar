@@ -44,6 +44,7 @@ const Index = () => {
   const [suggestiveForm] = Form.useForm();
   const [companyForm] = Form.useForm();
   const [courses, setCourses] = useState([]);
+  const [educationQualification, setEducationQualification] = useState("");
 
   const addCourse = () => {
     setCourses([...courses, { key: courses.length }]);
@@ -517,6 +518,7 @@ const Index = () => {
         payout_from: value?.payout_from,
         payout_to: value?.payout_to,
         isOpen: true,
+        trade: value?.trade,
         posted_on: moment().format("DD-MM-YYYY HH:mm:ss"),
         qualification: value?.educationQualification,
         skills_required: value?.skillRequired,
@@ -1125,14 +1127,8 @@ const Index = () => {
                   name="companyName"
                   className="w-full mb-2"
                   rules={[
-                    {
-                      required: true,
-                      message: "Company Name is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Company Name is required",
-                    },
+                    { required: true, message: "Company Name is required" },
+                    { whitespace: true, message: "Company Name is required" },
                   ]}
                 >
                   <Input placeholder="Enter Company Name" />
@@ -1141,6 +1137,12 @@ const Index = () => {
                   label="Company GSTIN No"
                   name="companyGstin"
                   className="w-full mb-2"
+                  rules={[
+                    {
+                      pattern: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{3}$/,
+                      message: "Invalid GSTIN number",
+                    },
+                  ]}
                 >
                   <Input placeholder="Enter GST Number" />
                 </Form.Item>
@@ -1148,6 +1150,12 @@ const Index = () => {
                   name="companyPan"
                   label="Company Pan Card No"
                   className="mb-2"
+                  rules={[
+                    {
+                      pattern: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                      message: "Invalid PAN number",
+                    },
+                  ]}
                 >
                   <Input placeholder="Enter PAN number" />
                 </Form.Item>
@@ -1156,13 +1164,10 @@ const Index = () => {
                   label="PIN"
                   className="mb-2"
                   rules={[
+                    { required: true, message: "PIN is required" },
                     {
-                      required: true,
-                      message: "PIN is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "PIN is required",
+                      pattern: /^[1-9][0-9]{5}$/,
+                      message: "Invalid PIN code",
                     },
                   ]}
                 >
@@ -1173,13 +1178,11 @@ const Index = () => {
                   label="State"
                   className="mb-2"
                   rules={[
+                    { required: true, message: "State is required" },
                     {
-                      required: true,
-                      message: "State is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "State is required",
+                      pattern: /^[a-zA-Z\s]+$/,
+                      message:
+                        "State name cannot contain numbers or special characters",
                     },
                   ]}
                 >
@@ -1207,30 +1210,24 @@ const Index = () => {
                   label="Email"
                   className=""
                   rules={[
+                    { required: true, message: "Email is required" },
                     {
-                      required: true,
-                      message: "Email is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Email is required",
+                      type: "email",
+                      message: "Invalid email address",
                     },
                   ]}
                 >
-                  <Input placeholder="Eg. 24 Bombay House" />
+                  <Input placeholder="Enter Email" />
                 </Form.Item>
                 <Form.Item
                   name="phone"
                   label="Phone"
                   className=""
                   rules={[
+                    { required: true, message: "Phone is required" },
                     {
-                      required: true,
-                      message: "Phone is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Phone is required",
+                      pattern: /^[0-9]{10}$/,
+                      message: "Invalid phone number",
                     },
                   ]}
                 >
@@ -1240,10 +1237,7 @@ const Index = () => {
                   label="Job Poster Name"
                   name="job_poster_name"
                   rules={[
-                    {
-                      required: true,
-                      message: "Job Poster Name is required",
-                    },
+                    { required: true, message: "Job Poster Name is required" },
                     {
                       whitespace: true,
                       message: "Job Poster Name is required",
@@ -1256,13 +1250,10 @@ const Index = () => {
                   label="Job Poster Email"
                   name="job_poster_email"
                   rules={[
+                    { required: true, message: "Job Poster email is required" },
                     {
-                      required: true,
-                      message: "Job Poster email is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Job Poster email is required",
+                      type: "email",
+                      message: "Invalid email address",
                     },
                   ]}
                 >
@@ -1272,13 +1263,10 @@ const Index = () => {
                   label="Job Poster Phone"
                   name="job_poster_phone"
                   rules={[
+                    { required: true, message: "Job Poster phone is required" },
                     {
-                      required: true,
-                      message: "Job Poster phone is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Job Poster phone is required",
+                      pattern: /^[0-9]{10}$/,
+                      message: "Invalid phone number",
                     },
                   ]}
                 >
@@ -1295,14 +1283,8 @@ const Index = () => {
                   name="jobPosition"
                   className="w-full mb-2"
                   rules={[
-                    {
-                      required: true,
-                      message: "Job Position is required",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Job Position is required",
-                    },
+                    { required: true, message: "Job Position is required" },
+                    { whitespace: true, message: "Job Position is required" },
                   ]}
                 >
                   <Input placeholder="Eg. Technician" />
@@ -1324,9 +1306,8 @@ const Index = () => {
                 >
                   <Select
                     placeholder="Choose from dropdown"
-                    style={{
-                      flex: 1,
-                    }}
+                    style={{ flex: 1 }}
+                    onChange={(e) => setEducationQualification(e)}
                   >
                     <Option value="5th pass">5th pass</Option>
                     <Option value="8th pass">8th pass</Option>
@@ -1345,24 +1326,40 @@ const Index = () => {
                     <Option value="Other">Other</Option>
                   </Select>
                 </Form.Item>
+
+                {educationQualification == "ITI" && (
+                  <Form.Item
+                    label="Trade"
+                    name="trade"
+                    className="mb-2"
+                    rules={[
+                      { required: true, message: "Trade is required" },
+                      { whitespace: true, message: "Trade is required" },
+                    ]}
+                  >
+                    <Select
+                      placeholder="Tarde"
+                      style={{
+                        flex: 1,
+                      }}
+                    >
+                      {suggestiveList?.Trades?.map((op) => {
+                        return (
+                          <Option value={op?.name} key={op?.id}>
+                            {op?.name}
+                          </Option>
+                        );
+                      })}
+                    </Select>
+                  </Form.Item>
+                )}
                 <Form.Item
                   name="jobPlace"
                   label="Job Place"
                   className="mb-2"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Job Place is required",
-                    },
-                  ]}
+                  rules={[{ required: true, message: "Job Place is required" }]}
                 >
-                  <Select
-                    placeholder="Place"
-                    mode="tags"
-                    style={{
-                      flex: 1,
-                    }}
-                  />
+                  <Select placeholder="Place" mode="tags" style={{ flex: 1 }} />
                 </Form.Item>
                 <Form.Item
                   name="experienceRequired"
@@ -1377,51 +1374,13 @@ const Index = () => {
                 >
                   <Select
                     placeholder="Experience"
-                    style={{
-                      flex: 1,
-                    }}
+                    style={{ flex: 1 }}
                     options={[
-                      {
-                        value: "Any",
-                        label: "Any",
-                      },
-                      {
-                        value: "Fresher",
-                        label: "Fresher",
-                      },
-                      {
-                        value: "Experience",
-                        label: "Experience",
-                      },
+                      { value: "Any", label: "Any" },
+                      { value: "Fresher", label: "Fresher" },
+                      { value: "Experience", label: "Experience" },
                     ]}
                   />
-                </Form.Item>
-                <Form.Item
-                  name="skillRequired"
-                  label="Skill Required"
-                  className="mb-2"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Skill Required is required",
-                    },
-                  ]}
-                >
-                  <Select
-                    placeholder="skillRequired"
-                    mode="multiple"
-                    style={{
-                      flex: 1,
-                    }}
-                  >
-                    {suggestiveList?.Skill?.map((op) => {
-                      return (
-                        <Option value={op?.name} key={op?.id}>
-                          {op?.name}
-                        </Option>
-                      );
-                    })}
-                  </Select>
                 </Form.Item>
                 <Form.Item
                   name="numberOfOpenings"
@@ -1438,13 +1397,41 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input placeholder="Eg.100" />
+                  <Input placeholder="Eg.100" type="number" />
                 </Form.Item>
+                <Form.Item
+                  name="skillRequired"
+                  label="Skill Required"
+                  className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Skill Required is required",
+                    },
+                  ]}
+                >
+                  <Select
+                    placeholder="Required Skills"
+                    mode="multiple"
+                    style={{
+                      flex: 1,
+                    }}
+                  >
+                    {suggestiveList?.Skill?.map((op) => {
+                      return (
+                        <Option value={op?.name} key={op?.id}>
+                          {op?.name}
+                        </Option>
+                      );
+                    })}
+                  </Select>
+                </Form.Item>
+
                 <div className="flex items-center justify-center gap-2">
                   <Form.Item
                     name="payout_from"
                     label="Payout From"
-                    className="mb-2"
+                    className="mb-2 flex-1"
                     rules={[
                       {
                         required: true,
@@ -1458,7 +1445,7 @@ const Index = () => {
                   <Form.Item
                     label="Payout To"
                     name="payout_to"
-                    className="mb-2"
+                    className="mb-2 flex-1"
                     rules={[
                       {
                         required: true,
@@ -1473,10 +1460,17 @@ const Index = () => {
                   name="otherBenefits"
                   label="Other Benefits"
                   className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Other Benefits is required",
+                    },
+                  ]}
                 >
                   <Select
                     placeholder="Other Benefits"
-                    mode="tags"
+                mode="multiple"
+
                     style={{
                       flex: 1,
                     }}
@@ -1491,14 +1485,15 @@ const Index = () => {
                   </Select>
                 </Form.Item>
               </div>
-              <div className="flex justify-end gap-8">
+              <Form.Item>
                 <Button
-                  className="px-8 py-2 bg-[#013D9D] text-white"
+                  type="primary"
+                  className="bg-[#013D9D] ml-[40%] px-12"
                   htmlType="submit"
                 >
-                  Post
+                  Post Job
                 </Button>
-              </div>
+              </Form.Item>
             </Form>
           </div>
         </TabPane>
@@ -1616,7 +1611,7 @@ const Index = () => {
                         <Input placeholder="Location" />
                       </Form.Item>
                       <Form.Item
-                        label="Duration (Months)"
+                        label="Duration"
                         name={`duration${index}`}
                       >
                         <Input placeholder="Duration" />
@@ -1638,7 +1633,7 @@ const Index = () => {
             </Form>
           </div>
         </TabPane>
-        <TabPane
+        {/* <TabPane
           tab={<span className="font-semibold">Volunteer</span>}
           //  tab=""
           key="3"
@@ -1711,7 +1706,7 @@ const Index = () => {
               ))}
             </Tabs>
           </div>
-        </TabPane>
+        </TabPane> */}
         <TabPane
           tab={<span className="font-semibold">Document</span>}
           // tab="Document"
@@ -2191,7 +2186,7 @@ const Index = () => {
                 <Form.Item label="Location" name={`location${index}`}>
                   <Input placeholder="Location" />
                 </Form.Item>
-                <Form.Item label="Duration (Months)" name={`duration${index}`}>
+                <Form.Item label="Duration" name={`duration${index}`}>
                   <Input placeholder="Duration" />
                 </Form.Item>{" "}
                 <Form.Item label="Start Date" name={`startDate${index}`}>
@@ -2263,7 +2258,7 @@ const Index = () => {
           >
             <Input placeholder="location" />
           </Form.Item>
-          <Form.Item label="Duration (Months)" name={`duration`}>
+          <Form.Item label="Duration" name={`duration`}>
             <Input placeholder="Duration" />
           </Form.Item>
           <Form.Item label="Start Date" name={`startDate`}>
