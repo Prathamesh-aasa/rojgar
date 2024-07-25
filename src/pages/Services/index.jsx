@@ -12,6 +12,7 @@ import {
   notification,
   Card,
   message,
+  Table,
 } from "antd";
 import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import TabPane from "antd/es/tabs/TabPane";
@@ -45,24 +46,25 @@ const Index = () => {
   const [companyForm] = Form.useForm();
   const [courses, setCourses] = useState([]);
   const [educationQualification, setEducationQualification] = useState("");
-
-  const addCourse = () => {
-    setCourses([...courses, { key: courses.length }]);
+  const [selectedCourseType, setSelectedCourseType] = useState("free");
+  const [isCourseEdit, setIsCourseEdit] = useState(false);
+  const [courseTypeFilter, setCourseTypeFilter] = useState(null);
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const handleSkillFilter = (value) => {
+    const skill = skilling.find((skill) => skill.id === value);
+    setSelectedSkill(skill);
   };
 
-  const removeCourse = (key) => {
-    setCourses(courses.filter((course) => course.key !== key));
-  };
-  const [workshops, setWorkshops] = useState([""]);
-  const addWorkshopInput = () => {
-    setWorkshops([...workshops, ""]);
+  const handleCourseTypeChange = (value) => {
+    const v = value == "all" ? null:value
+    setCourseTypeFilter(v);
   };
 
-  const handleWorkshopChange = (index, value) => {
-    const newWorkshops = [...workshops];
-    newWorkshops[index] = value;
-    setWorkshops(newWorkshops);
-  };
+  const filteredCourses =
+    selectedSkill?.courses.filter((course) => {
+      if (courseTypeFilter === null) return true;
+      return course.isFree === (courseTypeFilter === "free");
+    }) || [];
 
   //////////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +78,7 @@ const Index = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSkillingModal, setIsSkillingModal] = useState(false);
   const [skilling, setSkilling] = useState([]);
-  const [selectedSkill, setSelectedSkill] = useState(null);
+
   const [isSkillingModalVisible, setIsSkillingModalVisible] = useState(false);
   const [isAddNewVolunteerModalVisible, setIsAddNewVolunteerModal] =
     useState(false);
@@ -93,7 +95,6 @@ const Index = () => {
         ...doc.data(),
       }));
       setVolunteer(coursesList);
-      console.log("🚀 ~ getVolunteer ~ coursesList:", coursesList);
     } catch (error) {
       console.error("Error fetching volunteer courses:", error);
     }
@@ -326,8 +327,6 @@ const Index = () => {
 
     // Convert the skills map back to an array
     const listData = Object.values(skillsMap);
-    console.log("🚀 ~ getSkilling ~ listData:", listData);
-
     // Assuming you have a state setter for skilling
     setSkilling(listData);
   };
@@ -551,7 +550,6 @@ const Index = () => {
         description: `Subscription Updated successfully.`,
       });
     } catch (error) {
-      console.log("🚀 ~ handelSubscriptionPlan ~ error:", error);
       notification.error({
         message: "Error",
         description: "Failed to update Please try again later.",
@@ -612,55 +610,14 @@ const Index = () => {
 
       await updateDoc(program, { id: program.id });
 
-      // 2. Add each course
-      const courses = [];
-      for (let i = 0; values[`courseName${i}`] !== undefined; i++) {
-        const courseName = values[`courseName${i}`];
-        const courseVideoLink = values[`courseVideoLink${i}`] || "";
-        const fee = values[`fee${i}`] || 0;
-        const location = values[`location${i}`] || "";
-        const duration = values[`duration${i}`] || "";
-        const startDate = values[`startDate${i}`] || "";
-        const courseType = values[`courseType${i}`] === "free" ? true : false;
-
-        // Add course to courses array or database directly
-        courses.push({
-          skillId: program.id,
-          name: courseName,
-          videoLink: courseVideoLink,
-          isFree: courseType,
-          fee: Number(fee),
-          location: location,
-          duration: duration,
-          startDate: startDate,
-        });
-
-        const courseRef = await addDoc(collection(db, "Courses"), {
-          skillId: program.id,
-          name: courseName,
-          videoLink: courseVideoLink,
-          fee: Number(fee),
-          isFree: true,
-          location: location,
-          duration: duration,
-          startDate: startDate,
-          created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
-        });
-
-        const courseId = courseRef.id;
-
-        await updateDoc(courseRef, { id: courseId });
-      }
-
       form.resetFields();
-      console.log("Courses added:", courses);
+      setIsSkillingModal(false);
+      getSkilling();
       notification.success({
         message: "Success",
         description: "Skills and courses added successfully!",
       });
-    } catch (error) {
-      console.log("🚀 ~ onFinish ~ error:", error);
-    }
+    } catch (error) {}
   };
   const handleSkillChange = (value) => {
     const skill = skilling.find((skill) => skill.id === value);
@@ -716,7 +673,6 @@ const Index = () => {
         message: "Error",
         description: "Failed to update courses. Please try again later.",
       });
-      console.log("🚀 ~ updateCourses ~ error:", error);
     }
   };
   const handleAddCourse = async (values) => {
@@ -749,7 +705,48 @@ const Index = () => {
         message: "Error",
         description: "Failed to add course. Please try again later.",
       });
-      console.log("🚀 ~ handleAddCourse ~ error:", error);
+    }
+  };
+  const handelEdit = async (values) => {
+    try {
+      // Ensure values.id is defined and is the ID of the document you want to update
+      if (!values.id) {
+        throw new Error("Document ID is required for updating.");
+      }
+
+      // Get a reference to the existing document
+      const courseRef = doc(db, "Courses", values.id);
+
+      // Update the document with new values
+      await updateDoc(courseRef, {
+        skillId: selectedSkill?.id,
+        name: values.courseName,
+        videoLink: values.courseVideoLink || "",
+        fee: Number(values.fee) || 0,
+        location: values.location || "",
+        duration: values.duration || "",
+        startDate: values.startDate || "",
+        isFree: values.courseType === "free",
+      });
+
+      // Reset form and close modal
+      addNewCourseForm.resetFields();
+      setIsSkillingModalVisible(false);
+      setSelectedSkill(null);
+      getSkilling();
+      setIsCourseEdit(false);
+
+      // Show success notification
+      notification.success({
+        message: "Success",
+        description: "Course updated successfully!",
+      });
+    } catch (error) {
+      // Show error notification
+      notification.error({
+        message: "Error",
+        description: "Failed to update course. Please try again later.",
+      });
     }
   };
   const handelCreateVolunteer = async (value) => {
@@ -775,7 +772,6 @@ const Index = () => {
       createNewVolunteer.resetFields();
       setIsAddNewVolunteerModal(false);
     } catch (error) {
-      console.log("🚀 ~ handelCreateVolunteer ~ error:", error);
       notification.error({
         message: "Error",
         description: "Failed to add volunteer. Please try again later.",
@@ -1469,8 +1465,7 @@ const Index = () => {
                 >
                   <Select
                     placeholder="Other Benefits"
-                mode="multiple"
-
+                    mode="multiple"
                     style={{
                       flex: 1,
                     }}
@@ -1497,11 +1492,7 @@ const Index = () => {
             </Form>
           </div>
         </TabPane>
-        <TabPane
-          //  tab="Skilling"
-          tab={<span className="font-semibold">Skilling</span>}
-          key="2"
-        >
+        <TabPane tab={<span className="font-semibold">Skilling</span>} key="2">
           <div className="flex justify-end">
             {selectedSkill && (
               <Button
@@ -1516,121 +1507,96 @@ const Index = () => {
               Add New Skilling
             </Button>
           </div>
-          <div className=" max-w-screen-xl mt-7 mx-auto">
-            <Form
-              form={skillingForm}
-              layout="vertical"
-              onFinish={handleFormSubmit}
-            >
-              <Form.Item
-                label="Select Skill"
-                name="skill"
-                rules={[{ required: true, message: "Please select a skill" }]}
+          <div className="max-w-screen-xl mt-7 mx-auto">
+            <div className="flex justify-between">
+              <Select
+                placeholder="Select a skill"
+                onChange={handleSkillChange}
+                value={selectedSkill?.id}
+                className="mb-5 w-96"
               >
-                <Select
-                  placeholder="Select a skill"
-                  onChange={handleSkillChange}
-                  value={selectedSkill?.id}
-                >
-                  {skilling.map((skill) => (
-                    <Option key={skill.id} value={skill.id}>
-                      {skill.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              {/* 
-              <Form.Item
-                label="Program Name"
-                name="programName"
-                rules={[
-                  {
-                    required: true,
-                    whitespace: true,
-                    message: "Program Name is required",
-                  },
-                ]}
-              >
-                <Input placeholder="Enter Program Name" />
-              </Form.Item> */}
-
-              {selectedSkill &&
-                selectedSkill.courses.map((course, index) => (
-                  <div key={course.id} className="course-item">
-                    <Divider>Course {index + 1}</Divider>
-                    <div className="grid grid-cols-3 gap-5">
-                      <Form.Item
-                        label="Course Name"
-                        name={`courseName${index}`}
-                        rules={[
-                          {
-                            required: true,
-                            whitespace: true,
-                            message: "Course Name is required",
-                          },
-                        ]}
-                      >
-                        <Input placeholder="Enter course Name" />
-                      </Form.Item>
-                      <Form.Item
-                        label="Course Video Link"
-                        name={`videoLink${index}`}
-                        rules={[
-                          {
-                            // required: true,
-                            whitespace: true,
-                            message: "Course Video Link is required",
-                          },
-                        ]}
-                      >
-                        <Input placeholder="Enter Video Link" />
-                      </Form.Item>
-                      <Form.Item name={`course_id${index}`} hidden>
-                        <Input placeholder="Enter Video Link" />
-                      </Form.Item>
-                      <Form.Item
-                        label="Course Type"
-                        name={`courseType${index}`}
-                        rules={[
-                          {
-                            required: true,
-                            whitespace: true,
-                            message: "Course Type is required",
-                          },
-                        ]}
-                      >
-                        <Select placeholder="Select">
-                          <Option value="free">Free</Option>
-                          <Option value="paid">Chargeable </Option>
-                        </Select>
-                      </Form.Item>
-                      <Form.Item label="Amount" name={`fee${index}`}>
-                        <Input placeholder="Amount" type="number" />
-                      </Form.Item>
-                      <Form.Item label="Location" name={`location${index}`}>
-                        <Input placeholder="Location" />
-                      </Form.Item>
-                      <Form.Item
-                        label="Duration"
-                        name={`duration${index}`}
-                      >
-                        <Input placeholder="Duration" />
-                      </Form.Item>
-                      <Form.Item label="Start Date" name={`startDate${index}`}>
-                        <Input placeholder="start Date" type="date" />
-                      </Form.Item>
-                    </div>
-                  </div>
+                {skilling.map((skill) => (
+                  <Option key={skill.id} value={skill.id}>
+                    {skill.name}
+                  </Option>
                 ))}
-
-              {selectedSkill && (
-                <div className="flex justify-end gap-8 mt-4">
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-                </div>
-              )}
-            </Form>
+              </Select>
+              <Select
+                placeholder="Filter by course type"
+                onChange={handleCourseTypeChange}
+                allowClear
+                value={courseTypeFilter}
+                className="mb-5 w-96"
+              >
+                <Option value="all">All</Option>
+                <Option value="free">Free</Option>
+                <Option value="paid">Paid</Option>
+              </Select>
+            </div>
+            <Table
+              dataSource={filteredCourses}
+              columns={[
+                {
+                  title: "Course Name",
+                  dataIndex: "name",
+                  key: "name",
+                },
+                {
+                  title: "Course Type",
+                  dataIndex: "isFree",
+                  key: "isFree",
+                  render: (isFree) => (isFree ? "Free" : "Paid"),
+                },
+                {
+                  title: "Amount",
+                  dataIndex: "fee",
+                  key: "fee",
+                  render: (fee) => (fee ? fee : "-"),
+                },
+                {
+                  title: "Location",
+                  dataIndex: "location",
+                  key: "location",
+                  render: (location) => (location ? location : "-"),
+                },
+                {
+                  title: "Duration",
+                  dataIndex: "duration",
+                  key: "duration",
+                  render: (duration) => (duration ? duration : "-"),
+                },
+                {
+                  title: "Start Date",
+                  dataIndex: "startDate",
+                  key: "startDate",
+                  render: (startDate) => (startDate ? startDate : "-"),
+                },
+                {
+                  title: "Action",
+                  key: "action",
+                  render: (_, record) => (
+                    <Button
+                      onClick={() => {
+                        setIsSkillingModalVisible(true);
+                        addNewCourseForm.setFieldsValue({
+                          id: record.id,
+                          courseName: record.name,
+                          courseType: record.isFree ? "free" : "paid",
+                          courseVideoLink: record.videoLink,
+                          fee: record.fee,
+                          location: record.location,
+                          duration: record.duration,
+                          startDate: record.startDate,
+                        });
+                        setIsCourseEdit(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  ),
+                },
+              ]}
+            />
           </div>
         </TabPane>
         {/* <TabPane
@@ -2134,75 +2100,7 @@ const Index = () => {
           >
             <Input placeholder="Enter Program Name" />
           </Form.Item>
-          {courses.map((course, index) => (
-            <div key={course.key} className="course-item">
-              <Divider>Course {index + 1}</Divider>
-              <div className="grid grid-cols-3 gap-5">
-                <Form.Item
-                  label="Course Name"
-                  name={`courseName${course.key}`}
-                  rules={[
-                    {
-                      required: true,
-                      whitespace: true,
-                      message: "Course Name is required",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Enter course Name" />
-                </Form.Item>
-                <Form.Item
-                  label="Course Video Link"
-                  name={`courseVideoLink${course.key}`}
-                  rules={[
-                    {
-                      // required: true,
-                      whitespace: true,
-                      message: "Course Video Link is required",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Enter Video Link" />
-                </Form.Item>
-                <Form.Item
-                  label="Course Type"
-                  name={`courseType${course.key}`}
-                  rules={[
-                    {
-                      required: true,
-                      whitespace: true,
-                      message: "Course Fee is required",
-                    },
-                  ]}
-                >
-                  <Select placeholder="Select">
-                    <Option value="free">Free</Option>
-                    <Option value="paid">Chargeable </Option>
-                  </Select>
-                </Form.Item>
-                <Form.Item label="Amount" name={`fee${index}`}>
-                  <Input placeholder="Amount" type="number" />
-                </Form.Item>
-                <Form.Item label="Location" name={`location${index}`}>
-                  <Input placeholder="Location" />
-                </Form.Item>
-                <Form.Item label="Duration" name={`duration${index}`}>
-                  <Input placeholder="Duration" />
-                </Form.Item>{" "}
-                <Form.Item label="Start Date" name={`startDate${index}`}>
-                  <Input placeholder="start Date" type="date" />
-                </Form.Item>
-              </div>
-              {courses.length > 1 && (
-                <Button type="link" onClick={() => removeCourse(course.key)}>
-                  Remove
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="dashed" onClick={addCourse} icon={<PlusOutlined />}>
-            Add Course
-          </Button>
+
           <div className="flex justify-end gap-8 mt-4">
             <Button onClick={() => setIsSkillingModal(false)}>Cancel</Button>
             <Button type="primary" htmlType="submit">
@@ -2212,16 +2110,24 @@ const Index = () => {
         </Form>
       </Modal>
       <Modal
-        title="Add Course"
+        title={isCourseEdit ? "Edit Course" : "Add Course"}
         open={isSkillingModalVisible}
-        onCancel={() => setIsSkillingModalVisible(false)}
+        onCancel={() => {
+          setIsSkillingModalVisible(false);
+          setIsCourseEdit(false);
+        }}
         footer={null}
       >
         <Form
           form={addNewCourseForm}
           layout="vertical"
-          onFinish={handleAddCourse}
+          onFinish={(e) => (isCourseEdit ? handelEdit(e) : handleAddCourse(e))}
         >
+          {isCourseEdit && (
+            <Form.Item label="Course Id" name="id">
+              <Input placeholder="Enter course name" disabled />
+            </Form.Item>
+          )}
           <Form.Item
             label="Course Name"
             name="courseName"
@@ -2243,14 +2149,29 @@ const Index = () => {
             name="courseType"
             rules={[{ required: true, message: "Course Type is required" }]}
           >
-            <Select placeholder="Select course type">
+            <Select
+              placeholder="Select course type"
+              defaultValue="free"
+              onChange={(e) => setSelectedCourseType(e)}
+            >
               <Option value="free">Free</Option>
               <Option value="paid">Chargeable </Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Amount" name={`fee`}>
-            <Input placeholder="Amount" type="number" />
-          </Form.Item>
+          {selectedCourseType == "paid" && (
+            <Form.Item
+              label="Amount"
+              name="fee"
+              rules={[
+                {
+                  required: true,
+                  message: "Amount is required",
+                },
+              ]}
+            >
+              <Input placeholder="Amount" type="number" />
+            </Form.Item>
+          )}
           <Form.Item
             label="Location"
             name="location"
@@ -2258,19 +2179,24 @@ const Index = () => {
           >
             <Input placeholder="location" />
           </Form.Item>
-          <Form.Item label="Duration" name={`duration`}>
+          <Form.Item label="Duration" name="duration">
             <Input placeholder="Duration" />
           </Form.Item>
-          <Form.Item label="Start Date" name={`startDate`}>
+          <Form.Item label="Start Date" name="startDate">
             <Input placeholder="start Date" type="date" />
           </Form.Item>
 
           <div className="flex justify-end gap-8 mt-4">
-            <Button onClick={() => setIsSkillingModalVisible(false)}>
+            <Button
+              onClick={() => {
+                setIsSkillingModalVisible(false);
+                setIsCourseEdit(false);
+              }}
+            >
               Cancel
             </Button>
             <Button type="primary" htmlType="submit">
-              Add Course
+              {isCourseEdit ? "Update " : "Add"} Course
             </Button>
           </div>
         </Form>
