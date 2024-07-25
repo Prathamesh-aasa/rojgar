@@ -27,7 +27,14 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
-import { CrossIcon, Minus, MinusCircle, PenBoxIcon, XIcon } from "lucide-react";
+import {
+  CrossIcon,
+  Minus,
+  MinusCircle,
+  PenBoxIcon,
+  SquareArrowOutUpRight,
+  XIcon,
+} from "lucide-react";
 import moment from "moment";
 
 let index1 = 0;
@@ -56,7 +63,7 @@ const Index = () => {
   };
 
   const handleCourseTypeChange = (value) => {
-    const v = value == "all" ? null:value
+    const v = value == "all" ? null : value;
     setCourseTypeFilter(v);
   };
 
@@ -1564,6 +1571,19 @@ const Index = () => {
                   dataIndex: "duration",
                   key: "duration",
                   render: (duration) => (duration ? duration : "-"),
+                },
+                {
+                  title: "Video Link",
+                  dataIndex: "videoLink",
+                  key: "videoLink",
+                  render: (videoLink) =>
+                    videoLink ? (
+                      <a href={videoLink} className="text-center">
+                        <SquareArrowOutUpRight className="h-4 w-4 text-blue-700" />
+                      </a>
+                    ) : (
+                      "-"
+                    ),
                 },
                 {
                   title: "Start Date",
