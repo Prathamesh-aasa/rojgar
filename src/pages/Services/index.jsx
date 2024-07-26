@@ -524,7 +524,7 @@ const Index = () => {
         payout_from: value?.payout_from,
         payout_to: value?.payout_to,
         isOpen: true,
-        trade: value?.trade,
+        trade: value?.trade||"",
         posted_on: moment().format("DD-MM-YYYY HH:mm:ss"),
         qualification: value?.educationQualification,
         skills_required: value?.skillRequired,
@@ -536,6 +536,7 @@ const Index = () => {
       });
       companyForm.resetFields();
     } catch (error) {
+      console.log("🚀 ~ handelCreateJobPost ~ error:", error)
       notification.error({
         message: "Error",
         description: "Failed to Create Please try again later.",
