@@ -75,25 +75,6 @@ const Applications = () => {
     });
   };
 
-  const fetchSecondPaymentData = async (transactionId) => {
-    const paymentCollection = collection(db, "Payments");
-    const paymentQuery = query(
-      paymentCollection,
-      where("id", "==", transactionId)
-    );
-    const querySnapshot = await getDocs(paymentQuery);
-
-    if (!querySnapshot.empty) {
-      const paymentDoc = querySnapshot.docs[0];
-      console.log("🚀 ~ fetchSecondPaymentData ~ paymentDoc:", paymentDoc);
-      setSecondPaymentData(paymentDoc.data());
-    } else {
-      notification.error({
-        message: "Payment data not found",
-        description: "Please try again later.",
-      });
-    }
-  };
   const fetchPaymentData = async (transactionId) => {
     const paymentCollection = collection(db, "Payments");
     const paymentQuery = query(
@@ -114,7 +95,6 @@ const Applications = () => {
     }
   };
   const fetchPaymentDatas = async (transactionId) => {
-    setSecondPaymentData(null);
     const paymentCollection = collection(db, "Payments");
     const paymentQuery = query(
       paymentCollection,
@@ -135,6 +115,8 @@ const Applications = () => {
   };
 
   const handleButtonClick = async (record, index = 0) => {
+    setSecondPaymentData(false);
+
     setSelectedItem(record);
     // if (record?.payment_id && index == 1) {
     // setModalVisible(true);
@@ -144,6 +126,11 @@ const Applications = () => {
     // setModalVisible(true);
     // await fetchPaymentData(record.payment_id);
     // }
+  };
+  const handleButtonClick2 = async (record, index = 0) => {
+    setSecondPaymentData(true);
+    setSelectedItem(record);
+    await fetchPaymentDatas(record.complete_payment_id);
   };
   const getColumns = (tab) => {
     const commonColumns = [
@@ -287,7 +274,7 @@ const Applications = () => {
               )}
               {record?.complete_payment_id != "" &&
                 record?.course_amount != 0 && (
-                  <button onClick={() => handleButtonClick(record)}>
+                  <button onClick={() => handleButtonClick2(record)}>
                     <ReceiptText />
                   </button>
                 )}
@@ -771,6 +758,7 @@ const Applications = () => {
             description: "Payment for this skilling have not been approved.",
           });
       }
+
       const paymentQuery2 = query(
         paymentCollection,
         where("id", "==", selectedItem?.complete_payment_id)
@@ -778,12 +766,13 @@ const Applications = () => {
       const querySnapshot2 = await getDocs(paymentQuery2);
 
       if (!querySnapshot2.empty) {
-        const paymentDoc = querySnapshot.docs[0];
+        const paymentDoc = querySnapshot2.docs[0];
         const data = paymentDoc.data();
         if (data.status == "Pending" || data.status == "Rejected")
           return notification.error({
             message: "Payment",
-            description: "Second Payment for this skilling have not been approved.",
+            description:
+              "Second Payment for this skilling have not been approved.",
           });
       }
       const skillingDoc = doc(db, "Skilling", selectedItem?.id);
@@ -1638,6 +1627,7 @@ const Applications = () => {
                   </Button>
 
                   {selectedItem?.paid == false &&
+                    selectedItem?.complete_payment_id == "" &&
                     selectedItem?.isFree == false && (
                       <Button
                         onClick={() => {
@@ -2382,20 +2372,23 @@ const Applications = () => {
                             <p className="font-semibold">Status.</p>
                             <span>{paymentData?.status}</span>
                           </div>
-                          {tab != "4" && tab !== "1" && tab !== "5" && (
-                            <div className="flex flex-col gap-3">
-                              <p className="font-semibold">Pending Amount</p>
-                              <span>
-                                {selectedItem?.course_amount != 0
-                                  ? selectedItem?.course_amount -
-                                    paymentData.amount
-                                  : 0}
-                              </span>
-                            </div>
-                          )}
+                          {tab != "4" &&
+                            tab !== "1" &&
+                            tab !== "5" &&
+                            !secondPaymentData && (
+                              <div className="flex flex-col gap-3">
+                                <p className="font-semibold">Pending Amount</p>
+                                <span>
+                                  {selectedItem?.course_amount != 0
+                                    ? selectedItem?.course_amount -
+                                      paymentData.amount
+                                    : 0}
+                                </span>
+                              </div>
+                            )}
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">
-                              Registration Fee Paid
+                            {secondPaymentData ? "Amount" : " Registration Fee Paid"}
                             </p>
                             <span>{paymentData?.amount}</span>
                           </div>

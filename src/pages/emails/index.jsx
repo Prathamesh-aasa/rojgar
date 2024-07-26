@@ -177,6 +177,21 @@ const Emails = () => {
         >
           <Input placeholder="Enter email for Skilling" />
         </Form.Item>
+        <Form.Item
+          label="Welfare "
+          name="welfare"
+          initialValue={emails.welfare}
+          rules={[
+            {
+              type: "email",
+              whitespace: true,
+              required: true,
+              message: "Please input the email for Skilling!",
+            },
+          ]}
+        >
+          <Input placeholder="Enter email for Skilling" />
+        </Form.Item>
         <div>
           <Button type="primary" htmlType="submit">
             Update Emails
