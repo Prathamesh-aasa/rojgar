@@ -91,23 +91,7 @@ const Dashboard = () => {
       dataIndex: "phone_number",
       key: "phone_number",
     },
-    {
-      title: "Services Enrolled",
-      dataIndex: "trade",
-      key: "trade",
-    },
-    {
-      title: "Status",
-      key: "status",
-      dataIndex: "status",
-      render: (_, { status }) => (
-        <>
-          <Tag className="capitalize text-purpleText bg-purpleTextMd">
-            {status}
-          </Tag>
-        </>
-      ),
-    },
+  
   ];
 
   const columns2 = [

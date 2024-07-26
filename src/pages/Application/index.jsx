@@ -24,8 +24,9 @@ import {
   where,
 } from "firebase/firestore";
 import moment from "moment";
-import { FileTextIcon } from "lucide-react";
+import { FileTextIcon, ReceiptText } from "lucide-react";
 import { Sorter } from "../../utils/sorter";
+import { ReceiptIndianRupee } from "lucide-react";
 const { Option } = Select;
 
 const Applications = () => {
@@ -138,8 +139,7 @@ const Applications = () => {
     // if (record?.payment_id && index == 1) {
     // setModalVisible(true);
     await fetchPaymentDatas(record.payment_id);
-    if (record?.complete_payment_id && record?.complete_payment_id !== "")
-      await fetchSecondPaymentData(record?.complete_payment_id);
+
     // } else if (record?.payment_id) {
     // setModalVisible(true);
     // await fetchPaymentData(record.payment_id);
@@ -276,15 +276,21 @@ const Applications = () => {
         {
           title: "Action",
           render: (text, record) => (
-            <div>
-              <Button onClick={() => showModal(record)} type="link">
+            <div className="flex gap-2">
+              <button onClick={() => showModal(record)}>
                 <DownOutlined />
-              </Button>
+              </button>
               {record?.payment_id != "" && record?.course_amount != 0 && (
-                <Button onClick={() => handleButtonClick(record)} type="link">
-                  View Payment
-                </Button>
+                <button onClick={() => handleButtonClick(record)}>
+                  <ReceiptText />
+                </button>
               )}
+              {record?.complete_payment_id != "" &&
+                record?.course_amount != 0 && (
+                  <button onClick={() => handleButtonClick(record)}>
+                    <ReceiptText />
+                  </button>
+                )}
             </div>
           ),
         },
@@ -755,6 +761,7 @@ const Applications = () => {
         where("id", "==", selectedItem?.payment_id)
       );
       const querySnapshot = await getDocs(paymentQuery);
+
       if (!querySnapshot.empty) {
         const paymentDoc = querySnapshot.docs[0];
         const data = paymentDoc.data();
@@ -762,6 +769,21 @@ const Applications = () => {
           return notification.error({
             message: "Payment",
             description: "Payment for this skilling have not been approved.",
+          });
+      }
+      const paymentQuery2 = query(
+        paymentCollection,
+        where("id", "==", selectedItem?.complete_payment_id)
+      );
+      const querySnapshot2 = await getDocs(paymentQuery2);
+
+      if (!querySnapshot2.empty) {
+        const paymentDoc = querySnapshot.docs[0];
+        const data = paymentDoc.data();
+        if (data.status == "Pending" || data.status == "Rejected")
+          return notification.error({
+            message: "Payment",
+            description: "Second Payment for this skilling have not been approved.",
           });
       }
       const skillingDoc = doc(db, "Skilling", selectedItem?.id);
@@ -772,10 +794,7 @@ const Applications = () => {
         message: "Status Updated",
         description: `Skilling ${selectedItem?.id} has been Completed successfully.`,
       });
-      console.log(
-        "🚀 ~ handelCompleteSkilling ~  selectedItem?.user_id,:",
-        selectedItem?.user_id
-      );
+
       sendNotification(
         selectedItem?.user_id,
         `Your request for skilling has been Completed`
@@ -995,14 +1014,12 @@ const Applications = () => {
         apps[index].jobSeekerData = jobSeekerData;
       }
 
-
       // sort apps by date
       apps.sort((a, b) => {
         if (a.date < b.date) return 1;
         if (a.date > b.date) return -1;
         return 0;
       });
-
 
       // Update state with applications including job seeker data
       setApplications(apps);
@@ -1222,8 +1239,6 @@ const Applications = () => {
     }
   };
 
-
-
   const handleJobApplicationApprove = async (id, data) => {
     try {
       const jobDocRef = doc(db, "Job Applied", id);
@@ -1348,14 +1363,7 @@ const Applications = () => {
       </div>
       <div className="flex justify-between mb-4">
         <h1 className="text-xl">Applications</h1>
-        <div className="flex gap-4">
-          {/* <Button type="primary" onClick={showSendNotificationModal}>
-            <SendOutlined /> Send Notification
-          </Button> */}
-          {/* <Button type="primary">
-            <DownloadOutlined /> Download
-          </Button> */}
-        </div>
+        <div className="flex gap-4"></div>
       </div>
       <Tabs
         // className="font-semibold"
@@ -1950,7 +1958,8 @@ const Applications = () => {
                     <div className="flex flex-col gap-2">
                       <p>Need any agricultural products?</p>
                       <span>
-                        {selectedItem?.do_you_need_any_farming_products || "Not Given"}
+                        {selectedItem?.do_you_need_any_farming_products ||
+                          "Not Given"}
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -2373,7 +2382,7 @@ const Applications = () => {
                             <p className="font-semibold">Status.</p>
                             <span>{paymentData?.status}</span>
                           </div>
-                          {tab != "4" && tab !== "1" && tab!== "5"&& (
+                          {tab != "4" && tab !== "1" && tab !== "5" && (
                             <div className="flex flex-col gap-3">
                               <p className="font-semibold">Pending Amount</p>
                               <span>
@@ -2406,29 +2415,6 @@ const Applications = () => {
                           </div>
                         </div>
                       </div>
-                      {secondPaymentData && (
-                        <div className="shadow shadow-blue-300/40 p-3 rounded-md mb-4">
-                          <h1 className="text-2xl text-[#013D9D] font-medium mb-5">
-                            Second Payment Details
-                          </h1>
-
-                          <div className="grid grid-cols-5 gap-14">
-                            <div className="flex flex-col gap-3">
-                              <p className="font-semibold">Status.</p>
-                              <span>{secondPaymentData?.status}</span>
-                            </div>
-                            <div className="flex flex-col gap-3">
-                              <p className="font-semibold">Payment Amount</p>
-                              <span>{secondPaymentData?.amount}</span>
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                              <p className="font-semibold">Transaction Id</p>
-                              <span>{secondPaymentData?.transaction_id}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                   {paymentData?.status == "Pending" &&
