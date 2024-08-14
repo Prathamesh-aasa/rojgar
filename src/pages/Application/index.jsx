@@ -743,13 +743,13 @@ const Applications = () => {
   };
   const handelCompleteSkilling = async () => {
     try {
-      if (!selectedItem?.complete_payment_id) {
-        return notification.error({
-          message: "Payment",
-          description: "Second Payment is not done yet.",
-        });
-      }
-
+      // if (!selectedItem?.complete_payment_id) {
+      //   return notification.error({
+      //     message: "Payment",
+      //     description: "Second Payment is not done yet.",
+      //   });
+      // }
+1
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
         paymentCollection,
@@ -1966,8 +1966,8 @@ const Applications = () => {
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <p>Need any agricultural products?</p>
-                      <span>
+                      <p>Mention farming products</p>
+                      <span className="capitalize">
                         {selectedItem?.do_you_need_any_farming_products ||
                           "Not Given"}
                       </span>
@@ -1981,13 +1981,15 @@ const Applications = () => {
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <p>Mention agricultural products</p>
+                      <p>Do you have health insurance</p>
                       <span>
-                        {selectedItem?.farming_product || "Not Given"}
+                      {selectedItem?.do_you_have_health_insurance
+                          ? "Yes"
+                          : "No"}
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <p>Have a toilet at home?</p>
+                      <p>Have a toilet at home</p>
                       <span>
                         {selectedItem?.do_you_have_toilet_at_home
                           ? "Yes"
