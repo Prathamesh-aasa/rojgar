@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Tabs, Tag, Input } from "antd";
 import { db } from "../../../firebase";
 import { collection, getDocs, query } from "firebase/firestore";
+import moment from "moment";
 const { Search } = Input;
 
 const Index = () => {
@@ -62,21 +63,28 @@ const Index = () => {
       title: " Name",
       dataIndex: "full_name",
       key: "full_name",
+      sorter: (a, b) =>
+        a?.full_name?.toLowerCase()?.localeCompare(b?.full_name?.toLowerCase()),
     },
     {
       title: "Registration ID",
       dataIndex: "id",
       key: "id",
+      sorter: (a, b) =>
+        a?.id?.toLowerCase()?.localeCompare(b?.id?.toLowerCase()),
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      sorter: (a, b) =>
+        a?.email?.toLowerCase()?.localeCompare(b?.email?.toLowerCase()),
     },
     {
       title: "Phone Number",
       dataIndex: "phone_number",
       key: "phone_number",
+      sorter: (a, b) => a?.phone_number?.localeCompare(b?.phone_number),
     },
     // {
     //   title: "Services Enrolled",
@@ -102,44 +110,66 @@ const Index = () => {
       title: "Company Name",
       dataIndex: "company_name",
       key: "company_name",
+      sorter: (a, b) =>
+        a?.company_name
+          ?.toLowerCase()
+          ?.localeCompare(b?.company_name?.toLowerCase()),
     },
     {
       title: "Company ID",
       dataIndex: "id",
       key: "id",
+      sorter: (a, b) =>
+        a?.id?.toLowerCase()?.localeCompare(b?.id?.toLowerCase()),
     },
     {
       title: "Job poster Email Id",
       dataIndex: "job_poster_email",
       key: "job_poster_email",
+      sorter: (a, b) =>
+        a?.job_poster_email
+          ?.toLowerCase()
+          ?.localeCompare(b?.job_poster_email?.toLowerCase()),
     },
     {
       title: "Job poster Phone Number",
       dataIndex: "job_poster_phone_number",
       key: "job_poster_phone_number",
+      sorter: (a, b) =>
+        a?.job_poster_phone_number?.localeCompare(b?.job_poster_phone_number),
     },
     {
       title: "Date of Registration",
       dataIndex: "date_of_registration",
       key: "date_of_registration",
-      render: (date) => new Date(date).toLocaleDateString(),
+      sorter: (dateA, dateB) =>
+        moment(dateA?.date_of_registration).diff(
+          moment(dateB?.date_of_registration)
+        ),
+      render: (text) => moment(text).format("DD-MM-YYYY"),
     },
     {
       title: "Address",
       dataIndex: "registered_address",
       key: "registered_address",
+      sorter: (a, b) =>
+        a?.registered_address
+          ?.toLowerCase()
+          ?.localeCompare(b?.registered_address?.toLowerCase()),
     },
     {
       title: "Verification Status",
-      render: (_, { status }) => {
-        return status;
-      },
+      dataIndex: "status",
+      key: "status",
+
+      sorter: (a, b) =>
+        a?.status?.toLowerCase()?.localeCompare(b?.status?.toLowerCase()),
     },
   ];
 
   return (
     <div className="p-5">
-      <div>
+      {/* <div>
         <p className="text-base mb-5">
           Dashboard <span className="text-[#F7B652]">&gt;</span> New
           Registration List
@@ -147,7 +177,7 @@ const Index = () => {
         <h1 className="text-2xl text-[#013D9D] mb-5 font-semibold">
           New Registrations list
         </h1>
-      </div>
+      </div> */}
 
       <Tabs>
         <Tabs.TabPane

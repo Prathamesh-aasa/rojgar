@@ -13,6 +13,7 @@
     "antd": "^5.18.3",
     "autoprefixer": "^10.4.19",
     "chart.js": "^4.4.3",
+    "file-saver": "^2.0.5",
     "firebase": "^10.12.2",
     "lucide": "^0.396.0",
     "lucide-react": "^0.396.0",

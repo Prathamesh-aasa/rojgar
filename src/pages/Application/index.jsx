@@ -184,24 +184,24 @@ const Applications = () => {
           sorter: (a, b) =>
             a?.email?.toLowerCase()?.localeCompare(b?.email?.toLowerCase()),
         },
-        {
-          title: "Applied Company",
-          dataIndex: "company_name",
-          key: "company_name",
-          sorter: (a, b) =>
-            a?.company_name
-              ?.toLowerCase()
-              ?.localeCompare(b?.company_name?.toLowerCase()),
-        },
-        {
-          title: "Applied Post",
-          key: "job_you_want_to_apply",
-          dataIndex: "job_you_want_to_apply",
-          sorter: (a, b) =>
-            a?.job_you_want_to_apply
-              ?.toLowerCase()
-              ?.localeCompare(b?.job_you_want_to_apply?.toLowerCase()),
-        },
+        // {
+        //   title: "Applied Company",
+        //   dataIndex: "company_name",
+        //   key: "company_name",
+        //   sorter: (a, b) =>
+        //     a?.company_name
+        //       ?.toLowerCase()
+        //       ?.localeCompare(b?.company_name?.toLowerCase()),
+        // },
+        // {
+        //   title: "Applied Post",
+        //   key: "job_you_want_to_apply",
+        //   dataIndex: "job_you_want_to_apply",
+        //   sorter: (a, b) =>
+        //     a?.job_you_want_to_apply
+        //       ?.toLowerCase()
+        //       ?.localeCompare(b?.job_you_want_to_apply?.toLowerCase()),
+        // },
         {
           title: "Action",
           render: (text, record) => (
@@ -272,7 +272,8 @@ const Applications = () => {
                   <ReceiptText />
                 </button>
               )}
-              {record?.complete_payment_id != "" &&
+              {record?.complete_payment_id &&
+                record?.complete_payment_id != "" &&
                 record?.course_amount != 0 && (
                   <button onClick={() => handleButtonClick2(record)}>
                     <ReceiptText />
@@ -742,6 +743,13 @@ const Applications = () => {
   };
   const handelCompleteSkilling = async () => {
     try {
+      if (!selectedItem?.complete_payment_id) {
+        return notification.error({
+          message: "Payment",
+          description: "Second Payment is not done yet.",
+        });
+      }
+
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
         paymentCollection,
@@ -1157,14 +1165,16 @@ const Applications = () => {
 
       sendNotification(
         userId,
-        `Your payments request for the ${reason} ${
-          selectedItem?.profile_type &&
-          selectedItem?.profile_type != "Job Seeker" &&
-          selectedItem?.profile_type != "Skilling"
-            ? `of ${selectedItem?.profile_type}`
-            : ""
-        } has been approved`
+        `Your payments request for the ${reason} has been approved`
       );
+
+      // ${
+      //   selectedItem?.profile_type &&
+      //   selectedItem?.profile_type != "Job Seeker" &&
+      //   selectedItem?.profile_type != "Skilling"
+      //     ? `of ${selectedItem?.profile_type}`
+      //     : ""
+      // }
 
       notification.success({
         message: "Payment Approved",
@@ -1694,10 +1704,10 @@ const Applications = () => {
                     <p>Name</p>
                     <span>{selectedItem?.full_name}</span>
                   </div>
-                  <div className="flex flex-col gap-2">
+                 {tab !== "4"&& <div className="flex flex-col gap-2">
                     <p>Gender</p>
                     <span>{selectedItem?.gender || "Not Given"}</span>
-                  </div>
+                  </div>}
 
                   <div className="flex flex-col gap-2">
                     <p>Phone Number</p>
@@ -1738,12 +1748,12 @@ const Applications = () => {
                       <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
                     </div>
                   )}
-                  {tab != "4" && tab != "5" && (
+                  {/* {tab != "4" && tab != "5" && (
                     <div className="flex flex-col gap-2 mb-4">
                       <p>Referred By</p>
                       <span>{selectedItem?.referred_by || "NA"}</span>
                     </div>
-                  )}
+                  )} */}
                   {tab == "2" && (
                     <div className="flex flex-col gap-2 mb-4">
                       <p>City User Want For Offline Skilling</p>
@@ -1852,14 +1862,16 @@ const Applications = () => {
                       </span>
                     </div>
                   )}
-                  <div className="flex flex-col gap-2">
-                    <p>Pan No.</p>
-                    <span>
-                      {selectedItem?.pan_card_number ||
-                        selectedItem?.pan_number ||
-                        "Not Given"}
-                    </span>
-                  </div>
+                  {tab !== "5" && tab !== "4" && (
+                    <div className="flex flex-col gap-2">
+                      <p>Pan No.</p>
+                      <span>
+                        {selectedItem?.pan_card_number ||
+                          selectedItem?.pan_number ||
+                          "Not Given"}
+                      </span>
+                    </div>
+                  )}
                   {tab !== "2" && (
                     <div className="flex flex-col gap-2">
                       <p>Service Selected</p>
@@ -2388,7 +2400,9 @@ const Applications = () => {
                             )}
                           <div className="flex flex-col gap-3">
                             <p className="font-semibold">
-                            {secondPaymentData ? "Amount" : " Registration Fee Paid"}
+                              {secondPaymentData
+                                ? "Amount"
+                                : " Registration Fee Paid"}
                             </p>
                             <span>{paymentData?.amount}</span>
                           </div>

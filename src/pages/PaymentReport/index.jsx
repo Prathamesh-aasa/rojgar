@@ -18,7 +18,7 @@ import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-
+import { saveAs } from "file-saver";
 const { TabPane } = Tabs;
 const { Option } = Select;
 
@@ -35,6 +35,31 @@ const Index = () => {
   const [filteredCompanyPayments, setFilteredCompanyPayments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+
+  const downloadAllTransactions = () => {
+    const dataToDownload = filteredIndividualPayments.map((payment) => ({
+      "Registration Id": payment.id,
+      "Payment From": payment.user_id,
+      "Transaction ID": payment.transaction_id,
+      "Payment Type": payment.title,
+      "Payment Date": moment(payment.date).format("DD-MM-YYYY"),
+      "Payment Status": payment.status,
+    }));
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      Object.keys(dataToDownload[0]).join(",") +
+      "\n" +
+      dataToDownload.map((row) => Object.values(row).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "all_transactions.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getPayments = async () => {
     const paymentsCollection = collection(db, "Payments");
@@ -129,27 +154,26 @@ const Index = () => {
       title: "Registration Id",
       dataIndex: "id",
       key: "id",
+      sorter: (a, b) => a.id.localeCompare(b.id),
     },
     {
       title: "Payment From",
       dataIndex: "user_id",
       key: "user_id",
+      sorter: (a, b) => a.user_id.localeCompare(b.user_id),
     },
     {
       title: "Transaction ID",
       dataIndex: "transaction_id",
       key: "transaction_id",
+      sorter: (a, b) => a?.transaction_id?.localeCompare(b?.transaction_id || ""),
     },
     {
       title: "Payment Type",
       dataIndex: "title",
       key: "title",
+      sorter: (a, b) => a.title.localeCompare(b.title),
     },
-    // {
-    //   title: "Payment Receive On",
-    //   dataIndex: "paymentReceiveOn",
-    //   key: "paymentReceiveOn",
-    // },
     {
       title: "Payment Date",
       dataIndex: "date",
@@ -157,6 +181,7 @@ const Index = () => {
       render: (date) => (
         <span>{moment(date)?.format("DD-MM-YYYY") || "NA"}</span>
       ),
+      sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
     },
     {
       title: "Payment Status",
@@ -175,18 +200,69 @@ const Index = () => {
           {status}
         </span>
       ),
+      sorter: (a, b) => a.status.localeCompare(b.status),
     },
   ];
+
+  // const columns = [
+  //   {
+  //     title: "Registration Id",
+  //     dataIndex: "id",
+  //     key: "id",
+  //   },
+  //   {
+  //     title: "Payment From",
+  //     dataIndex: "user_id",
+  //     key: "user_id",
+  //   },
+  //   {
+  //     title: "Transaction ID",
+  //     dataIndex: "transaction_id",
+  //     key: "transaction_id",
+  //   },
+  //   {
+  //     title: "Payment Type",
+  //     dataIndex: "title",
+  //     key: "title",
+  //   },
+  //   // {
+  //   //   title: "Payment Receive On",
+  //   //   dataIndex: "paymentReceiveOn",
+  //   //   key: "paymentReceiveOn",
+  //   // },
+  //   {
+  //     title: "Payment Date",
+  //     dataIndex: "date",
+  //     key: "date",
+  //     render: (date) => (
+  //       <span>{moment(date)?.format("DD-MM-YYYY") || "NA"}</span>
+  //     ),
+  //   },
+  //   {
+  //     title: "Payment Status",
+  //     dataIndex: "status",
+  //     key: "status",
+  //     render: (status) => (
+  //       <span
+  //         className={`tag ${
+  //           status === "Completed"
+  //             ? "bg-green-500"
+  //             : status === "Pending"
+  //             ? "bg-yellow-500"
+  //             : "bg-red-500"
+  //         } text-white px-2 py-1 rounded-full`}
+  //       >
+  //         {status}
+  //       </span>
+  //     ),
+  //   },
+  // ];
   const handleRowClick = (record) => {
     navigate(`/payment-view-details/${record.id}`);
   };
   return (
     <div className="p-4">
       <div>
-        <p className="text-base mb-5">
-          Dashboard <span className="text-[#F7B652]">&gt;</span> New
-          Registration List
-        </p>
         <h1 className="text-2xl text-[#013D9D] mb-5 font-semibold">
           Payment Report
         </h1>
@@ -226,12 +302,13 @@ const Index = () => {
                 </Select>
               )}
               <div className="flex gap-2">
-                <Button icon={<DownloadOutlined />} type="primary">
+                <Button
+                  icon={<DownloadOutlined />}
+                  type="primary"
+                  onClick={downloadAllTransactions}
+                >
                   Download all Transaction
                 </Button>
-                {/* <Button icon={<FilterOutlined />} onClick={handleFilter}>
-                  Filters
-                </Button> */}
               </div>
             </div>
           </div>

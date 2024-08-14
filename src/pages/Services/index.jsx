@@ -492,38 +492,74 @@ const Index = () => {
   const handelCreateJobPost = async (value) => {
     try {
       // Check for existing company with the same email, GSTIN, phone, or PAN
-      const companyQuery = query(collection(db, "RegisterAsCompany"), 
-        where("company_email", "==", value.email),
-        where("company_phone", "==", value.phone),
-        where("gstin", "==", value.companyGstin)
-      );
+      // const companyQuery = query(collection(db, "RegisterAsCompany"),
+      //   where("company_email", "==", value.email),
+      //   where("company_phone", "==", value.phone),
+      //   where("gstin", "==", value.companyGstin)
+      // );
+
+      const buildCompanyQuery = (db, value) => {
+
+        let companyQuery = query(collection(db, "RegisterAsCompany"));
+
+
+        if (value.email) {
+          companyQuery = query(
+            companyQuery,
+            where("company_email", "==", value.email)
+          );
+        }
+
+        if (value.phone) {
+          companyQuery = query(
+            companyQuery,
+            where("company_phone", "==", value.phone)
+          );
+        }
+
+        if (value.companyGstin) {
+          companyQuery = query(
+            companyQuery,
+            where("gstin", "==", value.companyGstin)
+          );
+        }
+
+        return companyQuery;
+      };
+
+      const companyQuery = buildCompanyQuery(db, value);
+
       const companySnapshot = await getDocs(companyQuery);
-  
+
       if (!companySnapshot.empty) {
         notification.error({
           message: "Validation Error",
-          description: "Company with the same email, phone, or GSTIN already exists.",
+          description:
+            "Company with the same email, phone, or GSTIN already exists.",
         });
         return;
       }
-  
+
       // Check for existing job poster with the same email or phone
-      const jobPosterQuery = query(collection(db, "RegisterAsCompany"), 
+      const jobPosterQuery = query(
+        collection(db, "RegisterAsCompany"),
         where("job_poster_email", "==", value.job_poster_email),
         where("job_poster_phone_number", "==", value.job_poster_phone)
       );
       const jobPosterSnapshot = await getDocs(jobPosterQuery);
-  
+
       if (!jobPosterSnapshot.empty) {
         notification.error({
           message: "Validation Error",
-          description: "Job poster with the same email or phone already exists.",
+          description:
+            "Job poster with the same email or phone already exists.",
         });
         return;
       }
-  
+
       // Add new company document
       const company = await addDoc(collection(db, "RegisterAsCompany"), {
+        account_active:true,
         city: "",
         company_email: value.email,
         company_name: value?.companyName,
@@ -542,9 +578,9 @@ const Index = () => {
         subscription: "",
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
-  
+
       await updateDoc(company, { id: company?.id });
-  
+
       // Add new job document
       await addDoc(collection(db, "Jobs"), {
         benefits: value?.otherBenefits,
@@ -563,12 +599,12 @@ const Index = () => {
         skills_required: value?.skillRequired,
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
-  
+
       notification.success({
         message: "Item Added",
         description: "Job has been added successfully.",
       });
-  
+
       companyForm.resetFields();
     } catch (error) {
       console.log("🚀 ~ handelCreateJobPost ~ error:", error);
@@ -576,9 +612,9 @@ const Index = () => {
         message: "Error",
         description: "Failed to Create Please try again later.",
       });
-    } 
+    }
   };
-  
+
   const handelSubscriptionPlan = async (values) => {
     try {
       const planRef = doc(db, "Subscription Plans", values?.id);

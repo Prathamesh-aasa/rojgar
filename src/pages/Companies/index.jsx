@@ -46,11 +46,22 @@ const CompaniesPage = () => {
 
   const getCompanies = async () => {
     const companyCollection = collection(db, "RegisterAsCompany");
-    const companiesSnapshot = await getDocs(companyCollection);
+    const activeCompaniesQuery = query(
+      companyCollection,
+      where("account_active", "!=", false)
+    );
+    // const companiesSnapshot = await getDocs(companyCollection);
+    const companiesSnapshot = await getDocs(activeCompaniesQuery);
+  
     const companies = companiesSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
+
+    // const companies = companiesSnapshot.docs.map((doc) => ({
+    //   id: doc.id,
+    //   ...doc.data(),
+    // }));
 
     const jobsCollection = collection(db, "Jobs");
 
