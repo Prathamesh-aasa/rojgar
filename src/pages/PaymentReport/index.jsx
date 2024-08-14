@@ -41,7 +41,7 @@ const Index = () => {
       "Registration Id": payment.id,
       "Payment From": payment.user_id,
       "Transaction ID": payment.transaction_id,
-      "Payment Type": payment.title,
+      "Selected Service": payment.title,
       "Payment Date": moment(payment.date).format("DD-MM-YYYY"),
       "Payment Status": payment.status,
     }));
@@ -169,7 +169,7 @@ const Index = () => {
       sorter: (a, b) => a?.transaction_id?.localeCompare(b?.transaction_id || ""),
     },
     {
-      title: "Payment Type",
+      title: "Selected Service",
       dataIndex: "title",
       key: "title",
       sorter: (a, b) => a.title.localeCompare(b.title),

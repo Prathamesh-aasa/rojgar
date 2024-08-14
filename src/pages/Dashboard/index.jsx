@@ -22,7 +22,7 @@ import { collection, getDocs, limit, query } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { Link } from "react-router-dom";
 import moment from "moment";
-import { limitToFirst } from "firebase/database";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -35,6 +35,7 @@ ChartJS.register(
 );
 
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 const Dashboard = () => {
   const [tab, setTab] = useState("1");
@@ -43,8 +44,11 @@ const Dashboard = () => {
   const [individualUsers, setIndividualUsers] = useState([]);
   const [filteredIndividualUsers, setFilteredIndividualUsers] = useState([]);
   const [individualPayments, setIndividualPayments] = useState([]);
-
   const [paymentReport, setPaymentReport] = useState([]);
+  const [jobSeekers, setJobSeekers] = useState([]);
+  const [lineChartData, setLineChartData] = useState({ labels: [], datasets: [] });
+  const [barData, setBarData] = useState({ labels: [], datasets: [] });
+  const [timePeriod, setTimePeriod] = useState("weekly");
 
   const getIndividualUsers = async () => {
     const individualCollection = collection(db, "Individuals");
@@ -61,104 +65,55 @@ const Dashboard = () => {
   const getPayments = async () => {
     const paymentsCollection = collection(db, "Payments");
     const payQry = query(paymentsCollection, limit(5));
-
-    const snapshot = await getDocs(payQry, limit(5));
+    const snapshot = await getDocs(payQry);
     const paymentsList = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    console.log("🚀 ~ paymentsList ~ paymentsList:", paymentsList);
     setIndividualPayments(paymentsList);
   };
-  const columns = [
-    {
-      title: " Name",
-      dataIndex: "full_name",
-      key: "full_name",
-    },
-    {
-      title: "Registration ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Phone Number",
-      dataIndex: "phone_number",
-      key: "phone_number",
-    },
-  
-  ];
 
-  const columns2 = [
-    {
-      title: "Registration Id",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Payment From",
-      dataIndex: "user_id",
-      key: "user_id",
-    },
-    {
-      title: "Transaction ID",
-      dataIndex: "transaction_id",
-      key: "transaction_id",
-    },
-    {
-      title: "Payment Type",
-      dataIndex: "title",
-      key: "title",
-    },
-    // {
-    //   title: "Payment Receive On",
-    //   dataIndex: "paymentReceiveOn",
-    //   key: "paymentReceiveOn",
-    // },
-    {
-      title: "Payment Date",
-      dataIndex: "date",
-      key: "date",
-      render: (date) => (
-        <span>{moment(date)?.format("DD-MM-YYYY") || "NA"}</span>
-      ),
-    },
-    {
-      title: "Payment Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <span
-          className={`tag ${
-            status === "Completed"
-              ? "bg-green-500"
-              : status === "Pending"
-              ? "bg-yellow-500"
-              : "bg-red-500"
-          } text-white px-2 py-1 rounded-full`}
-        >
-          {status}
-        </span>
-      ),
-    },
-  ];
+  const getJobSeekers = async () => {
+    const jobSeekersCollection = collection(db, "Job Seekers");
+    const snapshot = await getDocs(jobSeekersCollection);
+    const seekersList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setJobSeekers(seekersList);
+    processLineChartData(seekersList);
+  };
 
-  useEffect(() => {
-    getIndividualUsers();
-    getPayments();
-  }, []);
-  const [timePeriod, setTimePeriod] = useState("weekly");
-  // const [paymentReport, setPaymentReport] = useState([]);
-  const [barData, setBarData] = useState({ labels: [], datasets: [] });
+  const processLineChartData = (data) => {
+    const today = moment();
+    const oneWeekAgo = moment().subtract(6, 'days');
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    let dailyCounts = Array(7).fill(0);
 
-  useEffect(() => {
-    getPaymentReports();
-  }, [timePeriod]);
+    data.forEach(seeker => {
+      const registrationDate = moment(seeker.date_of_registration);
+      if (registrationDate.isBetween(oneWeekAgo, today, null, '[]')) {
+        const dayIndex = registrationDate.day();
+        dailyCounts[dayIndex]++;
+      }
+    });
+
+    const rotatedDailyCounts = [...dailyCounts.slice(today.day() + 1), ...dailyCounts.slice(0, today.day() + 1)];
+    const rotatedDaysOfWeek = [...daysOfWeek.slice(today.day() + 1), ...daysOfWeek.slice(0, today.day() + 1)];
+
+    setLineChartData({
+      labels: rotatedDaysOfWeek,
+      datasets: [
+        {
+          label: 'New Job Seekers',
+          data: rotatedDailyCounts,
+          fill: false,
+          borderColor: "#4A90E2",
+        },
+      ],
+    });
+  };
 
   const getPaymentReports = async () => {
     const paymentsCollection = collection(db, "Payments");
@@ -186,18 +141,8 @@ const Dashboard = () => {
         break;
       case "monthly":
         labels = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         ];
         chartData = aggregateMonthlyData(data);
         break;
@@ -218,28 +163,28 @@ const Dashboard = () => {
   };
 
   const aggregateDailyData = (data) => {
-    let dailyData = Array(7)?.fill(0);
-    data?.forEach((payment) => {
-      const day = moment(payment?.date)?.day();
-      dailyData[day] += payment?.amount;
+    let dailyData = Array(7).fill(0);
+    data.forEach((payment) => {
+      const day = moment(payment.date).day();
+      dailyData[day] += payment.amount;
     });
     return dailyData;
   };
 
   const aggregateWeeklyData = (data) => {
-    let weeklyData = Array(4)?.fill(0);
-    data?.forEach((payment) => {
-      const week = moment(payment?.date)?.week() % 4;
-      weeklyData[week] += payment?.amount;
+    let weeklyData = Array(4).fill(0);
+    data.forEach((payment) => {
+      const week = moment(payment.date).week() % 4;
+      weeklyData[week] += payment.amount;
     });
     return weeklyData;
   };
 
   const aggregateMonthlyData = (data) => {
-    let monthlyData = Array(12)?.fill(0);
-    data?.forEach((payment) => {
-      const month = moment(payment?.date)?.month();
-      monthlyData[month] += payment?.amount;
+    let monthlyData = Array(12).fill(0);
+    data.forEach((payment) => {
+      const month = moment(payment.date).month();
+      monthlyData[month] += payment.amount;
     });
     return monthlyData;
   };
@@ -248,28 +193,150 @@ const Dashboard = () => {
     setTimePeriod(value);
   };
 
-  const options = {
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
+  const handleSearch = (value, type) => {
+    setSearchTerm(value);
+    if (type === "individuals") {
+      const filtered = individualUsers.filter(
+        (user) =>
+          user.full_name.toLowerCase().includes(value.toLowerCase()) ||
+          user.email.toLowerCase().includes(value.toLowerCase()) ||
+          user.id.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredIndividualUsers(filtered);
+    }
   };
+
+  useEffect(() => {
+    getIndividualUsers();
+    getPayments();
+    getJobSeekers();
+    getPaymentReports();
+  }, []);
 
   useEffect(() => {
     getPaymentReports();
   }, [timePeriod]);
 
-  const lineData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        label: "Candidates",
-        data: [300, 200, 400, 300, 200, 250, 350],
-        fill: false,
-        borderColor: "#4A90E2",
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "full_name",
+      key: "full_name",
+    },
+    {
+      title: "Registration ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Phone Number",
+      dataIndex: "phone_number",
+      key: "phone_number",
+    },
+  ];
+
+  const columns2 = [
+    {
+      title: "Registration Id",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Payment From",
+      dataIndex: "user_id",
+      key: "user_id",
+    },
+    {
+      title: "Transaction ID",
+      dataIndex: "transaction_id",
+      key: "transaction_id",
+    },
+    {
+      title: "Payment Type",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Payment Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date) => (
+        <span>{moment(date).format("DD-MM-YYYY") || "NA"}</span>
+      ),
+    },
+    {
+      title: "Payment Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <span
+          className={`tag ${
+            status === "Completed"
+              ? "bg-green-500"
+              : status === "Pending"
+              ? "bg-yellow-500"
+              : "bg-red-500"
+          } text-white px-2 py-1 rounded-full`}
+        >
+          {status}
+        </span>
+      ),
+    },
+  ];
+
+  const options = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of New Registrations'
+        }
       },
-    ],
+      x: {
+        title: {
+          display: true,
+          text: 'Day of Week'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top'
+      },
+      title: {
+        display: true,
+        text: 'New Job Seeker Registrations (Last 7 Days)'
+      }
+    }
+  };
+
+  const barOptions = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Total Fees'
+        }
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top'
+      },
+      title: {
+        display: true,
+        text: 'Payment Report'
+      }
+    }
   };
 
   return (
@@ -282,7 +349,7 @@ const Dashboard = () => {
           <h2 className="text-[#013D9D] text-[18px] font-semibold p-2">
             New Registrations
           </h2>
-          <Line data={lineData} options={options} />
+          <Line data={lineChartData} options={options} />
         </div>
         <div>
           <h2 className="text-[#013D9D] text-[18px] font-semibold p-2">
@@ -299,7 +366,7 @@ const Dashboard = () => {
               <Option value="monthly">Monthly</Option>
             </Select>
           </div>
-          <Bar data={barData} options={options} />
+          <Bar data={barData} options={barOptions} />
         </div>
       </div>
       <div className="mt-9 p-5">

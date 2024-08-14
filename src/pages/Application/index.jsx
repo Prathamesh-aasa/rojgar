@@ -1736,6 +1736,14 @@ const Applications = () => {
                       )}
                     </span>
                   </div>
+               { tab == "1" && <div className="flex flex-col gap-2">
+                    <p>When Can Join</p>
+                    <span>
+                      {moment(selectedItem?.when_can_join).format(
+                        "DD-MM-YYYY"
+                      )}
+                    </span>
+                  </div>}
                   {selectedItem?.company_name && (
                     <div className="flex flex-col gap-2">
                       <p>Applied Company</p>
