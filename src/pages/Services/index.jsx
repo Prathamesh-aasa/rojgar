@@ -582,23 +582,27 @@ const Index = () => {
       await updateDoc(company, { id: company?.id });
 
       // Add new job document
-      await addDoc(collection(db, "Jobs"), {
+      const job =   await addDoc(collection(db, "Jobs"), {
         benefits: value?.otherBenefits,
         company_id: company?.id,
         experience_required: value?.experienceRequired,
-        job_openings: value?.numberOfOpenings,
+        job_openings:Number(value?.numberOfOpenings),
         job_place: value?.jobPlace,
         job_position: value?.jobPosition,
         min_experience_in_months: 0,
-        payout_from: value?.payout_from,
-        payout_to: value?.payout_to,
+        payout_from: Number(value?.payout_from),
+        payout_to: Number(value?.payout_to),
         isOpen: true,
+        max_age:Number(value?.max_age),
+        min_age:Number(value?.min_age),
         trade: value?.trade || "",
         posted_on: moment().format("DD-MM-YYYY HH:mm:ss"),
         qualification: value?.educationQualification,
         skills_required: value?.skillRequired,
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
+
+      await updateDoc(job, { id: job?.id });
 
       notification.success({
         message: "Item Added",
@@ -1557,6 +1561,34 @@ const Index = () => {
                       );
                     })}
                   </Select>
+                </Form.Item>
+                <Form.Item
+                  name="min_age"
+                  label="Min Age"
+                  className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Min age is required!",
+                    },
+                  
+                  ]}
+                >
+                  <Input placeholder="Eg.20" type="number" />
+                </Form.Item>
+                <Form.Item
+                  name="max_age"
+                  label="Max Age"
+                  className="mb-2"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Max age is required!",
+                    },
+                  
+                  ]}
+                >
+                  <Input placeholder="Eg.20" type="number" />
                 </Form.Item>
               </div>
               <Form.Item>

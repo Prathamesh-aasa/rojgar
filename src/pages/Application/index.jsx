@@ -743,12 +743,12 @@ const Applications = () => {
   };
   const handelCompleteSkilling = async () => {
     try {
-      // if (!selectedItem?.complete_payment_id) {
-      //   return notification.error({
-      //     message: "Payment",
-      //     description: "Second Payment is not done yet.",
-      //   });
-      // }
+      if (!selectedItem?.complete_payment_id) {
+        return notification.error({
+          message: "Payment",
+          description: "Second Payment is not done yet.",
+        });
+      }
 1
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
@@ -786,6 +786,7 @@ const Applications = () => {
       const skillingDoc = doc(db, "Skilling", selectedItem?.id);
       await updateDoc(skillingDoc, {
         status: "Completed",
+        completed:true
       });
       notification.success({
         message: "Status Updated",
