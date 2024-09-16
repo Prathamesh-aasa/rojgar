@@ -133,7 +133,7 @@ const Emails = () => {
           <Input placeholder="Enter email for Volunteers" />
         </Form.Item>
         <Form.Item
-          label="Documents / Scheme"
+          label="Documents"
           name="documents"
           initialValue={emails.documents}
           rules={[
@@ -191,6 +191,21 @@ const Emails = () => {
           ]}
         >
           <Input placeholder="Enter email for Skilling" />
+        </Form.Item>
+        <Form.Item
+          label="Company"
+          name="company"
+          initialValue={emails.company}
+          rules={[
+            {
+              type: "email",
+              whitespace: true,
+              required: true,
+              message: "Please input the email for Company!",
+            },
+          ]}
+        >
+          <Input placeholder="Enter email for Company" />
         </Form.Item>
         <div>
           <Button type="primary" htmlType="submit">

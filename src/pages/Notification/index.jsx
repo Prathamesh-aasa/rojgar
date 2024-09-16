@@ -67,6 +67,7 @@ const Notifications = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      console.log(">>> ~ userData ~ userData:", userData)
 
       setUsers(userData);
     } catch (error) {
@@ -332,7 +333,7 @@ const Notifications = () => {
               size={"large"}
               icon={<UserOutlined />}
             />
-            <div>
+            <div className="relative">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg text-[#013D9D] mb-2 font-semibold">
                   {notification?.bold_text}
@@ -340,6 +341,7 @@ const Notifications = () => {
                 <p>{notification?.text}</p>
               </div>
               <p>User ID : {notification?.user_id}</p>
+              <p className="text-[#013D9D] text-sm font-semibold">{moment(notification?.sent_at)?.format('DD-MM-YYYY hh:mm A')}</p>
             </div>
           </div>
         ))}
@@ -488,11 +490,11 @@ const Notifications = () => {
                                 (user, index, self) =>
                                   index ===
                                   self.findIndex(
-                                    (t) => t.user_id === user.user_id
+                                    (t) => t.id === user.id
                                   )
                               )
                               .map((user) => ({
-                                value: user.user_id,
+                                value: user.id,
                                 label: user.company_name,
                               }))}
                           />

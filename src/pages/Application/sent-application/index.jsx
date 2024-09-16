@@ -230,7 +230,7 @@ const ApplicantTable = () => {
                 </div>
                 <div className="flex flex-col gap-2">
                   <p>Location of work</p>
-                  <span>{selectedItem?.preferred_city_of_work}</span>
+                  <span>{selectedItem?.preferred_city_of_work||"Not Given"}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <p>Any criminal record</p>

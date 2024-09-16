@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Button,
@@ -27,10 +27,20 @@ import moment from "moment";
 import { FileTextIcon, ReceiptText } from "lucide-react";
 import { Sorter } from "../../utils/sorter";
 import { ReceiptIndianRupee } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 const { Option } = Select;
 
 const Applications = () => {
-  const [tab, setTab] = useState("1");
+  const navigate = useNavigate();
+
+  function useQuery() {
+    const { search } = useLocation();
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+  }
+
+  let queryInt = useQuery();
+
+  const [tab, setTab] = useState(queryInt.get("tabIndex") || "1");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSendNotificationModalVisible, setIsSendNotificationModalVisible] =
@@ -749,7 +759,7 @@ const Applications = () => {
           description: "Second Payment is not done yet.",
         });
       }
-1
+      1;
       const paymentCollection = collection(db, "Payments");
       const paymentQuery = query(
         paymentCollection,
@@ -786,7 +796,7 @@ const Applications = () => {
       const skillingDoc = doc(db, "Skilling", selectedItem?.id);
       await updateDoc(skillingDoc, {
         status: "Completed",
-        completed:true
+        completed: true,
       });
       notification.success({
         message: "Status Updated",
@@ -1373,6 +1383,10 @@ const Applications = () => {
           setSearchTerm("");
           setFilterStatus("");
           setTab(w);
+          navigate({
+            pathname: location.pathname,
+            search: `?tabIndex=${w}`,
+          });
         }}
       >
         <TabPane
@@ -1705,10 +1719,12 @@ const Applications = () => {
                     <p>Name</p>
                     <span>{selectedItem?.full_name}</span>
                   </div>
-                 {tab !== "4"&& <div className="flex flex-col gap-2">
-                    <p>Gender</p>
-                    <span>{selectedItem?.gender || "Not Given"}</span>
-                  </div>}
+                  {tab !== "4" && (
+                    <div className="flex flex-col gap-2">
+                      <p>Gender</p>
+                      <span>{selectedItem?.gender || "Not Given"}</span>
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-2">
                     <p>Phone Number</p>
@@ -1725,8 +1741,9 @@ const Applications = () => {
                   <div className="flex flex-col gap-2">
                     <p>DOB</p>
                     <span>
-                      {moment(selectedItem?.dob).format("DD-MM-YYYY") ||
-                        "Not Given"}
+                      {moment(
+                        selectedItem?.date_of_birth || selectedItem?.dob
+                      ).format("DD-MM-YYYY") || "Not Given"}
                     </span>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1737,14 +1754,16 @@ const Applications = () => {
                       )}
                     </span>
                   </div>
-               { tab == "1" && <div className="flex flex-col gap-2">
-                    <p>When Can Join</p>
-                    <span>
-                      {moment(selectedItem?.when_can_join).format(
-                        "DD-MM-YYYY"
-                      )}
-                    </span>
-                  </div>}
+                  {tab == "1" && (
+                    <div className="flex flex-col gap-2">
+                      <p>When can you join?</p>
+                      <span>
+                        {moment(selectedItem?.when_can_join).format(
+                          "DD-MM-YYYY"
+                        )}
+                      </span>
+                    </div>
+                  )}
                   {selectedItem?.company_name && (
                     <div className="flex flex-col gap-2">
                       <p>Applied Company</p>
@@ -1906,14 +1925,14 @@ const Applications = () => {
                     Other Details
                   </h1>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="flex flex-col gap-2">
+                    {/* <div className="flex flex-col gap-2">
                       <p>Job you want to apply</p>
                       <span>{selectedItem?.job_you_want_to_apply || "NA"}</span>
-                    </div>
+                    </div> */}
                     <div className="flex flex-col gap-2">
                       <p>Location of work</p>
                       <span>
-                        {selectedItem?.preferred_city_of_work || "NA"}
+                        {selectedItem?.preferred_city_of_work || "Not Given"}
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -1924,10 +1943,10 @@ const Applications = () => {
                           : "No"}
                       </span>
                     </div>
-                    <div className="flex flex-col gap-2">
+                    {/* <div className="flex flex-col gap-2">
                       <p>Booking Fee paid</p>
                       <span>{selectedItem?.fee_paid || "NA"}</span>
-                    </div>
+                    </div> */}
                     <div className="flex flex-col gap-2 mb-4">
                       <p>Driving license</p>
                       <span>
@@ -1984,7 +2003,7 @@ const Applications = () => {
                     <div className="flex flex-col gap-2">
                       <p>Do you have health insurance</p>
                       <span>
-                      {selectedItem?.do_you_have_health_insurance
+                        {selectedItem?.do_you_have_health_insurance
                           ? "Yes"
                           : "No"}
                       </span>
@@ -2002,6 +2021,7 @@ const Applications = () => {
                     {selectedItem?.resume_link && (
                       <>
                         <a
+                          target="_blank"
                           href={selectedItem?.resume_link}
                           className="p-3 bg-blue-700/40 rounded flex gap-4"
                         >
@@ -2517,6 +2537,12 @@ const Applications = () => {
               <div className="flex flex-col gap-2">
                 <p>Address</p>
                 <span>{jobApplicationData?.jobSeekerData?.address}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p>Refer By</p>
+                <span>
+                  {jobApplicationData?.jobSeekerData?.referred_by || "NA"}
+                </span>
               </div>
               {jobApplicationData?.jobSeekerData?.resume_link && (
                 <div className="flex flex-col gap-2">

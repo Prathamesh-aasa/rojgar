@@ -1,9 +1,19 @@
 import { Button } from "antd";
-import { collection, getDoc, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { db } from "../../../../firebase";
 import { PlusCircle } from "lucide-react";
+import moment from "moment";
 
 function CompanyInfo() {
   const [companyData, setCompanyData] = useState({});
@@ -18,7 +28,6 @@ function CompanyInfo() {
       id: doc.id,
       ...doc.data(),
     }));
-    console.log("🚀 ~ data ~ data:", data);
 
     const finalData = data[0];
     if (finalData?.subscription) {
@@ -39,16 +48,36 @@ function CompanyInfo() {
     setCompanyData(finalData);
   };
   const getCompanyJobs = async () => {
-    const paymentsCollection = collection(db, "Jobs");
-    const payQry = query(paymentsCollection, where("company_id", "==", id));
-    const snapshot = await getDocs(payQry);
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    console.log("🚀 ~ data ~ data:", data);
+    try {
+      const paymentsCollection = collection(db, "Jobs");
+      const payQry = query(
+        paymentsCollection,
+        where("company_id", "==", id)
+        // orderBy("created_at", "desc")
+      );
+      const snapshot = await getDocs(payQry);
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("🚀 ~ data ~ data:", data);
 
-    setCompanyJobs(data);
+      setCompanyJobs(data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    }
+  };
+
+  const closeJob = async (jobId) => {
+    try {
+      const jobRef = doc(db, "Jobs", jobId);
+      await updateDoc(jobRef, {
+        isOpen: false,
+      });
+      getCompanyJobs();
+    } catch (error) {
+      console.error("Error closing job:", error);
+    }
   };
 
   useEffect(() => {
@@ -204,18 +233,36 @@ function CompanyInfo() {
                       </p>
                     )}
                   </h1>
-                  <Link
-                    className="underline text-[#013D9D]"
-                    to={`/applications/company/${job?.id}`}
-                  >
-                    See all Application
-                  </Link>
+                  <div>
+                    <Link
+                      className="underline text-[#013D9D]"
+                      to={`/applications/company/${job?.id}`}
+                    >
+                      See all Application
+                    </Link>
+                    {job?.isOpen && (
+                      <Button
+                        onClick={() => closeJob(job.id)}
+                        type="primary"
+                        danger
+                        className="ml-5"
+                      >
+                        Close Job
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="flex flex-col">
                     <p className="font-semibold text-sm">Job Position</p>
                     <span className="text-sm">{job?.job_position}</span>
                   </div>
+                  {/* <div className="flex flex-col">
+                    <p className="font-semibold text-sm">Posted On</p>
+                    <span className="text-sm">
+                      {moment(job?.posted_on)?.format("DD-MM-YYYY")}
+                    </span>
+                  </div> */}
                   <div className="flex flex-col">
                     <p className="font-semibold text-sm">Qualification</p>
                     <span className="text-sm">{job?.qualification}</span>
@@ -254,104 +301,6 @@ function CompanyInfo() {
               </div>
             );
           })}
-
-          {/* <div className="shadow-lg p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-5">
-              <h1 className=" text-[#013D9D] text-[22px] font-medium">
-                Posted Job (TECHNICIAN)
-              </h1>
-              <Link className="underline text-[#013D9D]">
-                View Sent Application
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col">
-                <p className="font-semibold text-sm">Job Position</p>
-                <span className="text-sm">TECHNICIAN</span>
-              </div>
-              <div className="flex flex-col">
-                <p className="font-semibold text-sm">Qualification</p>
-                <span className="text-sm">GRADUATION</span>
-              </div>
-              <div className="flex flex-col">
-                <p className="font-semibold text-sm">Experience</p>
-                <span className="text-sm">ANY</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Skill Required</p>
-                <span className="text-sm">BASIC EXCEL</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Job Opening</p>
-                <span className="text-sm">100</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Payout</p>
-                <span className="text-sm">20,000-30,000</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Job Id</p>
-                <span className="text-sm">ABCD1234</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Payment Mode</p>
-                <span className="text-sm">CASH IN HAND</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Benefit</p>
-                <span className="text-sm">BONUS</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="shadow-lg p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-5">
-              <h1 className=" text-[#013D9D] text-[22px] font-medium">
-                Posted Job (TECHNICIAN)
-              </h1>
-              <Button className=" text-[red] bg-[#FFE4E4] rounded-full">
-                closed
-              </Button>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col">
-                <p className="font-semibold text-sm">Job Position</p>
-                <span className="text-sm">TECHNICIAN</span>
-              </div>
-              <div className="flex flex-col">
-                <p className="font-semibold text-sm">Qualification</p>
-                <span className="text-sm">GRADUATION</span>
-              </div>
-              <div className="flex flex-col">
-                <p className="font-semibold text-sm">Experience</p>
-                <span className="text-sm">ANY</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Skill Required</p>
-                <span className="text-sm">BASIC EXCEL</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Job Opening</p>
-                <span className="text-sm">100</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Payout</p>
-                <span className="text-sm">20,000-30,000</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Job Id</p>
-                <span className="text-sm">ABCD1234</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Payment Mode</p>
-                <span className="text-sm">CASH IN HAND</span>
-              </div>
-              <div className="flex flex-col mb-4">
-                <p className="font-semibold text-sm">Benefit</p>
-                <span className="text-sm">BONUS</span>
-              </div>
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

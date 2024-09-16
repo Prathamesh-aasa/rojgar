@@ -1223,7 +1223,7 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input placeholder="Enter GST Number" />
+                  <Input placeholder="Enter GST Number" className="uppercase" />
                 </Form.Item>
                 <Form.Item
                   name="companyPan"
@@ -1236,7 +1236,7 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input placeholder="Enter PAN number" />
+                  <Input placeholder="Enter PAN number" className="uppercase" />
                 </Form.Item>
                 <Form.Item
                   name="companyPin"
@@ -1250,7 +1250,7 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input placeholder="Eg. 741234" type="number" />
+                  <Input placeholder="Eg. 741234" type="number" className="uppercase"/>
                 </Form.Item>
                 <Form.Item
                   name="companyState"
@@ -1265,7 +1265,7 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input placeholder="Eg. Hyderabad" />
+                  <Input placeholder="State" />
                 </Form.Item>
                 <Form.Item
                   name="companyAddress"
@@ -1364,6 +1364,7 @@ const Index = () => {
                   rules={[
                     { required: true, message: "Job Position is required" },
                     { whitespace: true, message: "Job Position is required" },
+                    { pattern: /^[a-zA-Z0-9\s]+$/, message: "Job Position should not contain special characters" }
                   ]}
                 >
                   <Input placeholder="Eg. Technician" />
@@ -1712,6 +1713,7 @@ const Index = () => {
                           duration: record.duration,
                           startDate: record.startDate,
                         });
+                        setSelectedCourseType(record.isFree ? "free" : "paid")
                         setIsCourseEdit(true);
                       }}
                     >
