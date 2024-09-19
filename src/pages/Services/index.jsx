@@ -688,6 +688,7 @@ const Index = () => {
       const program = await addDoc(collection(db, "Skills"), {
         name: programName,
         isFree: true,
+        status:'active',
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
 
