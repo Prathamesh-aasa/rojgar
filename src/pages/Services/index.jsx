@@ -499,9 +499,7 @@ const Index = () => {
       // );
 
       const buildCompanyQuery = (db, value) => {
-
         let companyQuery = query(collection(db, "RegisterAsCompany"));
-
 
         if (value.email) {
           companyQuery = query(
@@ -559,7 +557,7 @@ const Index = () => {
 
       // Add new company document
       const company = await addDoc(collection(db, "RegisterAsCompany"), {
-        account_active:true,
+        account_active: true,
         city: "",
         company_email: value.email,
         company_name: value?.companyName,
@@ -582,19 +580,19 @@ const Index = () => {
       await updateDoc(company, { id: company?.id });
 
       // Add new job document
-      const job =   await addDoc(collection(db, "Jobs"), {
+      const job = await addDoc(collection(db, "Jobs"), {
         benefits: value?.otherBenefits,
         company_id: company?.id,
         experience_required: value?.experienceRequired,
-        job_openings:Number(value?.numberOfOpenings),
+        job_openings: Number(value?.numberOfOpenings),
         job_place: value?.jobPlace,
         job_position: value?.jobPosition,
         min_experience_in_months: 0,
         payout_from: Number(value?.payout_from),
         payout_to: Number(value?.payout_to),
         isOpen: true,
-        max_age:Number(value?.max_age),
-        min_age:Number(value?.min_age),
+        max_age: Number(value?.max_age),
+        min_age: Number(value?.min_age),
         trade: value?.trade || "",
         posted_on: moment().format("DD-MM-YYYY HH:mm:ss"),
         qualification: value?.educationQualification,
@@ -688,7 +686,7 @@ const Index = () => {
       const program = await addDoc(collection(db, "Skills"), {
         name: programName,
         isFree: true,
-        status:'active',
+        status: "active",
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
 
@@ -771,6 +769,7 @@ const Index = () => {
         startDate: values.startDate || "",
         isFree: values.courseType == "free" ? true : false,
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
+        status: "active",
       });
 
       const courseId = courseRef.id;
@@ -1251,7 +1250,11 @@ const Index = () => {
                     },
                   ]}
                 >
-                  <Input placeholder="Eg. 741234" type="number" className="uppercase"/>
+                  <Input
+                    placeholder="Eg. 741234"
+                    type="number"
+                    className="uppercase"
+                  />
                 </Form.Item>
                 <Form.Item
                   name="companyState"
@@ -1365,7 +1368,11 @@ const Index = () => {
                   rules={[
                     { required: true, message: "Job Position is required" },
                     { whitespace: true, message: "Job Position is required" },
-                    { pattern: /^[a-zA-Z0-9\s]+$/, message: "Job Position should not contain special characters" }
+                    {
+                      pattern: /^[a-zA-Z0-9\s]+$/,
+                      message:
+                        "Job Position should not contain special characters",
+                    },
                   ]}
                 >
                   <Input placeholder="Eg. Technician" />
@@ -1573,7 +1580,6 @@ const Index = () => {
                       required: true,
                       message: "Min age is required!",
                     },
-                  
                   ]}
                 >
                   <Input placeholder="Eg.20" type="number" />
@@ -1587,7 +1593,6 @@ const Index = () => {
                       required: true,
                       message: "Max age is required!",
                     },
-                  
                   ]}
                 >
                   <Input placeholder="Eg.20" type="number" />
@@ -1714,7 +1719,7 @@ const Index = () => {
                           duration: record.duration,
                           startDate: record.startDate,
                         });
-                        setSelectedCourseType(record.isFree ? "free" : "paid")
+                        setSelectedCourseType(record.isFree ? "free" : "paid");
                         setIsCourseEdit(true);
                       }}
                     >
