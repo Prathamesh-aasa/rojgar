@@ -398,7 +398,7 @@ const Index = () => {
     try {
       const welfareRef = await addDoc(collection(db, "All Welfare Schemes"), {
         name,
-        fee: Number(fee) || 0,
+        fee: String(fee) || "0",
         status: "active",
         created_at: moment().format("DD-MM-YYYY HH:mm:ss"),
       });
@@ -894,7 +894,7 @@ const Index = () => {
       // Update the document
       await updateDoc(documentRef, {
         name: name,
-        fee: fee,
+        fee: String(fee),
       });
 
       // await deleteDoc(doc(db, "All Welfare Schemes", id));
