@@ -2283,7 +2283,6 @@ const Index = () => {
           >
             <Select
               placeholder="Select course type"
-              defaultValue="free"
               onChange={(e) => setSelectedCourseType(e)}
             >
               <Option value="free">Free</Option>
