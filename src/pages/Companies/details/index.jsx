@@ -273,7 +273,7 @@ function CompanyInfo() {
                   </div>
                   <div className="flex flex-col mb-4">
                     <p className="font-semibold text-sm">Skill Required</p>
-                    <span className="text-sm">{job?.skills_required}</span>
+                    <span className="text-sm">{job?.skills_required?.join(', ')}</span>
                   </div>
                   <div className="flex flex-col mb-4">
                     <p className="font-semibold text-sm">Job Opening</p>
@@ -295,7 +295,7 @@ function CompanyInfo() {
                   </div> */}
                   <div className="flex flex-col mb-4">
                     <p className="font-semibold text-sm">Benefit</p>
-                    <span className="text-sm">{job?.benefits}</span>
+                    <span className="text-sm">{job?.benefits?.join(', ')}</span>
                   </div>
                 </div>
               </div>
