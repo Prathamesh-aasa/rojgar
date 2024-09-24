@@ -1548,7 +1548,7 @@ const Applications = () => {
                 <Option value="Approved">Approved</Option>
                 <Option value="Rejected">Rejected</Option>
               </Select>
-              <Button onClick={downloadJobSeekers}>Download</Button>
+             
             </div>
           </div>
           <div className="overflow-scroll">
