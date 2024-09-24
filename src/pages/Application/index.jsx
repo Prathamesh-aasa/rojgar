@@ -1363,14 +1363,148 @@ const Applications = () => {
     }
   };
 
+  const downloadJobSeekers = () => {
+    const dataToDownload = filterData(jobSeekerData).map((seeker) => ({
+      "Registration Id": seeker.id,
+      Name: seeker.full_name,
+      "Phone Number": seeker.phone_number,
+      "Date of Registration": moment(seeker?.date_of_registration).format(
+        "DD-MM-YYYY"
+      ),
+      Status: seeker.status,
+      Email: seeker.email,
+    }));
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      Object.keys(dataToDownload[0]).join(",") +
+      "\n" +
+      dataToDownload.map((row) => Object.values(row).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "job_seekers.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const downloadSkilling = () => {
+    const dataToDownload = filterData(aggregatedData).map((seeker) => ({
+      "Registration Id": seeker.id,
+      Name: seeker.full_name,
+      "Phone Number": seeker.phone_number,
+      "Date of Registration": moment(seeker?.date_of_registration).format(
+        "DD-MM-YYYY"
+      ),
+      Status: seeker.status,
+      Email: seeker.email_id,
+      "Skilling Program": seeker.skill_name,
+      Course: seeker.course_name,
+    }));
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      Object.keys(dataToDownload[0]).join(",") +
+      "\n" +
+      dataToDownload.map((row) => Object.values(row).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "skilling.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadVolunteer = () => {
+    const dataToDownload = filterData(volunteerData).map((seeker) => ({
+      "Registration Id": seeker.id,
+      Name: seeker.full_name,
+      "Phone Number": seeker.phone_number,
+      "Date of Registration": moment(seeker?.date_of_registration).format(
+        "DD-MM-YYYY"
+      ),
+      Status: seeker.status,
+      Email: seeker.email_id,
+      "Training Program(s)": seeker.skills_name,
+      "Course(s)": seeker.courses,
+    }));
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      Object.keys(dataToDownload[0]).join(",") +
+      "\n" +
+      dataToDownload.map((row) => Object.values(row).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "volunteer.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadDocuments = () => {
+    const dataToDownload = filterData(documents).map((seeker) => ({
+      "Registration Id": seeker.id,
+      Name: seeker.full_name,
+      "Phone Number": seeker.phone_number,
+      "Date of Registration": moment(seeker?.date_of_registration).format(
+        "DD-MM-YYYY"
+      ),
+      Status: seeker.status,
+      Email: seeker.email,
+      "Document(s)": seeker.document_service,
+    }));
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      Object.keys(dataToDownload[0]).join(",") +
+      "\n" +
+      dataToDownload.map((row) => Object.values(row).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "documents.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadWelfareSchemes = () => {
+    const dataToDownload = filterData(welfares).map((seeker) => ({
+      "Registration Id": seeker.id,
+      Name: seeker.full_name,
+      "Phone Number": seeker.phone_number,
+      "Date of Registration": moment(seeker?.date_of_registration).format(
+        "DD-MM-YYYY"
+      ),
+      Status: seeker.status,
+      Email: seeker.email,
+      "Family Income": seeker.family_income,
+      "Scheme(s)": seeker.welfare_schemes,
+    }));
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      Object.keys(dataToDownload[0]).join(",") +
+      "\n" +
+      dataToDownload.map((row) => Object.values(row).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "welfare_schemes.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="p-6">
-      <div>
-        <p className="text-base mb-5">
-          Dashboard <span className="text-[#F7B652]">&gt;</span> New
-          Registration List
-        </p>
-      </div>
       <div className="flex justify-between mb-4">
         <h1 className="text-xl">Applications</h1>
         <div className="flex gap-4"></div>
@@ -1414,6 +1548,7 @@ const Applications = () => {
                 <Option value="Approved">Approved</Option>
                 <Option value="Rejected">Rejected</Option>
               </Select>
+              <Button onClick={downloadJobSeekers}>Download</Button>
             </div>
           </div>
           <div className="overflow-scroll">
@@ -1455,6 +1590,8 @@ const Applications = () => {
                   Filters
                 </Button>
               </div> */}
+
+              <Button onClick={downloadSkilling}>Download</Button>
             </div>
           </div>
           <div className="overflow-scroll">
@@ -1495,6 +1632,7 @@ const Applications = () => {
                   Filters
                 </Button>
               </div> */}
+              <Button onClick={downloadVolunteer}>Download</Button>
             </div>
           </div>
           <div className="overflow-scroll">
@@ -1535,6 +1673,7 @@ const Applications = () => {
                   Filters
                 </Button>
               </div> */}
+              <Button onClick={downloadDocuments}>Download</Button>
             </div>
           </div>
           <div className="overflow-scroll">
@@ -1575,6 +1714,8 @@ const Applications = () => {
                   Filters
                 </Button>
               </div> */}
+              <Button onClick={downloadWelfareSchemes}>Download</Button>
+
             </div>
           </div>
           <div className="overflow-scroll">
