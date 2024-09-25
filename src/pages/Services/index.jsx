@@ -515,7 +515,7 @@ const Index = () => {
           );
         }
 
-        if (value.companyGstin) {
+        if (value?.companyGstin?.trim()) {
           companyQuery = query(
             companyQuery,
             where("gstin", "==", value.companyGstin)
@@ -563,7 +563,7 @@ const Index = () => {
         company_name: value?.companyName,
         company_phone: value?.phone,
         date_of_registration: moment().format("YYYY-MM-DDTHH:mm:ss"),
-        gstin: value?.companyGstin,
+        gstin: value?.companyGstin||"",
         job_poster_email: value.job_poster_email,
         job_poster_name: value.job_poster_name,
         job_poster_phone_number: value.job_poster_phone,
@@ -1231,7 +1231,7 @@ const Index = () => {
                   className="mb-2"
                   rules={[
                     {
-                      pattern: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                      pattern: /^[A-Z]{5}[0-9]{2}[A-Z]{1}$/,
                       message: "Invalid PAN number",
                     },
                   ]}
